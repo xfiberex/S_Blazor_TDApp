@@ -1,0 +1,75 @@
+﻿@inject NavigationManager NavigationManager
+
+<div class="sidebar bg-dark text-light">
+    <div class="top-row navbar navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="">
+                <img src="/tareasicon.png" alt="L" width="30" height="30" class="textIcon me-2">
+                Todo App
+            </a>
+            <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+        <nav class="flex-column">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="inicioProcesos" Match="NavLinkMatch.All">
+                    <span aria-hidden="true">
+                        <i class="bi @("bi-house-gear-fill")"></i>
+                    </span> Inicio - Procesos
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="tareasRecurrentes">
+                    <span aria-hidden="true">
+                        <i class="bi @("bi bi-list-task")"></i>
+                    </span> Tareas - Recurrentes
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="tareasCalendario">
+                    <span aria-hidden="true">
+                        <i class="bi @("bi bi-calendar2-range-fill")"></i>
+                    </span> Tareas - Calendario
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="usuarios">
+                    <span aria-hidden="true">
+                        <i class="bi @("bi bi-people-fill")"></i>
+                    </span> Gestión - Usuarios
+                </NavLink>
+            </div>
+        </nav>
+    </div>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += LocationChanged;
+    }
+
+    private void LocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        collapseNavMenu = true;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= LocationChanged;
+    }
+}

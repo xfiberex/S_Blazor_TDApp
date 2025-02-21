@@ -1,0 +1,193 @@
+﻿@page "/usuarios"
+
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+
+@inject SweetAlertService SwalService
+@inject IUsuarioService UsuarioService
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            
+        </div>
+        
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (listaUsuarios == null || listaUsuarios.Count == 0)
+    {
+        <div class="alert alert-info shadow-sm">
+            <i class="bi bi-info-circle me-2"></i>No se encontraron usuarios.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="text-primary mb-0">
+                            <i class="bi bi-people-fill me-2"></i>Administración de Usuarios
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Buscar..." @bind-value="searchTerm" @bind-value:event="oninput" @onkeyup="FilterUsers" />
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <a class="btn btn-success shadow-sm" href="/usuario">
+                            <i class="bi bi-plus-circle me-2"></i>Nuevo
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Correo</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Creación</th>
+                                <th>Actualización</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in filteredUsers)
+                            {
+                                <tr>
+                                    <td>@item.NombreUsuario</td>
+                                    <td>@item.Email</td>
+                                    <td>@item.Rol?.NombreRol</td>
+                                    <td><span class="badge bg-@(item.Activo ? "success" : "danger")">@(item.Activo ? "Habilitado" : "Deshabilitado")</span></td>
+                                    <td>@item.FechaCreacion.ToString("dd MMM yyyy HH:mm")</td>
+                                    <td>@(item.FechaActualizacion.HasValue ? item.FechaActualizacion.Value.ToString("dd MMM yyyy HH:mm") : "Nunca")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a class="btn btn-outline-primary btn-sm" href="/usuario/@item.UsuarioId" title="Editar">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="(() => Eliminar(item.UsuarioId, item.NombreUsuario))" title="Eliminar">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                Total de usuarios: @filteredUsers.Count
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<UsuarioDTO> listaUsuarios = new List<UsuarioDTO>();
+    private List<UsuarioDTO> filteredUsers = new List<UsuarioDTO>();
+    private bool isLoading = true;
+    private string searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsuarios();
+    }
+
+    private async Task LoadUsuarios()
+    {
+        try
+        {
+            isLoading = true;
+            listaUsuarios = await UsuarioService.Lista();
+            filteredUsers = listaUsuarios;
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar usuarios: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Eliminar(int id, string nombreUsuario)
+    {
+        var result = await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Estás seguro?",
+                Text = $"¿Deseas eliminar el usuario {nombreUsuario}?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Sí, eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        if (result.IsConfirmed)
+        {
+            try
+            {
+                var deletionResult = await UsuarioService.Eliminar(id);
+                if (deletionResult)
+                {
+                    listaUsuarios.RemoveAll(u => u.UsuarioId == id);
+                    FilterUsers();
+                    await SwalService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Eliminado",
+                            Text = "El usuario ha sido eliminado correctamente.",
+                            Icon = SweetAlertIcon.Success
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                await SwalService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Error",
+                        Text = $"Ha ocurrido un error al eliminar el usuario: {ex.Message}",
+                        Icon = SweetAlertIcon.Error
+                    });
+            }
+        }
+    }
+
+    private void FilterUsers()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredUsers = listaUsuarios;
+        }
+        else
+        {
+            filteredUsers = listaUsuarios.Where(u =>
+                u.NombreUsuario.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                u.Email!.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                (u.Rol?.NombreRol?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
+            ).ToList();
+        }
+    }
+}

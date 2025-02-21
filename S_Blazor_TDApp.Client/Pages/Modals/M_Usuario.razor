@@ -1,0 +1,201 @@
+﻿@page "/usuario"
+@page "/usuario/{IdUsuarioEditar:int}"
+
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+
+@inject IUsuarioService UsuarioService
+@inject IRolService RolService
+@inject NavigationManager NavigationManager
+@inject SweetAlertService SwalService
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>@titulo</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="usuario" OnValidSubmit="OnValidSubmit">
+                        <DataAnnotationsValidator />
+
+                        @if (context.GetValidationMessages().Any())
+                        {
+                            <div class="alert alert-danger mb-3">
+                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                                <ValidationSummary />
+                            </div>
+                        }
+
+                        <!-- Nombre de Usuario -->
+                        <div class="mb-3">
+                            <label for="nombreUsuario" class="form-label">Nombre de Usuario</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <InputText id="nombreUsuario" class="form-control"
+                                           placeholder="Ingrese el nombre de usuario"
+                                           @bind-Value="usuario.NombreUsuario" />
+                            </div>
+                        </div>
+
+                        <!-- Contraseña -->
+                        <div class="mb-3">
+                            <label for="clave" class="form-label">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <InputText id="clave" type="password" class="form-control"
+                                           placeholder="Ingrese la contraseña"
+                                           @bind-Value="usuario.Clave" />
+                            </div>
+                        </div>
+
+                        <!-- Correo Electrónico -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <InputText id="email" type="email" class="form-control"
+                                           placeholder="ejemplo@dominio.com"
+                                           @bind-Value="usuario.Email" />
+                            </div>
+                        </div>
+
+                        <!-- Rol del Usuario -->
+                        <div class="mb-3">
+                            <label for="rol" class="form-label">Rol</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                <InputSelect id="rol" class="form-select" @bind-Value="usuario.RolId">
+                                    <option value="0">-- Seleccionar --</option>
+                                    @foreach (var rol in listaRoles)
+                                    {
+                                        <option value="@rol.RolId">@rol.NombreRol</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <!-- Estado del usuario -->
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-toggle-on"></i></span>
+                                <InputSelect id="estado" class="form-select" @bind-Value="usuario.Activo">
+                                    <option value="true">Habilitado</option>
+                                    <option value="false">Deshabilitado</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    @if (btnTexto == "Guardar")
+                                    {
+                                        <i class="bi bi-save me-2"></i>
+                                    }
+                                    else if (btnTexto == "Actualizar")
+                                    {
+                                        <i class="bi bi-pencil-square me-2"></i>
+                                    }
+                                }
+                                @btnTexto
+                            </button>
+
+                            <a class="btn btn-outline-secondary" href="/usuarios">
+                                <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                            </a>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int IdUsuarioEditar { get; set; } = 0;
+
+    private string titulo = string.Empty;
+    private string btnTexto = string.Empty;
+    public bool isSaving = false;
+
+    private UsuarioDTO usuario = new UsuarioDTO();
+    private List<RolDTO> listaRoles = new List<RolDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Cargar la lista de roles
+            listaRoles = await RolService.Lista();
+
+            if (IdUsuarioEditar != 0)
+            {
+                // Se busca el usuario a editar
+                usuario = await UsuarioService.Buscar(IdUsuarioEditar);
+                btnTexto = "Actualizar";
+                titulo = "Editar Usuario";
+            }
+            else
+            {
+                btnTexto = "Guardar";
+                titulo = "Nuevo Usuario";
+            }
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar datos: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            int idDevuelto = 0;
+
+            if (IdUsuarioEditar == 0)
+            {
+                idDevuelto = await UsuarioService.Guardar(usuario);
+            }
+            else
+            {
+                idDevuelto = await UsuarioService.Editar(usuario);
+            }
+
+            if (idDevuelto != 0)
+            {
+                NavigationManager.NavigateTo("/usuarios");
+            }
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Ha ocurrido un error al guardar el usuario: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

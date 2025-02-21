@@ -1,0 +1,201 @@
+﻿@page "/tareasCalendario"
+
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+
+@inject SweetAlertService SwalService
+@inject ITareaCalendarioService TareaCalendarioService
+
+<div class="container-fluid mt-4">
+    
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (listaTareasCalendario == null || listaTareasCalendario.Count == 0)
+    {
+        <div class="alert alert-info shadow-sm">
+            <i class="bi bi-info-circle me-2"></i>No se encontraron tareas de calendario.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="text-primary mb-0">
+                            <i class="bi bi-calendar-event me-2"></i>Tareas de Calendario
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Buscar..." @bind-value="searchTerm" @bind-value:event="oninput" @onkeyup="FilterTasks" />
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <a class="btn btn-success shadow-sm" href="/tareaCalendario">
+                            <i class="bi bi-plus-circle me-2"></i>Nueva
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in filteredTasks)
+                            {
+                                <tr>
+                                    <td>@item.NombreTarea</td>
+                                    <td>
+                                        @if (item.DescripcionTarea!.Length > 80)
+                                        {
+                                            <span>@(item.ShowFullDescription ? item.DescripcionTarea : item.DescripcionTarea.Substring(0, 80) + "...")</span>
+                                            <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                <i class="bi @(item.ShowFullDescription ? "bi-eye-slash" : "bi-eye")"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.DescripcionTarea</span>
+                                        }
+                                    </td>
+                                    <td><span class="badge bg-@(item.Habilitado ? "success" : "warning")">@(item.Habilitado ? "Habilitada" : "Deshabilitada")</span></td>
+                                    <td>@item.Fecha.ToString("dd MMM yyyy")</td>
+                                    <td>@item.Hora.ToString("hh:mm tt")</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a class="btn btn-outline-primary btn-sm" href="/tareaCalendario/@item.TareaId" title="Editar">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="(() => Eliminar(item.TareaId, item.DescripcionTarea!))" title="Eliminar">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                Total de tareas: @filteredTasks.Count
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<TareasCalendarioDTO> listaTareasCalendario = new List<TareasCalendarioDTO>();
+    private List<TareasCalendarioDTO> filteredTasks = new List<TareasCalendarioDTO>();
+    private bool isLoading = true;
+    private string searchTerm = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTareasCalendario();
+    }
+
+    private async Task LoadTareasCalendario()
+    {
+        try
+        {
+            isLoading = true;
+            listaTareasCalendario = await TareaCalendarioService.Lista();
+            filteredTasks = listaTareasCalendario;
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar las tareas de calendario: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Eliminar(int id, string nombreTareaCalendario)
+    {
+        var result = await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Estás seguro?",
+                Text = $"¿Deseas eliminar la tarea de calendario: {nombreTareaCalendario}?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Sí, eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        if (result.IsConfirmed)
+        {
+            try
+            {
+                var deletionResult = await TareaCalendarioService.Eliminar(id);
+                if (deletionResult)
+                {
+                    listaTareasCalendario.RemoveAll(u => u.TareaId == id);
+                    FilterTasks();
+                    await SwalService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Eliminado",
+                            Text = "La tarea de calendario ha sido eliminada correctamente.",
+                            Icon = SweetAlertIcon.Success
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                await SwalService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Error",
+                        Text = $"Ha ocurrido un error al eliminar la tarea de calendario: {ex.Message}",
+                        Icon = SweetAlertIcon.Error
+                    });
+            }
+        }
+    }
+
+    private void ToggleDescription(TareasCalendarioDTO item)
+    {
+        item.ShowFullDescription = !item.ShowFullDescription;
+    }
+
+    private void FilterTasks()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredTasks = listaTareasCalendario;
+        }
+        else
+        {
+            filteredTasks = listaTareasCalendario.Where(t =>
+                t.NombreTarea.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                t.DescripcionTarea!.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+    }
+}

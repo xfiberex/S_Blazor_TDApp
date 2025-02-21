@@ -1,0 +1,230 @@
+﻿@page "/tareaCalendario"
+@page "/tareaCalendario/{IdTareaCalendarioEditar:int}"
+
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+@using System.Globalization
+
+@inject ITareaCalendarioService TareaCalendarioService
+@inject NavigationManager NavigationManager
+@inject SweetAlertService SwalService
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>@titulo</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="tareaCalendario" OnValidSubmit="OnValidSubmit">
+                        <DataAnnotationsValidator />
+
+                        @if (context.GetValidationMessages().Any())
+                        {
+                            <div class="alert alert-danger mb-3">
+                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                                <ValidationSummary />
+                            </div>
+                        }
+
+                        <!-- Nombre de tarea -->
+                        <div class="mb-3">
+                            <label for="nombreTareaCal" class="form-label">Nombre</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-heading"></i></span>
+                                <InputText id="nombreTareaCal" class="form-control"
+                                           placeholder="Ingrese el nombre de la tarea"
+                                           @bind-Value="tareaCalendario.NombreTarea" />
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                <InputTextArea id="descripcion" class="form-control"
+                                               placeholder="Describa la tarea"
+                                               @bind-Value="tareaCalendario.DescripcionTarea" />
+                            </div>
+                        </div>
+
+                        <!-- Estado de la tarea -->
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-toggle-on"></i></span>
+                                <InputSelect id="estado" class="form-select" @bind-Value="tareaCalendario.Habilitado">
+                                    <option value="true">Habilitado</option>
+                                    <option value="false">Deshabilitado</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <!-- Fecha de la tarea -->
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label">Fecha</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                <InputDate id="fecha" class="form-control" @bind-Value="tareaCalendario.Fecha" />
+                            </div>
+                        </div>
+
+                        <!-- Entrada de la hora completa -->
+                        <div class="mb-3">
+                            <label for="hora" class="form-label">Hora</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                                <InputText id="hora" type="time" class="form-control" step="1" @bind-Value="horaInput" />
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    @if (btnTexto == "Guardar")
+                                    {
+                                        <i class="bi bi-save me-2"></i>
+                                    }
+                                    else if (btnTexto == "Actualizar")
+                                    {
+                                        <i class="bi bi-pencil-square me-2"></i>
+                                    }
+                                }
+                                @btnTexto
+                            </button>
+
+                            <a class="btn btn-outline-secondary" href="/tareasCalendario">
+                                <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                            </a>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int IdTareaCalendarioEditar { get; set; } = 0;
+
+    private string titulo = string.Empty;
+    private string btnTexto = string.Empty;
+    public bool isSaving = false;
+
+    private TareasCalendarioDTO tareaCalendario = new TareasCalendarioDTO();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (IdTareaCalendarioEditar != 0)
+            {
+                tareaCalendario = await TareaCalendarioService.Buscar(IdTareaCalendarioEditar);
+                btnTexto = "Actualizar";
+                titulo = "Editar tarea de calendario";
+            }
+            else
+            {
+                btnTexto = "Guardar";
+                titulo = "Nueva tarea de calendario";
+            }
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar datos: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            int idDevuelto = 0;
+
+            if (IdTareaCalendarioEditar == 0)
+            {
+                idDevuelto = await TareaCalendarioService.Guardar(tareaCalendario);
+            }
+            else
+            {
+                idDevuelto = await TareaCalendarioService.Editar(tareaCalendario);
+            }
+
+            if (idDevuelto != 0)
+            {
+                NavigationManager.NavigateTo("/tareasCalendario");
+            }
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Ha ocurrido un error al guardar la tarea de calendario: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private string horaInput
+    {
+        get => tareaCalendario.Hora.ToString("HH:mm:ss");
+        set
+        {
+            _ = SetHoraInputAsync(value);
+        }
+    }
+
+    private async Task SetHoraInputAsync(string value)
+    {
+        try
+        {
+            if (DateTime.TryParseExact(value, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
+            {
+                tareaCalendario.Hora = tareaCalendario.Hora.Date.Add(parsedTime.TimeOfDay);
+            }
+            else
+            {
+                throw new FormatException("El formato de la hora debe ser 'HH:mm:ss'.");
+            }
+        }
+        catch (FormatException ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error de formato",
+                    Text = ex.Message,
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Ha ocurrido un error al guardar la hora: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+}
