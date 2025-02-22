@@ -78,7 +78,7 @@
                                         }
                                     </td>
                                     <td><span class="badge bg-@(item.Habilitado ? "success" : "warning")">@(item.Habilitado ? "Habilitada" : "Deshabilitada")</span></td>
-                                    <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.Fecha.ToString("dd MMM yyyy")</td>
                                     <td>@item.Hora.ToString("hh:mm tt")</td>
                                     <td>
                                         <div class="btn-group" role="group">
@@ -100,7 +100,6 @@
                 Total de tareas: @filteredTasks.Count
             </div>
         </div>
-        <br />
     }
 </div>
 
