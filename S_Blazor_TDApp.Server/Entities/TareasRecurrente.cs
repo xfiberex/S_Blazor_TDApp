@@ -1,4 +1,7 @@
-﻿namespace S_Blazor_TDApp.Server.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class TareasRecurrente
 {
@@ -10,13 +13,15 @@ public partial class TareasRecurrente
 
     public bool Recurrente { get; set; }
 
-    public DateTime HoraDesde { get; set; } = DateTime.UtcNow;
+    public DateTime HoraDesde { get; set; }
 
-    public DateTime HorasHasta { get; set; } = DateTime.UtcNow;
+    public DateTime HorasHasta { get; set; }
 
     public int TiempoEjecucion { get; set; }
 
     public int CantidadEjecuciones { get; set; }
 
     public bool Estado { get; set; }
+
+    public virtual ICollection<TareaDia> TareaDia { get; set; } = new List<TareaDia>();
 }

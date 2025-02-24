@@ -1,4 +1,7 @@
-﻿namespace S_Blazor_TDApp.Server.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class TareasCalendario
 {
@@ -12,5 +15,5 @@ public partial class TareasCalendario
 
     public DateTime Fecha { get; set; }
 
-    public DateTime Hora { get; set; } = DateTime.UtcNow;
+    public DateTime Hora { get; set; }
 }

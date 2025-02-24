@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.Entities;
 
 namespace S_Blazor_TDApp.Server.DBContext;
@@ -16,6 +18,8 @@ public partial class DbTdappContext : DbContext
 
     public virtual DbSet<Rol> Roles { get; set; }
 
+    public virtual DbSet<TareaDia> TareaDias { get; set; }
+
     public virtual DbSet<TareasCalendario> TareasCalendarios { get; set; }
 
     public virtual DbSet<TareasRecurrente> TareasRecurrentes { get; set; }
@@ -28,7 +32,7 @@ public partial class DbTdappContext : DbContext
     {
         modelBuilder.Entity<Rol>(entity =>
         {
-            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F1ECADB469");
+            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F1E5C6894E");
 
             entity.ToTable("Rol");
 
@@ -41,22 +45,50 @@ public partial class DbTdappContext : DbContext
             entity.Property(e => e.NombreRol).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<TareaDia>(entity =>
+        {
+            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D87D3301E5");
+
+            entity.ToTable("Tarea_Dias");
+
+            entity.Property(e => e.Dia).HasMaxLength(20);
+
+            entity.HasOne(d => d.TareaRecurr).WithMany(p => p.TareaDia)
+                .HasForeignKey(d => d.TareaRecurrId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TareaDias_TareasRecurrentes");
+        });
+
         modelBuilder.Entity<TareasCalendario>(entity =>
         {
-            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD83991FBC8110D");
+            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD839916998F010");
 
             entity.ToTable("Tareas_Calendario");
 
             entity.Property(e => e.DescripcionTarea).HasMaxLength(250);
             entity.Property(e => e.Fecha).HasColumnType("datetime");
-            entity.Property(e => e.Hora).HasColumnType("datetime");
             entity.Property(e => e.Habilitado).HasDefaultValue(true);
+            entity.Property(e => e.Hora).HasColumnType("datetime");
             entity.Property(e => e.NombreTarea).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<TareasRecurrente>(entity =>
+        {
+            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1ABC043B1");
+
+            entity.ToTable("Tareas_Recurrentes");
+
+            entity.Property(e => e.DescripcionTareaRecurr).HasMaxLength(100);
+            entity.Property(e => e.Estado).HasDefaultValue(true);
+            entity.Property(e => e.HoraDesde).HasColumnType("datetime");
+            entity.Property(e => e.HorasHasta).HasColumnType("datetime");
+            entity.Property(e => e.NombreTareaRecurr).HasMaxLength(100);
+            entity.Property(e => e.Recurrente).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8149D383B");
+            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8593507B6");
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Clave).HasMaxLength(255);
@@ -71,20 +103,6 @@ public partial class DbTdappContext : DbContext
                 .HasForeignKey(d => d.RolId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Usuarios_Rol");
-        });
-
-        modelBuilder.Entity<TareasRecurrente>(entity =>
-        {
-            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1D8BF7AF4");
-
-            entity.ToTable("Tareas_Recurrentes");
-
-            entity.Property(e => e.Estado).HasDefaultValue(true);
-            entity.Property(e => e.NombreTareaRecurr).HasMaxLength(100);
-            entity.Property(e => e.DescripcionTareaRecurr).HasMaxLength(100);
-            entity.Property(e => e.Recurrente).HasDefaultValue(true);
-            entity.Property(e => e.HoraDesde).HasColumnType("datetime");
-            entity.Property(e => e.HorasHasta).HasColumnType("datetime");
         });
 
         OnModelCreatingPartial(modelBuilder);

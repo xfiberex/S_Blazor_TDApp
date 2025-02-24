@@ -1,7 +1,335 @@
 ﻿@page "/tareasDias"
 
-<h3>Modificar días en que estaran disponibles las tareas</h3>
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+@inject SweetAlertService SwalService
+@inject ITareaRecurrenteService TareaRecurrenteService
+@inject ITareaDiasService TareaDiasService
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Formulario para agregar disponibilidad -->
+        <div class="col-md-6">
+            <div class="card shadow mb-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Configurar Disponibilidad</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@tareaDisponibilidadModel" OnValidSubmit="AgregarDisponibilidad">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <!-- Selección de la Tarea Recurrente -->
+                        <div class="mb-3">
+                            <label for="tareaRecurr" class="form-label">Tarea Recurrente</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-tasks"></i>
+                                </span>
+                                <InputSelect id="tareaRecurr"
+                                             class="form-select"
+                                             @bind-Value="tareaDisponibilidadModel.TareaRecurrId"
+                                             @onchange="OnTareaSeleccionadaChanged">
+                                    <option value="0">Seleccione una tarea</option>
+                                    @foreach (var tarea in listaTareasRecurrentes)
+                                    {
+                                        <option value="@tarea.TareaRecurrId">@tarea.NombreTareaRecurr</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <!-- Selección del Día (únicos no configurados) -->
+                        <div class="mb-3">
+                            <label for="dia" class="form-label">Día</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar-day"></i>
+                                </span>
+                                <InputSelect id="dia"
+                                             class="form-select"
+                                             @bind-Value="tareaDisponibilidadModel.Dia"
+                                             disabled="@(!TieneTareaSeleccionada)">
+                                    <option value="">Seleccione un día</option>
+                                    @foreach (var d in diasDisponibles)
+                                    {
+                                        <option value="@d">@d</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary"
+                                disabled="@isSaving || !TieneTareaSeleccionada || string.IsNullOrEmpty(tareaDisponibilidadModel.Dia)">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            Agregar Disponibilidad
+                        </button>
+
+                        <!-- Bloque de depuración (opcional) -->
+                        <p>TareaRecurrId: @tareaDisponibilidadModel.TareaRecurrId</p>
+                        <p>Dia: @tareaDisponibilidadModel.Dia</p>
+                        <p>isSaving: @isSaving</p>
+                        <p>TieneTareaSeleccionada: @TieneTareaSeleccionada</p>
+                        <p>string.IsNullOrEmpty(Dia): @string.IsNullOrEmpty(tareaDisponibilidadModel.Dia)</p>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de días configurados para la tarea seleccionada -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Días Configurados</h5>
+                </div>
+                <div class="card-body">
+                    @if (TieneTareaSeleccionada)
+                    {
+                        if (listaDiasConfigurados != null && listaDiasConfigurados.Any())
+                        {
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Día</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in listaDiasConfigurados)
+                                    {
+                                        <tr>
+                                            <td>@item.TareaDiaId</td>
+                                            <td>@item.Dia</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-danger"
+                                                        @onclick="() => EliminarDisponibilidad(item.TareaDiaId)">
+                                                    Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p>No se ha configurado disponibilidad para esta tarea.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p>Seleccione una tarea para ver la disponibilidad.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
+    // Modelo para el formulario
+    private TareaDiasDTO tareaDisponibilidadModel = new();
 
+    // Listas
+    private List<TareasRecurrentesDTO> listaTareasRecurrentes = new();
+    private List<TareaDiasDTO> listaDiasConfigurados = new();
+
+    // Días de la semana
+    private readonly List<string> diasSemana = new() { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
+    private List<string> diasDisponibles = new();
+
+    // Control de estado
+    private bool isSaving = false;
+
+    // Propiedad que indica si se ha seleccionado una tarea
+    private bool TieneTareaSeleccionada => tareaDisponibilidadModel.TareaRecurrId != 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTareasRecurrentes();
+        // Inicialmente, se muestran todos los días disponibles
+        diasDisponibles = new List<string>(diasSemana);
+    }
+
+    private async Task CargarTareasRecurrentes()
+    {
+        try
+        {
+            listaTareasRecurrentes = await TareaRecurrenteService.Lista();
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar las tareas recurrentes: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+
+    private async Task OnTareaSeleccionadaChanged()
+    {
+        // Al cambiar la tarea, recargamos las disponibilidades
+        await CargarDisponibilidades();
+    }
+
+    private async Task CargarDisponibilidades()
+    {
+        try
+        {
+            if (TieneTareaSeleccionada)
+            {
+                // Llama al método de servicio que retorna las disponibilidades de la tarea seleccionada
+                listaDiasConfigurados = await TareaDiasService.ListaPorTareaRecurrId(tareaDisponibilidadModel.TareaRecurrId);
+                ActualizarDiasDisponibles();
+            }
+            else
+            {
+                listaDiasConfigurados.Clear();
+                diasDisponibles = new List<string>(diasSemana);
+            }
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar disponibilidades: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+
+    private void ActualizarDiasDisponibles()
+    {
+        var diasUsados = listaDiasConfigurados.Select(d => d.Dia).ToHashSet();
+        diasDisponibles = diasSemana.Where(d => !diasUsados.Contains(d)).ToList();
+
+        // Si el día seleccionado ya no está disponible, se limpia la selección
+        if (!string.IsNullOrEmpty(tareaDisponibilidadModel.Dia) &&
+            !diasDisponibles.Contains(tareaDisponibilidadModel.Dia))
+        {
+            tareaDisponibilidadModel.Dia = string.Empty;
+        }
+    }
+
+    private async Task AgregarDisponibilidad()
+    {
+        if (!TieneTareaSeleccionada)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = "Debe seleccionar una tarea recurrente.",
+                    Icon = SweetAlertIcon.Error
+                });
+            return;
+        }
+
+        if (string.IsNullOrEmpty(tareaDisponibilidadModel.Dia))
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = "Debe seleccionar un día.",
+                    Icon = SweetAlertIcon.Error
+                });
+            return;
+        }
+
+        // Verificación extra: el día no debe repetirse para la misma tarea
+        if (listaDiasConfigurados.Any(d => d.Dia == tareaDisponibilidadModel.Dia))
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = "El día ya está configurado para esta tarea.",
+                    Icon = SweetAlertIcon.Error
+                });
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            var nuevoRegistro = new TareaDiasDTO
+                {
+                    TareaRecurrId = tareaDisponibilidadModel.TareaRecurrId,
+                    Dia = tareaDisponibilidadModel.Dia
+                };
+
+            int idAgregado = await TareaDiasService.Guardar(nuevoRegistro);
+            if (idAgregado != 0)
+            {
+                await SwalService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Éxito",
+                        Text = "Disponibilidad agregada correctamente.",
+                        Icon = SweetAlertIcon.Success
+                    });
+                // Recarga las disponibilidades para refrescar la tabla y el dropdown
+                await CargarDisponibilidades();
+                // Limpia la selección del día
+                tareaDisponibilidadModel.Dia = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al agregar la disponibilidad: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task EliminarDisponibilidad(int id)
+    {
+        var result = await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Confirmar",
+                Text = "¿Está seguro de eliminar esta disponibilidad?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true
+            });
+
+        if (result.IsConfirmed)
+        {
+            try
+            {
+                bool eliminado = await TareaDiasService.Eliminar(id);
+                if (eliminado)
+                {
+                    await SwalService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Eliminado",
+                            Text = "La disponibilidad ha sido eliminada.",
+                            Icon = SweetAlertIcon.Success
+                        });
+                    await CargarDisponibilidades();
+                }
+            }
+            catch (Exception ex)
+            {
+                await SwalService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Error",
+                        Text = $"Error al eliminar la disponibilidad: {ex.Message}",
+                        Icon = SweetAlertIcon.Error
+                    });
+            }
+        }
+    }
 }
