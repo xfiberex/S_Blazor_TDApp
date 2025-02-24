@@ -61,21 +61,15 @@
                         </div>
 
                         <button type="submit"
-                                class="btn btn-primary"
-                                disabled="@isSaving || !TieneTareaSeleccionada || string.IsNullOrEmpty(tareaDisponibilidadModel.Dia)">
+                                class="btn btn-primary">
                             @if (isSaving)
                             {
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                             }
                             Agregar Disponibilidad
-                        </button>
 
-                        <!-- Bloque de depuración (opcional) -->
-                        <p>TareaRecurrId: @tareaDisponibilidadModel.TareaRecurrId</p>
-                        <p>Dia: @tareaDisponibilidadModel.Dia</p>
-                        <p>isSaving: @isSaving</p>
-                        <p>TieneTareaSeleccionada: @TieneTareaSeleccionada</p>
-                        <p>string.IsNullOrEmpty(Dia): @string.IsNullOrEmpty(tareaDisponibilidadModel.Dia)</p>
+                            @* TODO: La tareas se muestran pero, al seleccionarla no muestra lo que ya esta configurado *@
+                        </button>
                     </EditForm>
                 </div>
             </div>
