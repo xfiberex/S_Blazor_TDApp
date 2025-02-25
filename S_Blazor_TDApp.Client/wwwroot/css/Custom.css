@@ -15,6 +15,10 @@ code {
     color: #c02d76;
 }
 
+.label-Custom {
+   font-weight: 600;
+}
+
 /* Sidebar Styles */
 .sidebar {
     width: 250px;
