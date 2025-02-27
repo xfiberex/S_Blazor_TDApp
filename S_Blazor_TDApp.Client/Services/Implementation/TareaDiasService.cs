@@ -16,12 +16,13 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? [];
+            return resultado.Valor ?? new List<TareaDiasDTO>();
         }
 
         public async Task<List<TareaDiasDTO>> ListaPorTareaRecurrId(int tareaRecurrId)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<TareaDiasDTO>>>($"api/TareaDias/ListaPorTarea?tareaRecurrId={tareaRecurrId}")
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<TareaDiasDTO>>>(
+                $"api/TareaDias/ListaPorTarea?tareaRecurrId={tareaRecurrId}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -32,7 +33,8 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<TareaDiasDTO> Buscar(int id)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<TareaDiasDTO>>($"api/TareaDias/Buscar/{id}")
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<TareaDiasDTO>>(
+                $"api/TareaDias/Buscar/{id}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -43,7 +45,6 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<int> Guardar(TareaDiasDTO tareaDias)
         {
-            // Se utiliza PostAsJsonAsync y se comprueba el código de estado HTTP.
             var httpResponse = await _http.PostAsJsonAsync("api/TareaDias/Guardar", tareaDias);
             if (!httpResponse.IsSuccessStatusCode)
             {
@@ -75,7 +76,6 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             if (!response.EsCorrecto)
                 throw new Exception(response.Mensaje);
 
-            // Retorna true en caso de éxito
             return true;
         }
     }

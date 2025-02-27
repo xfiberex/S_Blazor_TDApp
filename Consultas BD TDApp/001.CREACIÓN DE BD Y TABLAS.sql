@@ -104,16 +104,38 @@ GO
 --('Reporte de incidencias', 'Elaborar reporte de incidencias y resolver problemas', 1, '2025-02-21 11:00:00', '2025-02-21 11:30:00', 30, 1, 1),
 --('Reunión de equipo', 'Coordinar y asistir a reunión de equipo', 1, '2025-02-21 16:00:00', '2025-02-21 17:00:00', 60, 1, 1),
 --('Mantenimiento de equipos', 'Realizar mantenimiento preventivo a equipos', 1, '2025-02-21 18:00:00', '2025-02-21 19:00:00', 60, 1, 1);
+--GO
+
+-- Tabla para los dias --
+CREATE TABLE Dias_Disponibles (
+	DiaId INT IDENTITY(1,1) PRIMARY KEY,
+	NombreDia NVARCHAR(20) NOT NULL,
+)
 GO
+
+--INSERT INTO Dias_Disponibles (NombreDia) VALUES
+--('Lunes'),
+--('Martes'),
+--('Miércoles'),
+--('Jueves'),
+--('Viernes'),
+--('Sábado'),
+--('Domingo');
+--GO
+
 
 -- Tabla para configurar los días en que estará disponible una tarea recurrente
 CREATE TABLE Tarea_Dias (
     TareaDiaId INT IDENTITY(1,1) PRIMARY KEY,
     TareaRecurrId INT NOT NULL,
-    Dia NVARCHAR(20) NOT NULL,
-    CONSTRAINT CHK_TareaDias_Dia CHECK (Dia IN ('Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo')),
-    CONSTRAINT FK_TareaDias_TareasRecurrentes FOREIGN KEY (TareaRecurrId)
-        REFERENCES Tareas_Recurrentes(TareaRecurrId)
+    DiaId INT NOT NULL,
+    CONSTRAINT FK_TareaDias_TareasRecurrentes 
+        FOREIGN KEY (TareaRecurrId)
+        REFERENCES Tareas_Recurrentes(TareaRecurrId),
+
+    CONSTRAINT FK_TareaDias_DiasDisponibles
+        FOREIGN KEY (DiaId)
+        REFERENCES Dias_Disponibles(DiaId)
 );
 
 --INSERT INTO Tarea_Dias (TareaRecurrId, NombreTareaRecurrDia, Dia) VALUES

@@ -14,6 +14,8 @@ public partial class DbTdappContext : DbContext
     {
     }
 
+    public virtual DbSet<DiasDisponible> DiasDisponibles { get; set; }
+
     public virtual DbSet<Rol> Roles { get; set; }
 
     public virtual DbSet<TareaDia> TareaDias { get; set; }
@@ -28,6 +30,15 @@ public partial class DbTdappContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<DiasDisponible>(entity =>
+        {
+            entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C769386BFF9");
+
+            entity.ToTable("Dias_Disponibles");
+
+            entity.Property(e => e.NombreDia).HasMaxLength(20);
+        });
+
         modelBuilder.Entity<Rol>(entity =>
         {
             entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F1E5C6894E");
@@ -45,13 +56,16 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareaDia>(entity =>
         {
-            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D87D3301E5");
+            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D89DDB3DCF");
 
             entity.ToTable("Tarea_Dias");
 
-            entity.Property(e => e.Dia).HasMaxLength(20);
+            entity.HasOne(d => d.IdDiaNavegation).WithMany(p => p.TareaDia)
+                .HasForeignKey(d => d.DiaId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TareaDias_DiasDisponibles");
 
-            entity.HasOne(d => d.TareaRecurr).WithMany(p => p.TareaDia)
+            entity.HasOne(d => d.IdTareaRecurrNavegation).WithMany(p => p.TareaDia)
                 .HasForeignKey(d => d.TareaRecurrId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_TareaDias_TareasRecurrentes");

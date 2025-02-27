@@ -31,6 +31,7 @@
                         }
 
                         <div class="row mb-3">
+                            <!-- Selector de Tarea Recurrente -->
                             <div class="col-md-5">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
@@ -43,18 +44,22 @@
                                     </InputSelect>
                                 </div>
                             </div>
+
+                            <!-- Selector de Día Disponible (utilizando la entidad DiasDisponibles) -->
                             <div class="col-md-4">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-calendar2-week-fill"></i></span>
-                                    <InputSelect id="IdDiasDisponibles" class="form-control" @bind-Value="selectedTareaDia">
-                                        <option value="">-- Seleccionar día disponible --</option>
+                                    <InputSelect id="IdDiasDisponibles" class="form-control" @bind-Value="selectedDiaId">
+                                        <option value="0">-- Seleccionar día disponible --</option>
                                         @foreach (var dia in diasDisponibles)
                                         {
-                                            <option value="@dia">@dia</option>
+                                            <option value="@dia.DiaId">@dia.NombreDia</option>
                                         }
                                     </InputSelect>
                                 </div>
                             </div>
+
+                            <!-- Botón para asignar -->
                             <div class="col-md-3">
                                 <div class="input-group">
                                     <button class="btn btn-success shadow-sm" type="submit" disabled="@isSaving">
@@ -72,7 +77,7 @@
                         <label for="datosTareaRecurrente" class="form-label label-Custom">Información detallada de la tarea</label>
                         <hr />
 
-                        <!-- Controles para mostrar la información de la tarea recurrente -->
+                        <!-- Información de la tarea -->
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label for="Recurrente" class="form-label">Recurrente</label>
@@ -126,37 +131,34 @@
         </div>
     </div>
 
-    <!-- Lista de días configurados para la tarea seleccionada -->
+    <!-- Tabla de Días Configurados para la Tarea Seleccionada -->
     <div class="row justify-content-center mt-4">
-        @if (isLoading)
-        {
-            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Cargando...</span>
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Días configurados</h5>
                 </div>
-            </div>
-        }
-        else if (listaTareasRecurrentes == null || listaTareasRecurrentes.Count == 0)
-        {
-            <div class="alert alert-info shadow-sm">
-                <i class="bi bi-info-circle me-2"></i>No se encontraron días asignados para esta tarea.
-            </div>
-        }
-        else
-        {
-            <div class="col-md-10">
-                <div class="card shadow">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0">Días configurados</h5>
-                    </div>
-
-                    <div class="card-body">
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (listaTareasDias == null || listaTareasDias.Count == 0)
+                    {
+                        <div class="alert alert-info shadow-sm">
+                            <i class="bi bi-info-circle me-2"></i>No se encontraron días asignados para esta tarea.
+                        </div>
+                    }
+                    else
+                    {
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>IdTarea</th>
-                                        <th>IdTareaRecurrente</th>
                                         <th>Día</th>
                                         <th>Acciones</th>
                                     </tr>
@@ -165,13 +167,11 @@
                                     @foreach (var item in listaTareasDias)
                                     {
                                         <tr>
-                                            <td>@item.TareaDiaId</td>
-                                            <td>@item.TareaRecurrId</td>
-                                            <td>@item.Dia</td>
+                                            <td>@item.Dia.NombreDia</td>
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <button type="button" class="btn btn-outline-danger btn-sm"
-                                                            @onclick="(() => Eliminar(item.TareaDiaId, item.Dia!))"
+                                                            @onclick="(() => Eliminar(item.TareaDiaId, item.Dia.NombreDia!))"
                                                             title="Eliminar">
                                                         <i class="bi bi-trash-fill"></i>
                                                     </button>
@@ -182,10 +182,11 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
-        }
+            <br>
+        </div>
     </div>
 </div>
 
@@ -193,22 +194,32 @@
     [Parameter]
     public int IdTareasDiasAñadir { get; set; } = 0;
 
-    private string titulo = string.Empty;
-    private string btnTexto = string.Empty;
     public bool isSaving = false;
+    private bool isLoading = true;
 
-    // Objetos y datos específicos
+    // Modelo para asignar un día a una tarea
     private TareaDiasDTO tareaDias = new TareaDiasDTO();
     private TareasRecurrentesDTO tareaRecurrente = new TareasRecurrentesDTO();
 
-    // Listas para los selectores y la tabla de días asignados
+    // Listas para tareas recurrentes y días asignados
     private List<TareasRecurrentesDTO> listaTareasRecurrentes = new();
     private List<TareaDiasDTO> listaTareasDias = new();
 
-    private EditContext editContext = null!;
-    private bool isLoading = true;
+    // Lista de todos los días disponibles (simulada o proveniente de servicio)
+    private List<DiasDisponiblesDTO> listaDiasDisponibles = new()
+    {
+        new DiasDisponiblesDTO { DiaId = 1, NombreDia = "Lunes" },
+        new DiasDisponiblesDTO { DiaId = 2, NombreDia = "Martes" },
+        new DiasDisponiblesDTO { DiaId = 3, NombreDia = "Miércoles" },
+        new DiasDisponiblesDTO { DiaId = 4, NombreDia = "Jueves" },
+        new DiasDisponiblesDTO { DiaId = 5, NombreDia = "Viernes" },
+        new DiasDisponiblesDTO { DiaId = 6, NombreDia = "Sábado" },
+        new DiasDisponiblesDTO { DiaId = 7, NombreDia = "Domingo" }
+    };
 
-    // Variables auxiliares para mostrar valores formateados
+    private EditContext editContext = null!;
+
+    // Variables para mostrar datos de la tarea seleccionada
     private string tareaRecurrenteDisplay = string.Empty;
     private string horaDesdeString = string.Empty;
     private string horasHastaString = string.Empty;
@@ -216,9 +227,7 @@
     private string tiempoEjecucionDisplay = string.Empty;
     private string cantidadEjecucionesDisplay = string.Empty;
 
-    // ------------------------
-    // PROPIEDAD PRINCIPAL
-    // ------------------------
+    // Propiedad para la tarea recurrente seleccionada
     private int _selectedTareaId;
     private int selectedTareaId
     {
@@ -228,31 +237,19 @@
             if (_selectedTareaId != value)
             {
                 _selectedTareaId = value;
-
-                // Asignar también al modelo TareaDias
                 tareaDias.TareaRecurrId = value;
-
-                // Actualizar información de la tarea
                 ActualizarDatosTarea();
-
-                // Cargar la lista de días asignados para la tarea seleccionada
-                CargarDiasPorTarea(value);
+                _ = CargarDiasPorTarea(value);
             }
         }
     }
 
-    // Propiedad para el día seleccionado (ahora de tipo string)
-    private string selectedTareaDia { get; set; } = string.Empty;
+    // Propiedad para el día seleccionado (ahora por ID)
+    private int selectedDiaId { get; set; } = 0;
 
-    // Lista inmutable con todos los días de la semana
-    private readonly List<string> diasSemana = new List<string>
-    {
-        "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"
-    };
-
-    // Propiedad calculada que devuelve los días disponibles (excluye los ya asignados)
-    private IEnumerable<string> diasDisponibles =>
-        diasSemana.Where(dia => !listaTareasDias.Any(td => string.Equals(td.Dia, dia, StringComparison.OrdinalIgnoreCase)));
+    // Propiedad que devuelve los días disponibles, excluyendo los ya asignados a la tarea
+    private IEnumerable<DiasDisponiblesDTO> diasDisponibles =>
+        listaDiasDisponibles.Where(dia => !listaTareasDias.Any(td => td.Dia.DiaId == dia.DiaId));
 
     protected override async Task OnInitializedAsync()
     {
@@ -261,11 +258,9 @@
         try
         {
             isLoading = true;
-
-            // Cargar la lista de tareas recurrentes
+            // Cargar lista de tareas recurrentes
             listaTareasRecurrentes = await TareaRecurrenteService.Lista();
-
-            // Cargar inicialmente la lista de días asignados (por defecto, TareaRecurrId = 0)
+            // Cargar días asignados para TareaRecurrId (inicialmente 0, probablemente vacía)
             listaTareasDias = await TareaDiasService.ListaPorTareaRecurrId(tareaDias.TareaRecurrId);
         }
         catch (Exception ex)
@@ -290,18 +285,32 @@
         {
             if (IdTareasDiasAñadir == 0)
             {
-                // Asignar el día seleccionado al modelo
+                // Asignar la tarea y el día seleccionado
                 tareaDias.TareaRecurrId = _selectedTareaId;
-                tareaDias.Dia = selectedTareaDia;
+                // Verificar que se haya seleccionado un día
+                if (selectedDiaId == 0)
+                {
+                    await SwalService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Error",
+                            Text = "Debe seleccionar un día disponible.",
+                            Icon = SweetAlertIcon.Error
+                        });
+                    return;
+                }
+                // Asignar el objeto día (con solo el ID)
+                tareaDias.Dia = new DiasDisponiblesDTO { DiaId = selectedDiaId };
 
-                // Validar el modelo antes de guardar
+                // Validar y guardar
                 if (editContext.Validate())
                 {
-                    // Guardar la entidad TareaDias
                     await TareaDiasService.Guardar(tareaDias);
 
-                    // Actualizar la lista de días asignados
+                    // Actualizar la lista de días asignados para la tarea actual
                     listaTareasDias = await TareaDiasService.ListaPorTareaRecurrId(_selectedTareaId);
+
+                    // Resetar varible
+                    selectedDiaId = 0;
                 }
             }
         }
@@ -320,7 +329,7 @@
         }
     }
 
-    private async void CargarDiasPorTarea(int tareaRecurrId)
+    private async Task CargarDiasPorTarea(int tareaRecurrId)
     {
         listaTareasDias = await TareaDiasService.ListaPorTareaRecurrId(tareaRecurrId);
         StateHasChanged();
@@ -330,7 +339,6 @@
     {
         if (selectedTareaId == 0)
         {
-            // Limpiar los campos si se selecciona la opción con valor 0
             tareaRecurrenteDisplay = string.Empty;
             horaDesdeString = string.Empty;
             horasHastaString = string.Empty;
@@ -340,12 +348,10 @@
         }
         else
         {
-            // Buscar la tarea seleccionada en la lista
             tareaRecurrente = listaTareasRecurrentes
                 .FirstOrDefault(t => t.TareaRecurrId == selectedTareaId)
                 ?? new TareasRecurrentesDTO();
 
-            // Actualizar variables auxiliares para mostrar la información
             tareaRecurrenteDisplay = tareaRecurrente.Recurrente ? "Si" : "No";
             horaDesdeString = tareaRecurrente.HoraDesde.ToString("hh:mm tt");
             horasHastaString = tareaRecurrente.HorasHasta.ToString("hh:mm tt");
@@ -359,12 +365,12 @@
 
     private string ConvertirTiempoEjecucion(int minutos)
     {
-        if (minutos >= 1440) // 1440 minutos = 1 día
+        if (minutos >= 1440)
         {
             int dias = minutos / 1440;
             return $"{dias} día";
         }
-        else if (minutos >= 60) // 60 minutos = 1 hora
+        else if (minutos >= 60)
         {
             int horas = minutos / 60;
             return $"{horas} hora";
@@ -375,12 +381,12 @@
         }
     }
 
-    private async Task Eliminar(int id, string nombreTareaRecurrente)
+    private async Task Eliminar(int id, string nombreDia)
     {
         var result = await SwalService.FireAsync(new SweetAlertOptions
             {
                 Title = "¿Estás seguro?",
-                Text = $"¿Deseas eliminar la tarea: {nombreTareaRecurrente}?",
+                Text = $"¿Deseas eliminar el día: {nombreDia}?",
                 Icon = SweetAlertIcon.Warning,
                 ShowCancelButton = true,
                 ConfirmButtonText = "Sí, eliminar",

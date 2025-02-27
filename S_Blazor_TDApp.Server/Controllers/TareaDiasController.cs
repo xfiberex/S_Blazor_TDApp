@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
-using S_Blazor_TDApp.Server.Entities;
 using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers
@@ -26,15 +25,22 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
+                // Incluir la navegación tanto a TareasRecurrente como a DiasDisponible
                 var listaEntities = await _context.TareaDias
-                                                  .Include(td => td.TareaRecurr)
+                                                  .Include(td => td.IdTareaRecurrNavegation)
+                                                  .Include(td => td.IdDiaNavegation)
                                                   .ToListAsync();
 
+                // Mapear a DTO
                 var listaDTO = listaEntities.Select(item => new TareaDiasDTO
                 {
                     TareaDiaId = item.TareaDiaId,
                     TareaRecurrId = item.TareaRecurrId,
-                    Dia = item.Dia
+                    Dia = new DiasDisponiblesDTO
+                    {
+                        DiaId = item.IdDiaNavegation.DiaId,
+                        NombreDia = item.IdDiaNavegation.NombreDia
+                    }
                 }).ToList();
 
                 responseApi.EsCorrecto = true;
@@ -49,7 +55,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             return Ok(responseApi);
         }
 
-        // GET: api/TareaDias/ListaPorTarea
+        // GET: api/TareaDias/ListaPorTarea?tareaRecurrId=...
         [HttpGet]
         [Route("ListaPorTarea")]
         public async Task<IActionResult> ListaPorTarea(int tareaRecurrId)
@@ -58,13 +64,19 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
+                // Se filtra por TareaRecurrId y se incluye la navegación a DiasDisponible
                 var listaDTO = await _context.TareaDias
                                              .Where(td => td.TareaRecurrId == tareaRecurrId)
+                                             .Include(td => td.IdDiaNavegation)
                                              .Select(td => new TareaDiasDTO
                                              {
                                                  TareaDiaId = td.TareaDiaId,
                                                  TareaRecurrId = td.TareaRecurrId,
-                                                 Dia = td.Dia
+                                                 Dia = new DiasDisponiblesDTO
+                                                 {
+                                                     DiaId = td.IdDiaNavegation.DiaId,
+                                                     NombreDia = td.IdDiaNavegation.NombreDia
+                                                 }
                                              })
                                              .ToListAsync();
 
@@ -89,8 +101,10 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
+                // Se incluye la navegación a DiasDisponible
                 var entity = await _context.TareaDias
-                                           .Include(td => td.TareaRecurr)
+                                           .Include(td => td.IdTareaRecurrNavegation)
+                                           .Include(td => td.IdDiaNavegation)
                                            .FirstOrDefaultAsync(td => td.TareaDiaId == id);
 
                 if (entity == null)
@@ -104,7 +118,11 @@ namespace S_Blazor_TDApp.Server.Controllers
                 {
                     TareaDiaId = entity.TareaDiaId,
                     TareaRecurrId = entity.TareaRecurrId,
-                    Dia = entity.Dia
+                    Dia = new DiasDisponiblesDTO
+                    {
+                        DiaId = entity.IdDiaNavegation.DiaId,
+                        NombreDia = entity.IdDiaNavegation.NombreDia
+                    }
                 };
 
                 responseApi.EsCorrecto = true;
@@ -128,9 +146,10 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                // Comprobar si la tarea recurrente asociada existe.
+                // Validar que exista la tarea recurrente
                 var tareaRecurrente = await _context.TareasRecurrentes
                                                    .FirstOrDefaultAsync(tr => tr.TareaRecurrId == tareaDiasDTO.TareaRecurrId);
+
                 if (tareaRecurrente == null)
                 {
                     responseApi.EsCorrecto = false;
@@ -138,13 +157,88 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return BadRequest(responseApi);
                 }
 
+                // Validar que exista el día en la tabla de días
+                var diaDisponible = await _context.DiasDisponibles
+                                                 .FirstOrDefaultAsync(d => d.DiaId == tareaDiasDTO.Dia.DiaId);
+
+                if (diaDisponible == null)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El día asociado no existe en la tabla de días disponibles.";
+                    return BadRequest(responseApi);
+                }
+
+                // Crear la entidad con la FK
                 var entity = new TareaDia
                 {
                     TareaRecurrId = tareaDiasDTO.TareaRecurrId,
-                    Dia = tareaDiasDTO.Dia
+                    DiaId = tareaDiasDTO.Dia.DiaId
                 };
 
                 _context.TareaDias.Add(entity);
+                await _context.SaveChangesAsync();
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = entity.TareaDiaId;
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+                return BadRequest(responseApi);
+            }
+
+            return Ok(responseApi);
+        }
+
+        // PUT: api/TareaDias/Editar/{id}
+        [HttpPut]
+        [Route("Editar/{id}")]
+        public async Task<IActionResult> Editar(int id, TareaDiasDTO tareaDiasDTO)
+        {
+            var responseApi = new ResponseAPI<int>();
+
+            try
+            {
+                var entity = await _context.TareaDias
+                                           .FirstOrDefaultAsync(td => td.TareaDiaId == id);
+                if (entity == null)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "No se encontró la entrada de Tarea Día.";
+                    return NotFound(responseApi);
+                }
+
+                // Validar la tarea recurrente
+                if (entity.TareaRecurrId != tareaDiasDTO.TareaRecurrId)
+                {
+                    var tareaRecurrente = await _context.TareasRecurrentes
+                                                        .FirstOrDefaultAsync(tr => tr.TareaRecurrId == tareaDiasDTO.TareaRecurrId);
+
+                    if (tareaRecurrente == null)
+                    {
+                        responseApi.EsCorrecto = false;
+                        responseApi.Mensaje = "La tarea recurrente asociada no existe.";
+                        return BadRequest(responseApi);
+                    }
+                }
+
+                // Validar que el día exista
+                var diaDisponible = await _context.DiasDisponibles
+                                                 .FirstOrDefaultAsync(d => d.DiaId == tareaDiasDTO.Dia.DiaId);
+
+                if (diaDisponible == null)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El día asociado no existe en la tabla de días disponibles.";
+                    return BadRequest(responseApi);
+                }
+
+                // Actualizar los campos
+                entity.TareaRecurrId = tareaDiasDTO.TareaRecurrId;
+                entity.DiaId = tareaDiasDTO.Dia.DiaId;
+
+                _context.Entry(entity).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 responseApi.EsCorrecto = true;
@@ -192,4 +286,6 @@ namespace S_Blazor_TDApp.Server.Controllers
             return Ok(responseApi);
         }
     }
+
+    // TODO: Crear la pagina que va a mostrar los procesos y su realización - Se recomienda hacer una tabla guardar los procesos y su realización
 }
