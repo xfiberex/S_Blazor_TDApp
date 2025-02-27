@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace S_Blazor_TDApp.Server.Entities;
+﻿namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class Usuario
 {

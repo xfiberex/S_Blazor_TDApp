@@ -11,7 +11,6 @@
 <div class="container-fluid text-center">
     <div class="row justify-content-center">
         <!-- Formulario para agregar disponibilidad -->
-        <!-- TODO: Seguir mejorando el diseño -->
         <div class="col-md-10">
             <div class="card shadow mb-3">
                 <div class="card-header bg-primary text-white">
@@ -31,21 +30,44 @@
                             </div>
                         }
 
-                        <div class="mb-3">
-                            <label for="IdTareaRecurrente" class="form-label">Tarea recurrente</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                                <!-- Se utiliza la propiedad auxiliar selectedTareaId para capturar el cambio -->
-                                <InputSelect id="IdTareaRecurrente" class="form-control" @bind-Value="selectedTareaId">
-                                    <option value="0">-- Seleccionar --</option>
-                                    @foreach (var tarea in listaTareasRecurrentes)
-                                    {
-                                        <option value="@tarea.TareaRecurrId">@tarea.NombreTareaRecurr</option>
-                                    }
-                                </InputSelect>
+                        <div class="row mb-3">
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                                    <InputSelect id="IdTareaRecurrente" class="form-control" @bind-Value="selectedTareaId">
+                                        <option value="0">-- Seleccionar tarea recurrente --</option>
+                                        @foreach (var tarea in listaTareasRecurrentes)
+                                        {
+                                            <option value="@tarea.TareaRecurrId">@tarea.NombreTareaRecurr</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-calendar2-week-fill"></i></span>
+                                    <InputSelect id="IdDiasDisponibles" class="form-control" @bind-Value="selectedTareaDia">
+                                        <option value="">-- Seleccionar día disponible --</option>
+                                        @foreach (var dia in diasDisponibles)
+                                        {
+                                            <option value="@dia">@dia</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <button class="btn btn-success shadow-sm" type="submit" disabled="@isSaving">
+                                        @if (isSaving)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        }
+                                        <i class="bi bi-calendar2-plus-fill me-2"></i>Asignar disponibilidad
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <hr />
+                        <br />
 
                         <label for="datosTareaRecurrente" class="form-label label-Custom">Información detallada de la tarea</label>
                         <hr />
@@ -106,14 +128,64 @@
 
     <!-- Lista de días configurados para la tarea seleccionada -->
     <div class="row justify-content-center mt-4">
-        <div class="col-md-10">
-            <div class="card shadow">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Días configurados</h5>
+        @if (isLoading)
+        {
+            <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
                 </div>
-                <!-- Aquí se puede agregar el contenido correspondiente -->
             </div>
-        </div>
+        }
+        else if (listaTareasRecurrentes == null || listaTareasRecurrentes.Count == 0)
+        {
+            <div class="alert alert-info shadow-sm">
+                <i class="bi bi-info-circle me-2"></i>No se encontraron días asignados para esta tarea.
+            </div>
+        }
+        else
+        {
+            <div class="col-md-10">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Días configurados</h5>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>IdTarea</th>
+                                        <th>IdTareaRecurrente</th>
+                                        <th>Día</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in listaTareasDias)
+                                    {
+                                        <tr>
+                                            <td>@item.TareaDiaId</td>
+                                            <td>@item.TareaRecurrId</td>
+                                            <td>@item.Dia</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                                            @onclick="(() => Eliminar(item.TareaDiaId, item.Dia!))"
+                                                            title="Eliminar">
+                                                        <i class="bi bi-trash-fill"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
@@ -125,11 +197,16 @@
     private string btnTexto = string.Empty;
     public bool isSaving = false;
 
+    // Objetos y datos específicos
     private TareaDiasDTO tareaDias = new TareaDiasDTO();
     private TareasRecurrentesDTO tareaRecurrente = new TareasRecurrentesDTO();
-    private List<TareasRecurrentesDTO> listaTareasRecurrentes = new List<TareasRecurrentesDTO>();
+
+    // Listas para los selectores y la tabla de días asignados
+    private List<TareasRecurrentesDTO> listaTareasRecurrentes = new();
+    private List<TareaDiasDTO> listaTareasDias = new();
 
     private EditContext editContext = null!;
+    private bool isLoading = true;
 
     // Variables auxiliares para mostrar valores formateados
     private string tareaRecurrenteDisplay = string.Empty;
@@ -139,7 +216,9 @@
     private string tiempoEjecucionDisplay = string.Empty;
     private string cantidadEjecucionesDisplay = string.Empty;
 
-    // Propiedad auxiliar para capturar la selección en el InputSelect
+    // ------------------------
+    // PROPIEDAD PRINCIPAL
+    // ------------------------
     private int _selectedTareaId;
     private int selectedTareaId
     {
@@ -149,19 +228,45 @@
             if (_selectedTareaId != value)
             {
                 _selectedTareaId = value;
+
+                // Asignar también al modelo TareaDias
                 tareaDias.TareaRecurrId = value;
+
+                // Actualizar información de la tarea
                 ActualizarDatosTarea();
+
+                // Cargar la lista de días asignados para la tarea seleccionada
+                CargarDiasPorTarea(value);
             }
         }
     }
 
+    // Propiedad para el día seleccionado (ahora de tipo string)
+    private string selectedTareaDia { get; set; } = string.Empty;
+
+    // Lista inmutable con todos los días de la semana
+    private readonly List<string> diasSemana = new List<string>
+    {
+        "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"
+    };
+
+    // Propiedad calculada que devuelve los días disponibles (excluye los ya asignados)
+    private IEnumerable<string> diasDisponibles =>
+        diasSemana.Where(dia => !listaTareasDias.Any(td => string.Equals(td.Dia, dia, StringComparison.OrdinalIgnoreCase)));
+
     protected override async Task OnInitializedAsync()
     {
         editContext = new EditContext(tareaDias);
+
         try
         {
-            // Cargar la lista de tareas recurrentes.
+            isLoading = true;
+
+            // Cargar la lista de tareas recurrentes
             listaTareasRecurrentes = await TareaRecurrenteService.Lista();
+
+            // Cargar inicialmente la lista de días asignados (por defecto, TareaRecurrId = 0)
+            listaTareasDias = await TareaDiasService.ListaPorTareaRecurrId(tareaDias.TareaRecurrId);
         }
         catch (Exception ex)
         {
@@ -172,6 +277,10 @@
                     Icon = SweetAlertIcon.Error
                 });
         }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task OnValidSubmit()
@@ -179,10 +288,21 @@
         isSaving = true;
         try
         {
-            int idDevuelto = 0;
             if (IdTareasDiasAñadir == 0)
             {
-                idDevuelto = await TareaDiasService.Guardar(tareaDias);
+                // Asignar el día seleccionado al modelo
+                tareaDias.TareaRecurrId = _selectedTareaId;
+                tareaDias.Dia = selectedTareaDia;
+
+                // Validar el modelo antes de guardar
+                if (editContext.Validate())
+                {
+                    // Guardar la entidad TareaDias
+                    await TareaDiasService.Guardar(tareaDias);
+
+                    // Actualizar la lista de días asignados
+                    listaTareasDias = await TareaDiasService.ListaPorTareaRecurrId(_selectedTareaId);
+                }
             }
         }
         catch (Exception ex)
@@ -190,7 +310,7 @@
             await SwalService.FireAsync(new SweetAlertOptions
                 {
                     Title = "Error",
-                    Text = $"Ha ocurrido un error al guardar el usuario: {ex.Message}",
+                    Text = $"Ha ocurrido un error al guardar: {ex.Message}",
                     Icon = SweetAlertIcon.Error
                 });
         }
@@ -198,6 +318,12 @@
         {
             isSaving = false;
         }
+    }
+
+    private async void CargarDiasPorTarea(int tareaRecurrId)
+    {
+        listaTareasDias = await TareaDiasService.ListaPorTareaRecurrId(tareaRecurrId);
+        StateHasChanged();
     }
 
     private void ActualizarDatosTarea()
@@ -215,8 +341,9 @@
         else
         {
             // Buscar la tarea seleccionada en la lista
-            tareaRecurrente = listaTareasRecurrentes.FirstOrDefault(t => t.TareaRecurrId == selectedTareaId)
-                              ?? new TareasRecurrentesDTO();
+            tareaRecurrente = listaTareasRecurrentes
+                .FirstOrDefault(t => t.TareaRecurrId == selectedTareaId)
+                ?? new TareasRecurrentesDTO();
 
             // Actualizar variables auxiliares para mostrar la información
             tareaRecurrenteDisplay = tareaRecurrente.Recurrente ? "Si" : "No";
@@ -224,21 +351,20 @@
             horasHastaString = tareaRecurrente.HorasHasta.ToString("hh:mm tt");
             estadoString = tareaRecurrente.Estado ? "Activo" : "Inactivo";
             tiempoEjecucionDisplay = ConvertirTiempoEjecucion(tareaRecurrente.TiempoEjecucion);
-            cantidadEjecucionesDisplay = $"{tareaRecurrente.CantidadEjecuciones} {(tareaRecurrente.CantidadEjecuciones == 1 ? "vez" : "veces")}";
+            cantidadEjecucionesDisplay =
+                $"{tareaRecurrente.CantidadEjecuciones} " +
+                (tareaRecurrente.CantidadEjecuciones == 1 ? "vez" : "veces");
         }
-
-        // Opcional: Forzar el re-render si fuera necesario
-        StateHasChanged();
     }
 
     private string ConvertirTiempoEjecucion(int minutos)
     {
-        if (minutos >= 1440) // 1440 minutos en un día
+        if (minutos >= 1440) // 1440 minutos = 1 día
         {
             int dias = minutos / 1440;
             return $"{dias} día";
         }
-        else if (minutos >= 60) // 60 minutos en una hora
+        else if (minutos >= 60) // 60 minutos = 1 hora
         {
             int horas = minutos / 60;
             return $"{horas} hora";
@@ -246,6 +372,40 @@
         else
         {
             return $"{minutos} min";
+        }
+    }
+
+    private async Task Eliminar(int id, string nombreTareaRecurrente)
+    {
+        var result = await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "¿Estás seguro?",
+                Text = $"¿Deseas eliminar la tarea: {nombreTareaRecurrente}?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Sí, eliminar",
+                CancelButtonText = "Cancelar"
+            });
+
+        if (result.IsConfirmed)
+        {
+            try
+            {
+                var deletionResult = await TareaDiasService.Eliminar(id);
+                if (deletionResult)
+                {
+                    listaTareasDias.RemoveAll(u => u.TareaDiaId == id);
+                }
+            }
+            catch (Exception ex)
+            {
+                await SwalService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Error",
+                        Text = $"Ha ocurrido un error al eliminar: {ex.Message}",
+                        Icon = SweetAlertIcon.Error
+                    });
+            }
         }
     }
 }

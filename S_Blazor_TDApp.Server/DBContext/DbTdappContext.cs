@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.Entities;
 
 namespace S_Blazor_TDApp.Server.DBContext;

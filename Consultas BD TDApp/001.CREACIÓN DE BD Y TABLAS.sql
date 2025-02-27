@@ -116,3 +116,6 @@ CREATE TABLE Tarea_Dias (
         REFERENCES Tareas_Recurrentes(TareaRecurrId)
 );
 
+--INSERT INTO Tarea_Dias (TareaRecurrId, NombreTareaRecurrDia, Dia) VALUES
+--(1, 'Revisión de correos', 'Lunes')
+

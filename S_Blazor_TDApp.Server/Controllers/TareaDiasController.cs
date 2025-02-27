@@ -128,6 +128,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
+                // Comprobar si la tarea recurrente asociada existe.
                 var tareaRecurrente = await _context.TareasRecurrentes
                                                    .FirstOrDefaultAsync(tr => tr.TareaRecurrId == tareaDiasDTO.TareaRecurrId);
                 if (tareaRecurrente == null)
@@ -144,54 +145,6 @@ namespace S_Blazor_TDApp.Server.Controllers
                 };
 
                 _context.TareaDias.Add(entity);
-                await _context.SaveChangesAsync();
-
-                responseApi.EsCorrecto = true;
-                responseApi.Valor = entity.TareaDiaId;
-            }
-            catch (Exception ex)
-            {
-                responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
-            }
-
-            return Ok(responseApi);
-        }
-
-        // PUT: api/TareaDias/Editar/{id}
-        [HttpPut]
-        [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(int id, TareaDiasDTO tareaDiasDTO)
-        {
-            var responseApi = new ResponseAPI<int>();
-
-            try
-            {
-                var entity = await _context.TareaDias.FirstOrDefaultAsync(td => td.TareaDiaId == id);
-                if (entity == null)
-                {
-                    responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "No se encontró la entrada de Tarea Día.";
-                    return NotFound(responseApi);
-                }
-
-                if (entity.TareaRecurrId != tareaDiasDTO.TareaRecurrId)
-                {
-                    var tareaRecurrente = await _context.TareasRecurrentes
-                                                       .FirstOrDefaultAsync(tr => tr.TareaRecurrId == tareaDiasDTO.TareaRecurrId);
-                    if (tareaRecurrente == null)
-                    {
-                        responseApi.EsCorrecto = false;
-                        responseApi.Mensaje = "La tarea recurrente asociada no existe.";
-                        return BadRequest(responseApi);
-                    }
-                }
-
-                entity.TareaRecurrId = tareaDiasDTO.TareaRecurrId;
-                entity.Dia = tareaDiasDTO.Dia;
-
-                _context.Entry(entity).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
                 responseApi.EsCorrecto = true;
