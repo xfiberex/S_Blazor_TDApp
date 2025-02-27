@@ -1,1 +1,1 @@
-# S_Blazor_TDApp
+# S_Blazor_TDApp - Gestión de tareas recurrentes
