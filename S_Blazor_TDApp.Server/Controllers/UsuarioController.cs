@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
@@ -8,42 +9,25 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsuarioController(DbTdappContext context) : ControllerBase
+    public class UsuarioController(DbTdappContext context, IMapper mapper) : ControllerBase
     {
         private readonly DbTdappContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
             var responseApi = new ResponseAPI<List<UsuarioDTO>>();
-            var listaUsuarioDTO = new List<UsuarioDTO>();
 
             try
             {
                 var usuarios = await _context.Usuarios
                                              .Include(u => u.IdRolNavigation)
                                              .ToListAsync();
-                foreach (var item in usuarios)
-                {
-                    listaUsuarioDTO.Add(new UsuarioDTO
-                    {
-                        UsuarioId = item.UsuarioId,
-                        NombreUsuario = item.NombreUsuario,
-                        Email = item.Email,
-                        RolId = item.RolId,
-                        Activo = item.Activo,
-                        FechaCreacion = item.FechaCreacion,
-                        FechaActualizacion = item.FechaActualizacion,
-                        // Por seguridad, no se retorna la contraseña
-                        Rol = new RolDTO
-                        {
-                            RolId = item.IdRolNavigation.RolId,
-                            NombreRol = item.IdRolNavigation.NombreRol
-                            // Se pueden mapear otros campos del rol si es necesario
-                        }
-                    });
-                }
+
+                // Mapea la lista de entidades a una lista de DTOs
+                var listaUsuarioDTO = _mapper.Map<List<UsuarioDTO>>(usuarios);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = listaUsuarioDTO;
@@ -75,23 +59,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                var usuarioDTO = new UsuarioDTO
-                {
-                    UsuarioId = usuarioEntity.UsuarioId,
-                    NombreUsuario = usuarioEntity.NombreUsuario,
-                    Clave = usuarioEntity.Clave,
-                    Email = usuarioEntity.Email,
-                    RolId = usuarioEntity.RolId,
-                    Activo = usuarioEntity.Activo,
-                    FechaCreacion = usuarioEntity.FechaCreacion,
-                    FechaActualizacion = usuarioEntity.FechaActualizacion,
-                    // No se retorna la contraseña por seguridad
-                    Rol = new RolDTO
-                    {
-                        RolId = usuarioEntity.IdRolNavigation.RolId,
-                        NombreRol = usuarioEntity.IdRolNavigation.NombreRol
-                    }
-                };
+                var usuarioDTO = _mapper.Map<UsuarioDTO>(usuarioEntity);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = usuarioDTO;
@@ -107,23 +75,14 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPost]
         [Route("Guardar")]
-        public async Task<IActionResult> Guardar(UsuarioDTO usuario)
+        public async Task<IActionResult> Guardar(UsuarioDTO usuarioDTO)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
-                // Se recomienda hashear la contraseña antes de almacenarla
-                var usuarioEntity = new Usuario
-                {
-                    NombreUsuario = usuario.NombreUsuario,
-                    Clave = usuario.Clave,
-                    Email = usuario.Email,
-                    RolId = usuario.RolId,
-                    Activo = usuario.Activo,
-                    FechaCreacion = DateTime.Now,
-                    FechaActualizacion = null
-                };
+                // Mapea el DTO a la entidad utilizando AutoMapper
+                var usuarioEntity = _mapper.Map<Usuario>(usuarioDTO);
 
                 _context.Usuarios.Add(usuarioEntity);
                 await _context.SaveChangesAsync();
@@ -150,13 +109,14 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPut]
         [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(UsuarioDTO usuario, int id)
+        public async Task<IActionResult> Editar(UsuarioDTO usuarioDTO, int id)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
                 var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id);
+
                 if (usuarioEntity == null)
                 {
                     responseApi.EsCorrecto = false;
@@ -164,13 +124,8 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                // Actualización de campos; la contraseña se actualiza solo si se desea
-                usuarioEntity.NombreUsuario = usuario.NombreUsuario;
-                usuarioEntity.Clave = usuario.Clave;
-                usuarioEntity.Email = usuario.Email;
-                usuarioEntity.RolId = usuario.RolId;
-                usuarioEntity.Activo = usuario.Activo;
-                usuarioEntity.FechaActualizacion = DateTime.Now;
+                // Mapea los valores del DTO a la entidad existente
+                _mapper.Map(usuarioDTO, usuarioEntity);
 
                 _context.Usuarios.Update(usuarioEntity);
                 await _context.SaveChangesAsync();
@@ -196,6 +151,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id);
+
                 if (usuarioEntity == null)
                 {
                     responseApi.EsCorrecto = false;

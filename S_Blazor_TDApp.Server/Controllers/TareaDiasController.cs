@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Shared;
@@ -7,14 +8,10 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TareaDiasController : ControllerBase
+    public class TareaDiasController(DbTdappContext context, IMapper mapper) : ControllerBase
     {
-        private readonly DbTdappContext _context;
-
-        public TareaDiasController(DbTdappContext context)
-        {
-            _context = context;
-        }
+        private readonly DbTdappContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         // GET: api/TareaDias/Lista
         [HttpGet]
@@ -26,25 +23,16 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 // Incluir la navegación tanto a TareasRecurrente como a DiasDisponible
-                var listaEntities = await _context.TareaDias
+                var TareaDias = await _context.TareaDias
                                                   .Include(td => td.IdTareaRecurrNavegation)
                                                   .Include(td => td.IdDiaNavegation)
                                                   .ToListAsync();
 
-                // Mapear a DTO
-                var listaDTO = listaEntities.Select(item => new TareaDiasDTO
-                {
-                    TareaDiaId = item.TareaDiaId,
-                    TareaRecurrId = item.TareaRecurrId,
-                    Dia = new DiasDisponiblesDTO
-                    {
-                        DiaId = item.IdDiaNavegation.DiaId,
-                        NombreDia = item.IdDiaNavegation.NombreDia
-                    }
-                }).ToList();
+                // Mapea la lista de entidades a una lista de DTOs
+                var listaDiasDTO = _mapper.Map<List<TareaDiasDTO>>(TareaDias);
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaDTO;
+                responseApi.Valor = listaDiasDTO;
             }
             catch (Exception ex)
             {

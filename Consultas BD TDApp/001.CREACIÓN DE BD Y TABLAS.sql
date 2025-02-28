@@ -110,7 +110,7 @@ GO
 CREATE TABLE Dias_Disponibles (
 	DiaId INT IDENTITY(1,1) PRIMARY KEY,
 	NombreDia NVARCHAR(20) NOT NULL,
-)
+);
 GO
 
 --INSERT INTO Dias_Disponibles (NombreDia) VALUES

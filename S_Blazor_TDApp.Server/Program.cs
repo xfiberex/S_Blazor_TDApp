@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
+using S_Blazor_TDApp.Server.Utilities.AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Registrar AutoMapper indicando el assembly donde se encuentra el perfil
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Contexto de la base de datos
 builder.Services.AddDbContext<DbTdappContext>(options =>

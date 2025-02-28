@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
@@ -8,36 +9,26 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TareasCalendarioController(DbTdappContext context) : ControllerBase
+    public class TareasCalendarioController(DbTdappContext context, IMapper mapper) : ControllerBase
     {
         private readonly DbTdappContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
             var responseApi = new ResponseAPI<List<TareasCalendarioDTO>>();
-            var listaTareasCalendarioDTO = new List<TareasCalendarioDTO>();
 
             try
             {
                 var tareasCalendario = await _context.TareasCalendarios.ToListAsync();
 
-                foreach (var item in tareasCalendario)
-                {
-                    listaTareasCalendarioDTO.Add(new TareasCalendarioDTO
-                    {
-                        TareaId = item.TareaId,
-                        NombreTarea = item.NombreTarea,
-                        DescripcionTarea = item.DescripcionTarea,
-                        Habilitado = item.Habilitado,
-                        Fecha = item.Fecha,
-                        Hora = item.Hora
-                    });
-                }
+                // Mapea la lista de entidades a una lista de DTOs
+                var listaTareasRecurrentesDTO = _mapper.Map<List<TareasCalendarioDTO>>(tareasCalendario);
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaTareasCalendarioDTO;
+                responseApi.Valor = listaTareasRecurrentesDTO;
             }
             catch (Exception ex)
             {
@@ -66,15 +57,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                var tareaCalendarioDTO = new TareasCalendarioDTO
-                {
-                    TareaId = tareaCalendarioEntity.TareaId,
-                    NombreTarea = tareaCalendarioEntity.NombreTarea,
-                    DescripcionTarea = tareaCalendarioEntity.DescripcionTarea,
-                    Habilitado = tareaCalendarioEntity.Habilitado,
-                    Fecha = tareaCalendarioEntity.Fecha,
-                    Hora = tareaCalendarioEntity.Hora
-                };
+                var tareaCalendarioDTO = _mapper.Map<TareasCalendarioDTO>(tareaCalendarioEntity);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = tareaCalendarioDTO;
@@ -90,20 +73,14 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPost]
         [Route("Guardar")]
-        public async Task<IActionResult> Guardar(TareasCalendarioDTO tareasCalendario)
+        public async Task<IActionResult> Guardar(TareasCalendarioDTO tareasCalendarioDTO)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
-                var tareaCalendarioEntity = new TareasCalendario
-                {
-                    NombreTarea = tareasCalendario.NombreTarea,
-                    DescripcionTarea = tareasCalendario.DescripcionTarea,
-                    Habilitado = tareasCalendario.Habilitado,
-                    Fecha = tareasCalendario.Fecha,
-                    Hora = tareasCalendario.Hora
-                };
+                // Mapea el DTO a la entidad utilizando AutoMapper
+                var tareaCalendarioEntity = _mapper.Map<TareasCalendario>(tareasCalendarioDTO);
 
                 _context.TareasCalendarios.Add(tareaCalendarioEntity);
                 await _context.SaveChangesAsync();
@@ -130,7 +107,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPut]
         [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(int id, TareasCalendarioDTO tareasCalendario)
+        public async Task<IActionResult> Editar(int id, TareasCalendarioDTO tareasCalendarioDTO)
         {
             var responseApi = new ResponseAPI<int>();
 
@@ -146,11 +123,8 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                tareaCalendarioEntity.NombreTarea = tareasCalendario.NombreTarea;
-                tareaCalendarioEntity.DescripcionTarea = tareasCalendario.DescripcionTarea;
-                tareaCalendarioEntity.Habilitado = tareasCalendario.Habilitado;
-                tareaCalendarioEntity.Fecha = tareasCalendario.Fecha;
-                tareaCalendarioEntity.Hora = tareasCalendario.Hora;
+                // Mapea los valores del DTO a la entidad existente
+                _mapper.Map(tareasCalendarioDTO, tareaCalendarioEntity);
 
                 _context.Entry(tareaCalendarioEntity).State = EntityState.Modified;
                 await _context.SaveChangesAsync();

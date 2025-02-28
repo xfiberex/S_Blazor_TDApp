@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
@@ -8,36 +9,24 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TareasRecurrentesController(DbTdappContext context) : ControllerBase
+    public class TareasRecurrentesController(DbTdappContext context, IMapper mapper) : ControllerBase
     {
         private readonly DbTdappContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
             var responseApi = new ResponseAPI<List<TareasRecurrentesDTO>>();
-            var listaTareasRecurrentesDTO = new List<TareasRecurrentesDTO>();
 
             try
             {
+                // Obtiene la lista de tareas recurrentes
                 var tareasRecurrentes = await _context.TareasRecurrentes.ToListAsync();
 
-                foreach (var item in tareasRecurrentes)
-                {
-                    listaTareasRecurrentesDTO.Add(new TareasRecurrentesDTO
-                    {
-                        TareaRecurrId = item.TareaRecurrId,
-                        NombreTareaRecurr = item.NombreTareaRecurr,
-                        DescripcionTareaRecurr = item.DescripcionTareaRecurr,
-                        Recurrente = item.Recurrente,
-                        HoraDesde = item.HoraDesde,
-                        HorasHasta = item.HorasHasta,
-                        TiempoEjecucion = item.TiempoEjecucion,
-                        CantidadEjecuciones = item.CantidadEjecuciones,
-                        Estado = item.Estado
-                    });
-                }
+                // Mapea la lista de entidades a una lista de DTOs
+                var listaTareasRecurrentesDTO = _mapper.Map<List<TareasRecurrentesDTO>>(tareasRecurrentes);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = listaTareasRecurrentesDTO;
@@ -56,11 +45,10 @@ namespace S_Blazor_TDApp.Server.Controllers
         public async Task<IActionResult> Buscar(int id)
         {
             var responseApi = new ResponseAPI<TareasRecurrentesDTO>();
-
             try
             {
                 var tareaRecurrenteEntity = await _context.TareasRecurrentes
-                                                .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
+                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
 
                 if (tareaRecurrenteEntity == null)
                 {
@@ -69,18 +57,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                var tareaRecurrenteDTO = new TareasRecurrentesDTO
-                {
-                    TareaRecurrId = tareaRecurrenteEntity.TareaRecurrId,
-                    NombreTareaRecurr = tareaRecurrenteEntity.NombreTareaRecurr,
-                    DescripcionTareaRecurr = tareaRecurrenteEntity.DescripcionTareaRecurr,
-                    Recurrente = tareaRecurrenteEntity.Recurrente,
-                    HoraDesde = tareaRecurrenteEntity.HoraDesde,
-                    HorasHasta = tareaRecurrenteEntity.HorasHasta,
-                    TiempoEjecucion = tareaRecurrenteEntity.TiempoEjecucion,
-                    CantidadEjecuciones = tareaRecurrenteEntity.CantidadEjecuciones,
-                    Estado = tareaRecurrenteEntity.Estado
-                };
+                var tareaRecurrenteDTO = _mapper.Map<TareasRecurrentesDTO>(tareaRecurrenteEntity);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = tareaRecurrenteDTO;
@@ -96,23 +73,13 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPost]
         [Route("Guardar")]
-        public async Task<IActionResult> Guardar(TareasRecurrentesDTO tareasRecurrentes)
+        public async Task<IActionResult> Guardar(TareasRecurrentesDTO tareasRecurrentesDTO)
         {
             var responseApi = new ResponseAPI<int>();
-
             try
             {
-                var tareaRecurrenteEntity = new TareasRecurrente
-                {
-                    NombreTareaRecurr = tareasRecurrentes.NombreTareaRecurr,
-                    DescripcionTareaRecurr = tareasRecurrentes.DescripcionTareaRecurr,
-                    Recurrente = tareasRecurrentes.Recurrente,
-                    HoraDesde = tareasRecurrentes.HoraDesde,
-                    HorasHasta = tareasRecurrentes.HorasHasta,
-                    TiempoEjecucion = tareasRecurrentes.TiempoEjecucion,
-                    CantidadEjecuciones = tareasRecurrentes.CantidadEjecuciones,
-                    Estado = tareasRecurrentes.Estado
-                };
+                // Mapea el DTO a la entidad utilizando AutoMapper
+                var tareaRecurrenteEntity = _mapper.Map<TareasRecurrente>(tareasRecurrentesDTO);
 
                 _context.TareasRecurrentes.Add(tareaRecurrenteEntity);
                 await _context.SaveChangesAsync();
@@ -139,14 +106,13 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPut]
         [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(int id, TareasRecurrentesDTO tareasRecurrentes)
+        public async Task<IActionResult> Editar(int id, TareasRecurrentesDTO tareasRecurrentesDTO)
         {
             var responseApi = new ResponseAPI<int>();
-
             try
             {
                 var tareaRecurrenteEntity = await _context.TareasRecurrentes
-                                                .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
+                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
 
                 if (tareaRecurrenteEntity == null)
                 {
@@ -155,15 +121,8 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                tareasRecurrentes.TareaRecurrId = id;
-                tareaRecurrenteEntity.NombreTareaRecurr = tareasRecurrentes.NombreTareaRecurr;
-                tareaRecurrenteEntity.DescripcionTareaRecurr = tareasRecurrentes.DescripcionTareaRecurr;
-                tareaRecurrenteEntity.Recurrente = tareasRecurrentes.Recurrente;
-                tareaRecurrenteEntity.HoraDesde = tareasRecurrentes.HoraDesde;
-                tareaRecurrenteEntity.HorasHasta = tareasRecurrentes.HorasHasta;
-                tareaRecurrenteEntity.TiempoEjecucion = tareasRecurrentes.TiempoEjecucion;
-                tareaRecurrenteEntity.CantidadEjecuciones = tareasRecurrentes.CantidadEjecuciones;
-                tareaRecurrenteEntity.Estado = tareasRecurrentes.Estado;
+                // Mapea los valores del DTO a la entidad existente
+                _mapper.Map(tareasRecurrentesDTO, tareaRecurrenteEntity);
 
                 _context.Entry(tareaRecurrenteEntity).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
@@ -185,11 +144,10 @@ namespace S_Blazor_TDApp.Server.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             var responseApi = new ResponseAPI<int>();
-
             try
             {
                 var tareaRecurrenteEntity = await _context.TareasRecurrentes
-                                                .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
+                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
 
                 if (tareaRecurrenteEntity == null)
                 {

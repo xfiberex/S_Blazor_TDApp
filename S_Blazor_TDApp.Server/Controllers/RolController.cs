@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Shared;
@@ -7,49 +8,36 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RolController : ControllerBase
+    public class RolController(DbTdappContext context, IMapper mapper) : ControllerBase
     {
-        private readonly DbTdappContext _context;
-
-        public RolController(DbTdappContext dbContext)
-        {
-            _context = dbContext;
-        }
+        private readonly DbTdappContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
         [Route("Lista")]
         public async Task<IActionResult> Lista()
         {
-            var responseAPI = new ResponseAPI<List<RolDTO>>();
-            var listaRolDTO = new List<RolDTO>();
+            var responseApi = new ResponseAPI<List<RolDTO>>();
 
             try
             {
-                // Recuperar la lista de roles
-                foreach (var item in await _context.Roles.ToListAsync())
-                {
-                    listaRolDTO.Add(new RolDTO
-                    {
-                        RolId = item.RolId,
-                        NombreRol = item.NombreRol,
-                        Descripcion = item.Descripcion,
-                        Activo = item.Activo,
-                        FechaCreacion = item.FechaCreacion,
-                        FechaActualizacion = item.FechaActualizacion
-                    });
-                }
+                // Obtiene la lista de roles
+                var listaRoles = await _context.Roles.ToListAsync();
+
+                // Mapea la lista de entidades a una lista de DTOs
+                var listaRolDTO = _mapper.Map<List<RolDTO>>(listaRoles);
 
                 // Asignar la lista de roles al objeto de respuesta
-                responseAPI.EsCorrecto = true;
-                responseAPI.Valor = listaRolDTO;
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = listaRolDTO;
             }
             catch (Exception ex)
             {
-                responseAPI.EsCorrecto = false;
-                responseAPI.Mensaje = ex.Message;
-                return BadRequest(responseAPI);
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+                return BadRequest(responseApi);
             }
-            return Ok(responseAPI);
+            return Ok(responseApi);
         }
     }
 }
