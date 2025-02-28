@@ -21,7 +21,10 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
                 .ReverseMap();
 
             CreateMap<Usuario, UsuarioDTO>()
-                .ReverseMap();
+                .ReverseMap()
+                 
+                // Se asigna este miembro para poder pasar la fecha al editar el usuario y reflejar su fecha de actualización 
+                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.Now));
         }
     }
 }
