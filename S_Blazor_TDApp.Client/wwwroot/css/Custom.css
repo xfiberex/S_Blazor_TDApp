@@ -139,6 +139,20 @@ code {
     color: red;
 }
 
+/* Animaciónes para la cajas de texto dentro de las tablas */
+.description-box {
+    transition: max-height 0.5s ease-in-out;
+    overflow: hidden;
+}
+
+    .description-box.collapsed {
+        max-height: 0;
+    }
+
+    .description-box.expanded {
+        max-height: 200px; /* Ajusta este valor según sea necesario */
+    }
+
 /* Blazor Error UI Styles */
 #blazor-error-ui {
     color-scheme: light only;

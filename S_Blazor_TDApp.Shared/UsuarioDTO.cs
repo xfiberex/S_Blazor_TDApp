@@ -21,6 +21,8 @@ namespace S_Blazor_TDApp.Shared
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar el rol del usuario.")]
         public int RolId { get; set; }
 
+        public string? NombreRol { get; set; }
+
         public bool Activo { get; set; }
 
         public DateTime FechaCreacion { get; set; }

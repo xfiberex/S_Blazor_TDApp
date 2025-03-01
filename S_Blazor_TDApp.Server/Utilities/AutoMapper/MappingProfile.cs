@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using S_Blazor_TDApp.Server.Entities;
 using S_Blazor_TDApp.Shared;
+using System;
 
 namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
 {
@@ -21,9 +22,12 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
                 .ReverseMap();
 
             CreateMap<Usuario, UsuarioDTO>()
+                // Mapea la entidad Rol en IdRolNavigation hacia la propiedad Rol del DTO
+                .ForMember(dest => dest.Rol, opt => opt.MapFrom(src => src.IdRolNavigation))
                 .ReverseMap()
-                 
-                // Se asigna este miembro para poder pasar la fecha al editar el usuario y reflejar su fecha de actualización 
+                // Al mapear de DTO a entidad, no solemos asignar el objeto Rol directamente,
+                // sino usar la clave foránea RolId. También se setea FechaActualizacion.
+                .ForMember(dest => dest.IdRolNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.Now));
         }
     }

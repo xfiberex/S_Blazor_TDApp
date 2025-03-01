@@ -8,7 +8,7 @@
 @inject ITareaCalendarioService TareaCalendarioService
 
 <div class="container-fluid mt-4">
-    
+
     @if (isLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
@@ -67,10 +67,20 @@
                                     <td>
                                         @if (item.DescripcionTarea!.Length > 50)
                                         {
-                                            <span>@(item.ShowFullDescription ? item.DescripcionTarea : item.DescripcionTarea.Substring(0, 50) + "...")</span>
-                                            <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
-                                                <i class="bi @(item.ShowFullDescription ? "bi-eye-slash" : "bi-eye")"></i>
-                                            </button>
+                                            @if (item.ShowFullDescription)
+                                            {
+                                                <textarea class="form-control" rows="3" @bind="item.DescripcionTarea"></textarea>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span>@item.DescripcionTarea.Substring(0, 50) ...</span>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            }
                                         }
                                         else
                                         {
