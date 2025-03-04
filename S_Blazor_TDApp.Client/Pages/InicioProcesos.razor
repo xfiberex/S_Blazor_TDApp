@@ -6,7 +6,202 @@
 
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
+@inject IRegistroProcesosService ProcesoService
+@inject ITareaRecurrenteService TareaRecurrenteService
+
+<div class="container-fluid mt-4">
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (listaTareasRecurrentes == null || listaTareasRecurrentes.Count == 0)
+    {
+        <div class="alert alert-info shadow-sm">
+            <i class="bi bi-info-circle me-2"></i>No se encontraron tareas recurrentes.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="text-primary mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Reporte de tareas
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Buscar..." @bind-value="searchTerm" @bind-value:event="oninput" @onkeyup="FilterTasks" />
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <a class="btn btn-success shadow-sm" href="/tareaRecurrente">
+                            <i class="bi bi-plus-circle me-2"></i>Nueva
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Recurrente</th>
+                                <th>Desde</th>
+                                <th>Hasta</th>
+                                <th>Tiempo</th>
+                                <th>Ejecuciones</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in filteredTasks)
+                            {
+                                <tr>
+                                    <td>@item.NombreTareaRecurr</td>
+                                    <td>
+                                        @if (item.DescripcionTareaRecurr.Length > 50)
+                                        {
+                                            @if (item.ShowFullDescription)
+                                            {
+                                                <textarea class="form-control slide-down" rows="3" @bind="item.DescripcionTareaRecurr" readonly></textarea>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span>@item.DescripcionTareaRecurr.Substring(0, 50) ...</span>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>@item.DescripcionTareaRecurr</span>
+                                        }
+                                    </td>
+                                    <td align="center"><span class="badge bg-@(item.Recurrente ? "success" : "secondary")">@(item.Recurrente ? "Si" : "No")</span></td>
+                                    <td>@item.HoraDesde.ToString("hh:mm tt")</td>
+                                    <td>@item.HorasHasta.ToString("hh:mm tt")</td>
+                                    <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion)</td>
+                                    <td align="center">@ConvertirCantidadEjecuciones(item.CantidadEjecuciones)</td>
+                                    <td><span class="badge bg-@(item.Estado ? "primary" : "warning")">@(item.Estado ? "Habilitada" : "Deshabilitada")</span></td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a class="btn btn-outline-primary btn-sm" href="/tareaRecurrente/@item.TareaRecurrId" title="Editar">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                Total de tareas recurrentes: @filteredTasks.Count
+            </div>
+        </div>
+        <br />
+    }
+</div>
 
 @code {
+    private List<RegistroProcesoDTO> listaProcesos = new List<RegistroProcesoDTO>();
+    private List<TareasRecurrentesDTO> listaTareasRecurrentes = new List<TareasRecurrentesDTO>();
+    private List<TareasRecurrentesDTO> filteredTasks = new List<TareasRecurrentesDTO>();
+    
+    private bool isLoading = true;
+    private string searchTerm = "";
+    private TareasRecurrentesDTO? expandedItem = null;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTareasRecurrentes();
+    }
+
+    private async Task LoadTareasRecurrentes()
+    {
+        try
+        {
+            isLoading = true;
+            listaTareasRecurrentes = await TareaRecurrenteService.Lista();
+            filteredTasks = listaTareasRecurrentes;
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar las tareas recurrentes: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleDescription(TareasRecurrentesDTO item)
+    {
+        if (expandedItem != null && expandedItem != item)
+        {
+            expandedItem.ShowFullDescription = false;
+        }
+
+        item.ShowFullDescription = !item.ShowFullDescription;
+        expandedItem = item.ShowFullDescription ? item : null;
+    }
+
+    private void FilterTasks()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredTasks = listaTareasRecurrentes;
+        }
+        else
+        {
+            filteredTasks = listaTareasRecurrentes.Where(t =>
+                t.NombreTareaRecurr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                t.DescripcionTareaRecurr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+    }
+
+    private string ConvertirTiempoEjecucion(int minutos)
+    {
+        if (minutos >= 1440) // 1440 minutos en un día
+        {
+            int dias = minutos / 1440;
+            return $"{dias} día";
+        }
+        else if (minutos >= 60) // 60 minutos en una hora
+        {
+            int horas = minutos / 60;
+            return $"{horas} hora";
+        }
+        else
+        {
+            return $"{minutos} min";
+        }
+    }
+
+    private string ConvertirCantidadEjecuciones(int cantidad)
+    {
+        return cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
+    }
 }

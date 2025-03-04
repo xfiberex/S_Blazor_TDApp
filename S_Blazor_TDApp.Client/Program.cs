@@ -16,6 +16,7 @@ builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ITareaCalendarioService, TareaCalendarioService>();
 builder.Services.AddScoped<ITareaRecurrenteService, TareaRecurrenteService>();
+builder.Services.AddScoped<IRegistroProcesosService, RegistroProcesosService>();
 builder.Services.AddScoped<ITareaDiasService, TareaDiasService>();
 
 builder.Services.AddSweetAlert2();
