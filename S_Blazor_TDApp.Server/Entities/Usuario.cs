@@ -1,4 +1,7 @@
-﻿namespace S_Blazor_TDApp.Server.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class Usuario
 {
@@ -17,6 +20,8 @@ public partial class Usuario
     public DateTime FechaCreacion { get; set; }
 
     public DateTime? FechaActualizacion { get; set; }
+
+    public virtual ICollection<RegistroProceso> RegistroProcesos { get; set; } = new List<RegistroProceso>();
 
     public virtual Rol IdRolNavigation { get; set; } = null!;
 }

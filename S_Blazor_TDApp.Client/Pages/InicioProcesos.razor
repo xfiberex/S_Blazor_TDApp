@@ -1,6 +1,11 @@
-﻿@page "/inicioProcesos"
+﻿@page "/registroProcesos"
 
-<h3>Procesos o tareas recurrentes</h3>
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+
+@inject SweetAlertService SwalService
+@inject IUsuarioService UsuarioService
 
 @code {
 

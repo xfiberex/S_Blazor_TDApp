@@ -29,6 +29,9 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
                 // sino usar la clave foránea RolId. También se setea FechaActualizacion.
                 .ForMember(dest => dest.IdRolNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.Now));
+
+            CreateMap<RegistroProceso, RegistroProcesoDTO>()
+                .ReverseMap();
         }
     }
 }

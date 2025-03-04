@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
+using S_Blazor_TDApp.Server.Entities;
 using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers

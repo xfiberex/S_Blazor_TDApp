@@ -137,7 +137,19 @@ CREATE TABLE Tarea_Dias (
         FOREIGN KEY (DiaId)
         REFERENCES Dias_Disponibles(DiaId)
 );
+GO
 
 --INSERT INTO Tarea_Dias (TareaRecurrId, NombreTareaRecurrDia, Dia) VALUES
 --(1, 'Revisión de correos', 'Lunes')
+GO
 
+-- Tabla para registrar los procesos entrantes de la tareas recurrentes --
+CREATE TABLE Registro_Procesos (
+	ProcesoId INT IDENTITY(1,1) PRIMARY KEY,
+	TareaRecurrId INT NOT NULL,
+	UsuarioId INT NOT NULL,
+	FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
+	Comentario NVARCHAR(100) NOT NULL,
+	CONSTRAINT FK_Registro_Procesos_TareasRecurrentes FOREIGN KEY (TareaRecurrId) REFERENCES Tareas_Recurrentes(TareaRecurrId),
+	CONSTRAINT FK_Registro_Procesos_Usuarios FOREIGN KEY (UsuarioId) REFERENCES Usuarios(UsuarioId)
+);

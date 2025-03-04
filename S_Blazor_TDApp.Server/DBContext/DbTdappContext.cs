@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.Entities;
 
 namespace S_Blazor_TDApp.Server.DBContext;
@@ -16,6 +18,8 @@ public partial class DbTdappContext : DbContext
 
     public virtual DbSet<DiasDisponible> DiasDisponibles { get; set; }
 
+    public virtual DbSet<RegistroProceso> RegistroProcesos { get; set; }
+
     public virtual DbSet<Rol> Roles { get; set; }
 
     public virtual DbSet<TareaDia> TareaDias { get; set; }
@@ -32,16 +36,38 @@ public partial class DbTdappContext : DbContext
     {
         modelBuilder.Entity<DiasDisponible>(entity =>
         {
-            entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C769386BFF9");
+            entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C76F3466B15");
 
             entity.ToTable("Dias_Disponibles");
 
             entity.Property(e => e.NombreDia).HasMaxLength(20);
         });
 
+        modelBuilder.Entity<RegistroProceso>(entity =>
+        {
+            entity.HasKey(e => e.ProcesoId).HasName("PK__Registro__1C00FFD0A8B349D5");
+
+            entity.ToTable("Registro_Procesos");
+
+            entity.Property(e => e.Comentario).HasMaxLength(100);
+            entity.Property(e => e.FechaRegistro)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.RefTareaRecurr).WithMany(p => p.RegistroProcesos)
+                .HasForeignKey(d => d.TareaRecurrId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Registro_Procesos_TareasRecurrentes");
+
+            entity.HasOne(d => d.RefUsuario).WithMany(p => p.RegistroProcesos)
+                .HasForeignKey(d => d.UsuarioId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Registro_Procesos_Usuarios");
+        });
+
         modelBuilder.Entity<Rol>(entity =>
         {
-            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F1E5C6894E");
+            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F146F08C8A");
 
             entity.ToTable("Rol");
 
@@ -56,7 +82,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareaDia>(entity =>
         {
-            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D89DDB3DCF");
+            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D8D9A06111");
 
             entity.ToTable("Tarea_Dias");
 
@@ -73,7 +99,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareasCalendario>(entity =>
         {
-            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD839916998F010");
+            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD8399198BF4AFB");
 
             entity.ToTable("Tareas_Calendario");
 
@@ -86,7 +112,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareasRecurrente>(entity =>
         {
-            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1ABC043B1");
+            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1A55B7B91");
 
             entity.ToTable("Tareas_Recurrentes");
 
@@ -100,7 +126,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8593507B6");
+            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8DB60C54E");
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Clave).HasMaxLength(255);
