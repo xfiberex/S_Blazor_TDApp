@@ -16,10 +16,10 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddDbContext<DbTdappContext>(options =>
 {
     // Conexion a la base de datos del equipo A
-    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
 
     // Conexion a la base de datos del equipo B
-    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
+    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
 });
 
 // CORS

@@ -70,10 +70,20 @@
                                     <td>
                                         @if (item.DescripcionTareaRecurr.Length > 50)
                                         {
-                                            <span>@(item.ShowFullDescription ? item.DescripcionTareaRecurr : item.DescripcionTareaRecurr.Substring(0, 50) + "...")</span>
-                                            <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
-                                                <i class="bi @(item.ShowFullDescription ? "bi-eye-slash" : "bi-eye")"></i>
-                                            </button>
+                                            @if (item.ShowFullDescription)
+                                            {
+                                                <textarea class="form-control slide-down" rows="3" @bind="item.DescripcionTareaRecurr" readonly></textarea>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span>@item.DescripcionTareaRecurr.Substring(0, 50) ...</span>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            }
                                         }
                                         else
                                         {
@@ -84,7 +94,7 @@
                                     <td>@item.HoraDesde.ToString("hh:mm tt")</td>
                                     <td>@item.HorasHasta.ToString("hh:mm tt")</td>
                                     <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion)</td>
-                                    <td align="center">@item.CantidadEjecuciones</td>
+                                    <td align="center">@ConvertirCantidadEjecuciones(item.CantidadEjecuciones)</td>
                                     <td><span class="badge bg-@(item.Estado ? "primary" : "warning")">@(item.Estado ? "Habilitada" : "Deshabilitada")</span></td>
                                     <td>
                                         <div class="btn-group" role="group">
@@ -115,6 +125,7 @@
     private List<TareasRecurrentesDTO> filteredTasks = new List<TareasRecurrentesDTO>();
     private bool isLoading = true;
     private string searchTerm = "";
+    private TareasRecurrentesDTO? expandedItem = null; // Nueva propiedad para rastrear el elemento expandido
 
     protected override async Task OnInitializedAsync()
     {
@@ -188,7 +199,13 @@
 
     private void ToggleDescription(TareasRecurrentesDTO item)
     {
+        if (expandedItem != null && expandedItem != item)
+        {
+            expandedItem.ShowFullDescription = false;
+        }
+
         item.ShowFullDescription = !item.ShowFullDescription;
+        expandedItem = item.ShowFullDescription ? item : null;
     }
 
     private void FilterTasks()
@@ -222,5 +239,10 @@
         {
             return $"{minutos} min";
         }
+    }
+
+    private string ConvertirCantidadEjecuciones(int cantidad)
+    {
+        return cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
     }
 }

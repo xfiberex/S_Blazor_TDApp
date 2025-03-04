@@ -69,7 +69,7 @@
                                         {
                                             @if (item.ShowFullDescription)
                                             {
-                                                <textarea class="form-control" rows="3" @bind="item.DescripcionTarea"></textarea>
+                                                <textarea class="form-control slide-down" rows="3" @bind="item.DescripcionTarea" readonly></textarea>
                                                 <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
                                                     <i class="bi bi-eye-slash"></i>
                                                 </button>
@@ -119,6 +119,7 @@
     private List<TareasCalendarioDTO> filteredTasks = new List<TareasCalendarioDTO>();
     private bool isLoading = true;
     private string searchTerm = "";
+    private TareasCalendarioDTO? expandedItem = null; // Nueva propiedad para rastrear el elemento expandido
 
     protected override async Task OnInitializedAsync()
     {
@@ -192,7 +193,13 @@
 
     private void ToggleDescription(TareasCalendarioDTO item)
     {
+        if (expandedItem != null && expandedItem != item)
+        {
+            expandedItem.ShowFullDescription = false;
+        }
+
         item.ShowFullDescription = !item.ShowFullDescription;
+        expandedItem = item.ShowFullDescription ? item : null;
     }
 
     private void FilterTasks()

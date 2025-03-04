@@ -141,6 +141,7 @@ GO
 
 --INSERT INTO Tarea_Dias (TareaRecurrId, NombreTareaRecurrDia, Dia) VALUES
 --(1, 'Revisión de correos', 'Lunes')
+<<<<<<< HEAD
 GO
 
 -- Tabla para registrar los procesos entrantes de la tareas recurrentes --
@@ -153,3 +154,19 @@ CREATE TABLE Registro_Procesos (
 	CONSTRAINT FK_Registro_Procesos_TareasRecurrentes FOREIGN KEY (TareaRecurrId) REFERENCES Tareas_Recurrentes(TareaRecurrId),
 	CONSTRAINT FK_Registro_Procesos_Usuarios FOREIGN KEY (UsuarioId) REFERENCES Usuarios(UsuarioId)
 );
+=======
+
+--INSERT INTO Usuarios (NombreUsuario, Clave, Email, RolId)
+--VALUES
+--('Usuario1', '12345', 'usuario1@ejemplo.com', 1),
+--('Usuario2', '12345', 'usuario2@ejemplo.com', 2),
+--('Usuario3', '12345', 'usuario3@ejemplo.com', 3),
+--('Usuario4', '12345', 'usuario4@ejemplo.com', 1),
+--('Usuario5', '12345', 'usuario5@ejemplo.com', 2),
+--('Usuario6', '12345', 'usuario6@ejemplo.com', 3),
+--('Usuario7', '12345', 'usuario7@ejemplo.com', 1),
+--('Usuario8', '12345', 'usuario8@ejemplo.com', 2),
+--('Usuario9', '12345', 'usuario9@ejemplo.com', 3),
+--('Usuario10', '12345', 'usuario10@ejemplo.com', 1);
+
+>>>>>>> Animaciones para ocultar y mostrar texto
