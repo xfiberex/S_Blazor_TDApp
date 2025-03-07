@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using S_Blazor_TDApp.Server.Entities;
 using S_Blazor_TDApp.Shared;
-using System;
 
 namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
 {

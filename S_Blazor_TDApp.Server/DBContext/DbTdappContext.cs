@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.Entities;
 
 namespace S_Blazor_TDApp.Server.DBContext;
@@ -49,7 +47,7 @@ public partial class DbTdappContext : DbContext
 
             entity.ToTable("Registro_Procesos");
 
-            entity.Property(e => e.Comentario).HasMaxLength(100);
+            entity.Property(e => e.DescripcionRegistro).HasMaxLength(100);
             entity.Property(e => e.FechaRegistro)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

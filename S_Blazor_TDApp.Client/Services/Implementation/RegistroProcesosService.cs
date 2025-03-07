@@ -1,8 +1,6 @@
-﻿using S_Blazor_TDApp.Client.Pages;
-using S_Blazor_TDApp.Client.Services.Interfaces;
+﻿using S_Blazor_TDApp.Client.Services.Interfaces;
 using S_Blazor_TDApp.Shared;
 using System.Net.Http.Json;
-using static System.Net.WebRequestMethods;
 
 namespace S_Blazor_TDApp.Client.Services.Implementation
 {

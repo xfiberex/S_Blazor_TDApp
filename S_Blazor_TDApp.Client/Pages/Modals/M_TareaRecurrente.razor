@@ -86,9 +86,7 @@
                             <label for="tiempoEjecucion" class="form-label">Tiempo de Ejecución</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
-                                <InputNumber id="tiempoEjecucion" class="form-control"
-                                             placeholder="Indica el tiempo en que se habilitará la tarea"
-                                             @bind-Value="tareaRecurrente.TiempoEjecucion" />
+                                <InputNumber id="tiempoEjecucion" class="form-control" @bind-Value="tareaRecurrente.TiempoEjecucion" disabled />
                             </div>
                         </div>
 
@@ -246,6 +244,7 @@
             if (DateTime.TryParseExact(value, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
             {
                 tareaRecurrente.HoraDesde = tareaRecurrente.HoraDesde.Date.Add(parsedTime.TimeOfDay);
+                CalcularTiempoEjecucion();
             }
             else
             {
@@ -279,6 +278,7 @@
             if (DateTime.TryParseExact(value, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
             {
                 tareaRecurrente.HorasHasta = tareaRecurrente.HorasHasta.Date.Add(parsedTime.TimeOfDay);
+                CalcularTiempoEjecucion();
             }
             else
             {
@@ -302,6 +302,15 @@
                     Text = $"Ha ocurrido un error al guardar la hora hasta: {ex.Message}",
                     Icon = SweetAlertIcon.Error
                 });
+        }
+    }
+
+    private void CalcularTiempoEjecucion()
+    {
+        if (tareaRecurrente.HoraDesde != default && tareaRecurrente.HorasHasta != default)
+        {
+            var tiempoEjecucion = (tareaRecurrente.HorasHasta - tareaRecurrente.HoraDesde).TotalMinutes;
+            tareaRecurrente.TiempoEjecucion = (int)tiempoEjecucion;
         }
     }
 }

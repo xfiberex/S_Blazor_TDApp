@@ -275,6 +275,4 @@ namespace S_Blazor_TDApp.Server.Controllers
             return Ok(responseApi);
         }
     }
-
-    // TODO: Crear la pagina que va a mostrar los procesos y su realización - Se recomienda hacer una tabla guardar los procesos y su realización
 }

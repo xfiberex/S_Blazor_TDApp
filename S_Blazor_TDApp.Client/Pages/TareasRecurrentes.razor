@@ -53,11 +53,8 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
-                                <th>Recurrente</th>
-                                <th>Desde</th>
-                                <th>Hasta</th>
-                                <th>Tiempo</th>
-                                <th>Ejecuciones</th>
+                                <th>Recurrente | Desde - Hasta</th>
+                                <th>Tiemp - Eje</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -68,7 +65,7 @@
                                 <tr>
                                     <td>@item.NombreTareaRecurr</td>
                                     <td>
-                                        @if (item.DescripcionTareaRecurr.Length > 50)
+                                        @if (item.DescripcionTareaRecurr.Length > 35)
                                         {
                                             @if (item.ShowFullDescription)
                                             {
@@ -79,7 +76,7 @@
                                             }
                                             else
                                             {
-                                                <span>@item.DescripcionTareaRecurr.Substring(0, 50) ...</span>
+                                                <span>@item.DescripcionTareaRecurr.Substring(0, 35) ...</span>
                                                 <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -90,12 +87,9 @@
                                             <span>@item.DescripcionTareaRecurr</span>
                                         }
                                     </td>
-                                    <td align="center"><span class="badge bg-@(item.Recurrente ? "success" : "secondary")">@(item.Recurrente ? "Si" : "No")</span></td>
-                                    <td>@item.HoraDesde.ToString("hh:mm tt")</td>
-                                    <td>@item.HorasHasta.ToString("hh:mm tt")</td>
-                                    <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion)</td>
-                                    <td align="center">@ConvertirCantidadEjecuciones(item.CantidadEjecuciones)</td>
-                                    <td><span class="badge bg-@(item.Estado ? "primary" : "warning")">@(item.Estado ? "Habilitada" : "Deshabilitada")</span></td>
+                                    <td align="center"><span class="badge bg-@(item.Recurrente ? "success" : "secondary")">@(item.Recurrente ? "Si" : "No")</span> | @item.HoraDesde.ToString("hh:mm tt") - @item.HorasHasta.ToString("hh:mm tt")</td>
+                                    <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion) - @ConvertirCantidadEjecuciones(item.CantidadEjecuciones)</td>
+                                    <td align="center"><span class="badge bg-@(item.Estado ? "primary" : "warning")">@(item.Estado ? "Habilitada" : "Deshabilitada")</span></td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a class="btn btn-outline-primary btn-sm" href="/tareaRecurrente/@item.TareaRecurrId" title="Editar">

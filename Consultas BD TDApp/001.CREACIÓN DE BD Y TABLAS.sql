@@ -150,7 +150,7 @@ CREATE TABLE Registro_Procesos (
 	TareaRecurrId INT NOT NULL,
 	UsuarioId INT NOT NULL,
 	FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
-	Comentario NVARCHAR(100) NOT NULL,
+	DescripcionRegistro NVARCHAR(100) NOT NULL,
 	CONSTRAINT FK_Registro_Procesos_TareasRecurrentes FOREIGN KEY (TareaRecurrId) REFERENCES Tareas_Recurrentes(TareaRecurrId),
 	CONSTRAINT FK_Registro_Procesos_Usuarios FOREIGN KEY (UsuarioId) REFERENCES Usuarios(UsuarioId)
 );

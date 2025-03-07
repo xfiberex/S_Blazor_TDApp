@@ -54,8 +54,7 @@
                                 <th>Nombre</th>
                                 <th>Descripción</th>
                                 <th>Estado</th>
-                                <th>Fecha</th>
-                                <th>Hora</th>
+                                <th>Fecha - Hora</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -88,8 +87,7 @@
                                         }
                                     </td>
                                     <td><span class="badge bg-@(item.Habilitado ? "success" : "warning")">@(item.Habilitado ? "Habilitada" : "Deshabilitada")</span></td>
-                                    <td>@item.Fecha.ToString("dd/MM/yyyy")</td>
-                                    <td>@item.Hora.ToString("hh:mm tt")</td>
+                                    <td align="center">@item.Fecha.ToString("dd/MM/yyyy") - @item.Hora.ToString("hh:mm tt")</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a class="btn btn-outline-primary btn-sm" href="/tareaCalendario/@item.TareaId" title="Editar">

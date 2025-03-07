@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
@@ -46,13 +45,13 @@ namespace S_Blazor_TDApp.Server.Controllers
         public async Task<IActionResult> ListaProcesos()
         {
             var responseApi = new ResponseAPI<List<RegistroProcesoDTO>>();
-            
+
             try
             {
                 var procesos = await _context.RegistroProcesos.ToListAsync();
-                
+
                 var listaProcesosDTO = _mapper.Map<List<RegistroProcesoDTO>>(procesos);
-                
+
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = listaProcesosDTO;
             }
@@ -134,7 +133,7 @@ namespace S_Blazor_TDApp.Server.Controllers
         public async Task<IActionResult> Guardar(RegistroProcesoDTO registroProcesosDTO)
         {
             var responseApi = new ResponseAPI<int>();
-            
+
             try
             {
                 var procesoEntity = _mapper.Map<RegistroProceso>(registroProcesosDTO);

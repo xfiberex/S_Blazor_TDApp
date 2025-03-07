@@ -6,9 +6,11 @@
 
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
-@inject IRegistroProcesosService ProcesoService
 @inject ITareaRecurrenteService TareaRecurrenteService
+@inject IRegistroProcesosService RegistroProcesoService
+@inject IJSRuntime JSRuntime
 
+<!-- Lista de tareas recurrentes reportables -->
 <div class="container-fluid mt-4">
     @if (isLoading)
     {
@@ -21,7 +23,7 @@
     else if (listaTareasRecurrentes == null || listaTareasRecurrentes.Count == 0)
     {
         <div class="alert alert-info shadow-sm">
-            <i class="bi bi-info-circle me-2"></i>No se encontraron tareas recurrentes.
+            <i class="bi bi-info-circle me-2"></i>No se encontraron tareas recurrentes para reportar.
         </div>
     }
     else
@@ -37,13 +39,14 @@
                     <div class="col-auto">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Buscar..." @bind-value="searchTerm" @bind-value:event="oninput" @onkeyup="FilterTasks" />
+                            <input type="text" class="form-control" placeholder="Buscar..." @bind="searchTerm" @bind:event="oninput" @onkeyup="FilterTasks" />
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            }
                         </div>
-                    </div>
-                    <div class="col-auto">
-                        <a class="btn btn-success shadow-sm" href="/tareaRecurrente">
-                            <i class="bi bi-plus-circle me-2"></i>Nueva
-                        </a>
                     </div>
                 </div>
             </div>
@@ -54,11 +57,8 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
-                                <th>Recurrente</th>
-                                <th>Desde</th>
-                                <th>Hasta</th>
+                                <th>Recurrente | Desde - Hasta</th>
                                 <th>Tiempo</th>
-                                <th>Ejecuciones</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -69,7 +69,7 @@
                                 <tr>
                                     <td>@item.NombreTareaRecurr</td>
                                     <td>
-                                        @if (item.DescripcionTareaRecurr.Length > 50)
+                                        @if (item.DescripcionTareaRecurr.Length > 35)
                                         {
                                             @if (item.ShowFullDescription)
                                             {
@@ -80,7 +80,7 @@
                                             }
                                             else
                                             {
-                                                <span>@item.DescripcionTareaRecurr.Substring(0, 50) ...</span>
+                                                <span>@item.DescripcionTareaRecurr.Substring(0, 35) ...</span>
                                                 <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -91,17 +91,22 @@
                                             <span>@item.DescripcionTareaRecurr</span>
                                         }
                                     </td>
-                                    <td align="center"><span class="badge bg-@(item.Recurrente ? "success" : "secondary")">@(item.Recurrente ? "Si" : "No")</span></td>
-                                    <td>@item.HoraDesde.ToString("hh:mm tt")</td>
-                                    <td>@item.HorasHasta.ToString("hh:mm tt")</td>
+                                    <td align="center">
+                                        <span class="badge bg-@(item.Recurrente ? "primary" : "secondary")">
+                                            @(item.Recurrente ? "Si" : "No")
+                                        </span> | @item.HoraDesde.ToString("hh:mm tt") - @item.HorasHasta.ToString("hh:mm tt")
+                                    </td>
                                     <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion)</td>
-                                    <td align="center">@ConvertirCantidadEjecuciones(item.CantidadEjecuciones)</td>
-                                    <td><span class="badge bg-@(item.Estado ? "primary" : "warning")">@(item.Estado ? "Habilitada" : "Deshabilitada")</span></td>
+                                    <td align="center">
+                                        <span class="badge bg-@(item.Estado ? "success" : "danger")">
+                                            @(item.Estado ? "Renovada" : "Expirada")
+                                        </span>
+                                    </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a class="btn btn-outline-primary btn-sm" href="/tareaRecurrente/@item.TareaRecurrId" title="Editar">
-                                                <i class="bi bi-pencil-fill"></i>
-                                            </a>
+                                            <button class="btn btn-outline-primary btn-sm" @onclick="() => OpenModal(item)" title="Registrar">
+                                                <i class="bi bi-pencil-fill me-2"></i>Registrar
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -118,20 +123,128 @@
     }
 </div>
 
+<!-- Lista de procesos registrados -->
+<div class="container-fluid mt-4">
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (listaRegistroProcesos == null || listaRegistroProcesos.Count == 0)
+    {
+        <div class="alert alert-info shadow-sm">
+            <i class="bi bi-info-circle me-2"></i>No se encontraron procesos registrados.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="text-primary mb-0">
+                            <i class="bi bi-clock-history me-2"></i>Reporte de tareas procesadas
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Buscar..." @bind="searchTerm" @bind:event="oninput" @onkeyup="FilterTasks" />
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tarea</th>
+                                <th>Usuario</th>
+                                <th>Fecha</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in listaRegistroProcesos)
+                            {
+                                <tr>
+                                    <td>@item.TareaRecurrId</td>
+                                    <td>@item.UsuarioId</td>
+                                    <td>@item.FechaRegistro.ToString("dd/MM/yyyy - hh:mm:ss tt")</td>
+                                    <td>@item.DescripcionRegistro</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                Total de tareas recurrentes: @filteredTasksProcess.Count
+            </div>
+        </div>
+        <br />
+    }
+</div>
+
+<!-- Modal para registrar los reportes de procesos -->
+<div class="modal fade" id="registroProcesoModal" tabindex="-1" aria-labelledby="registroProcesoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registroProcesoModalLabel">Registrar Proceso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="registroProceso" OnValidSubmit="RegistrarProceso">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="comentario" class="form-label">Comentario</label>
+                        <InputTextArea id="comentario" class="form-control" @bind-Value="registroProceso.DescripcionRegistro" />
+                    </div>
+                </EditForm>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" @onclick="RegistrarProceso">Registrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
-    private List<RegistroProcesoDTO> listaProcesos = new List<RegistroProcesoDTO>();
+    // Variables que devuelve una lista de datos
+    private List<RegistroProcesoDTO> listaRegistroProcesos = new List<RegistroProcesoDTO>();
     private List<TareasRecurrentesDTO> listaTareasRecurrentes = new List<TareasRecurrentesDTO>();
+
+    // Variables para filtrar la lista de tareas recurrentes
     private List<TareasRecurrentesDTO> filteredTasks = new List<TareasRecurrentesDTO>();
-    
+    private List<RegistroProcesoDTO> filteredTasksProcess = new List<RegistroProcesoDTO>();
+
+    // Variables para controlar el estado de la página
     private bool isLoading = true;
     private string searchTerm = "";
     private TareasRecurrentesDTO? expandedItem = null;
+    private RegistroProcesoDTO registroProceso = new RegistroProcesoDTO();
+    private TareasRecurrentesDTO? selectedTask = null;
 
+    // Método que se ejecuta al cargar la página
     protected override async Task OnInitializedAsync()
     {
         await LoadTareasRecurrentes();
+        await LoadProcesosRegistrados();
     }
 
+    // Método para cargar las tareas recurrentes
     private async Task LoadTareasRecurrentes()
     {
         try
@@ -143,11 +256,11 @@
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al cargar las tareas recurrentes: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
+            {
+                Title = "Error",
+                Text = $"Error al cargar las tareas recurrentes: {ex.Message}",
+                Icon = SweetAlertIcon.Error
+            });
         }
         finally
         {
@@ -155,6 +268,64 @@
             StateHasChanged();
         }
     }
+
+    private async Task LoadProcesosRegistrados()
+    {
+        try
+        {
+            isLoading = true;
+            listaRegistroProcesos = await RegistroProcesoService.ListaProcesos();
+            filteredTasksProcess = listaRegistroProcesos;
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Error",
+                Text = $"Error al cargar los procesos registrados: {ex.Message}",
+                Icon = SweetAlertIcon.Error
+            });
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenModal(TareasRecurrentesDTO task)
+    {
+        selectedTask = task;
+        registroProceso = new RegistroProcesoDTO
+        {
+            TareaRecurrId = task.TareaRecurrId,
+            UsuarioId = 1, // Asigna el ID del usuario actual
+            FechaRegistro = DateTime.Now
+        };
+        await JSRuntime.InvokeVoidAsync("showModal", "registroProcesoModal");
+    }
+
+    private async Task RegistrarProceso()
+    {
+        try
+        {
+            await RegistroProcesoService.GuardarProcesos(registroProceso);
+            await LoadProcesosRegistrados();
+            await JSRuntime.InvokeVoidAsync("hideModal", "registroProcesoModal");
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Error",
+                Text = $"Error al registrar el proceso: {ex.Message}",
+                Icon = SweetAlertIcon.Error
+            });
+        }
+    }
+
+
+    #region Métodos para mostrar u ocultar la descripción de la tarea recurrente, filtrar y convertir el tiempo de ejecución
 
     private void ToggleDescription(TareasRecurrentesDTO item)
     {
@@ -182,6 +353,12 @@
         }
     }
 
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        FilterTasks();
+    }
+
     private string ConvertirTiempoEjecucion(int minutos)
     {
         if (minutos >= 1440) // 1440 minutos en un día
@@ -204,4 +381,6 @@
     {
         return cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
     }
+
+    #endregion
 }

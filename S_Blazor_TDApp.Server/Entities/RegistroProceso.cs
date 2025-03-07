@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace S_Blazor_TDApp.Server.Entities;
+﻿namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class RegistroProceso
 {
@@ -13,7 +10,7 @@ public partial class RegistroProceso
 
     public DateTime FechaRegistro { get; set; }
 
-    public string Comentario { get; set; } = null!;
+    public string DescripcionRegistro { get; set; } = null!;
 
     public virtual TareasRecurrente RefTareaRecurr { get; set; } = null!;
 
