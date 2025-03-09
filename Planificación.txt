@@ -1,0 +1,16 @@
+-- Puntos a modificar en la pagina de tareas recurrentes --
+
+     1. Si la tarea recurrente, esta configurada para procesarse, ejemplo, Lunes y Viernes, en esos días estará habilitada, si no, seria deshabilitada.
+     2. Si la tarea es recurrente, no expirara, ni se podrá renovar y estará disponible en el rango de tiempo indicado.
+
+-- Pagina de procesos --
+
+     1. Implementa código para cronometrar las tareas de acuerdo a tiempo en que fueron configuradas.
+
+-- Implementaciones para mas adelante--
+
+     1. Implementar logica para activar o desactivar las tareas recurrentes, de acuerdo a sus días de disponibilidad.
+     2. Implementar inicio de sesión, con roles y permisos, sin validación por correo.
+     3. Implementar logica para cambio de contraseña, cada 30, 60 o 90 días configurables, para los usuarios.
+
+

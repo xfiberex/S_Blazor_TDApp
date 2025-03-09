@@ -15,9 +15,10 @@
     @if (isLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
+            <div class="spinner-border text-primary me-2" role="status">
+                <span class="visually-hidden"></span>
             </div>
+            <label>Cargando tareas recurrentes...</label>
         </div>
     }
     else if (listaTareasRecurrentes == null || listaTareasRecurrentes.Count == 0)
@@ -128,9 +129,10 @@
     @if (isLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
+            <div class="spinner-border text-primary me-2" role="status">
+                <span class="visually-hidden"></span>
             </div>
+            <label>Cargando procesos registrados...</label>
         </div>
     }
     else if (listaRegistroProcesos == null || listaRegistroProcesos.Count == 0)
@@ -299,7 +301,7 @@
         registroProceso = new RegistroProcesoDTO
         {
             TareaRecurrId = task.TareaRecurrId,
-            UsuarioId = 1, // Asigna el ID del usuario actual
+                UsuarioId = 1, // Asigna el ID del usuario actual, temporal, hasta implementar la autenticación
             FechaRegistro = DateTime.Now
         };
         await JSRuntime.InvokeVoidAsync("showModal", "registroProcesoModal");

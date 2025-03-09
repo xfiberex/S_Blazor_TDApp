@@ -22,6 +22,7 @@ namespace S_Blazor_TDApp.Shared
 
         [Required(ErrorMessage = "La hora de fin es obligatoria.")]
         public DateTime HorasHasta { get; set; } = DateTime.Now;
+
         [Range(1, int.MaxValue, ErrorMessage = "El tiempo de ejecución debe ser mayor a 0.")]
         public int TiempoEjecucion { get; set; }
 
