@@ -37,7 +37,16 @@
                     <div class="col-auto">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Buscar..." @bind-value="searchTerm" @bind-value:event="oninput" @onkeyup="FilterUsers" />
+                            <input type="text" class="form-control" placeholder="Buscar..."
+                                   @oninput="OnSearchTermChanged"
+                                   value="@searchTerm" />
+
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            }
                         </div>
                     </div>
                     <div class="col-auto">
@@ -130,6 +139,9 @@
     private int pageSize = 10;
     private int[] pageSizeOptions = new int[] { 10, 15, 20 };
 
+    // Timers para el debounce o delay en la búsqueda
+    private System.Threading.Timer? _searchTimerTasks;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadUsuarios();
@@ -203,6 +215,27 @@
         }
     }
 
+    // Se llama cuando el usuario escribe en el input de "Tasks"
+    private void OnSearchTermChanged(ChangeEventArgs e)
+    {
+        // Actualiza la variable con el texto del usuario
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+
+        // Si el timer ya existe, lo descartamos (reiniciamos el conteo)
+        _searchTimerTasks?.Dispose();
+
+        // Iniciamos un nuevo timer con 500ms (medio segundo) de delay
+        _searchTimerTasks = new System.Threading.Timer(_ =>
+        {
+            // Llamamos al método de filtrado en el hilo de Blazor
+            InvokeAsync(() =>
+            {
+                FilterUsers();
+                StateHasChanged();
+            });
+        }, null, 500, System.Threading.Timeout.Infinite);
+    }
+
     private void FilterUsers()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
@@ -220,6 +253,12 @@
         // Reinicia a la primera página después de filtrar
         currentPage = 1;
         UpdatePagedUsers();
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        FilterUsers();
     }
 
     private void UpdatePagedUsers()

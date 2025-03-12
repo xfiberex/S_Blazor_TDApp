@@ -8,7 +8,6 @@
 @inject ITareaCalendarioService TareaCalendarioService
 
 <div class="container-fluid mt-4">
-
     @if (isLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
@@ -31,13 +30,21 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <h5 class="text-primary mb-0">
-                            <i class="bi bi-calendar-event me-2"></i>Tareas de Calendario
+                            <i class="bi bi-calendar-event me-2"></i>Gestión - Tareas de calendario
                         </h5>
                     </div>
                     <div class="col-auto">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Buscar..." @bind-value="searchTerm" @bind-value:event="oninput" @onkeyup="FilterTasks" />
+                            <input type="text" class="form-control" placeholder="Buscar..."
+                                   @oninput="OnSearchTermChanged"
+                                   value="@searchTerm" />
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            }
                         </div>
                     </div>
                     <div class="col-auto">
@@ -60,7 +67,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in filteredTasks)
+                            @foreach (var item in pagedTasks)
                             {
                                 <tr>
                                     <td>@item.NombreTarea</td>
@@ -87,8 +94,14 @@
                                             <span>@item.DescripcionTarea</span>
                                         }
                                     </td>
-                                    <td><span class="badge bg-@(item.Habilitado ? "success" : "warning")">@(item.Habilitado ? "Habilitada" : "Deshabilitada")</span></td>
-                                    <td align="center">@item.Fecha.ToString("dd/MM/yyyy") - @item.Hora.ToString("hh:mm tt")</td>
+                                    <td>
+                                        <span class="badge bg-@(item.Habilitado ? "success" : "warning")">
+                                            @(item.Habilitado ? "Habilitada" : "Deshabilitada")
+                                        </span>
+                                    </td>
+                                    <td align="center">
+                                        @item.Fecha.ToString("dd/MM/yyyy") - @item.Hora.ToString("hh:mm tt")
+                                    </td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a class="btn btn-outline-primary btn-sm" href="/tareaCalendario/@item.TareaId" title="Editar">
@@ -106,7 +119,27 @@
                 </div>
             </div>
             <div class="card-footer text-muted">
-                Total de tareas: @filteredTasks.Count
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <label>Mostrar: </label>
+                        <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
+                            @foreach (var option in pageSizeOptions)
+                            {
+                                <option value="@option" selected="@(option == pageSize)">
+                                    @option
+                                </option>
+                            }
+                        </select>
+                        tareas de @filteredTasks.Count en total
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
+                        <span class="mx-2">
+                            Página @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
+                        </span>
+                        <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredTasks.Count)">Siguiente</button>
+                    </div>
+                </div>
             </div>
         </div>
         <br />
@@ -116,9 +149,19 @@
 @code {
     private List<TareasCalendarioDTO> listaTareasCalendario = new List<TareasCalendarioDTO>();
     private List<TareasCalendarioDTO> filteredTasks = new List<TareasCalendarioDTO>();
+    private List<TareasCalendarioDTO> pagedTasks = new List<TareasCalendarioDTO>();
+
     private bool isLoading = true;
     private string searchTerm = "";
-    private TareasCalendarioDTO? expandedItem = null; // Nueva propiedad para rastrear el elemento expandido
+    private TareasCalendarioDTO? expandedItem = null; // Propiedad para rastrear el elemento expandido
+
+    // Timer para el debounce en la búsqueda
+    private System.Threading.Timer? _searchTimerTasks;
+
+    // Parámetros de paginación
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int[] pageSizeOptions = new int[] { 10, 15, 20 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,6 +175,7 @@
             isLoading = true;
             listaTareasCalendario = await TareaCalendarioService.Lista();
             filteredTasks = listaTareasCalendario;
+            UpdatePagedTasks();
         }
         catch (Exception ex)
         {
@@ -201,6 +245,23 @@
         expandedItem = item.ShowFullDescription ? item : null;
     }
 
+    // Se llama cuando el usuario escribe en el input de búsqueda
+    private void OnSearchTermChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+
+        _searchTimerTasks?.Dispose();
+
+        _searchTimerTasks = new System.Threading.Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                FilterTasks();
+                StateHasChanged();
+            });
+        }, null, 500, System.Threading.Timeout.Infinite);
+    }
+
     private void FilterTasks()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
@@ -213,6 +274,50 @@
                 t.NombreTarea.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                 t.DescripcionTarea!.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
             ).ToList();
+        }
+        currentPage = 1;
+        UpdatePagedTasks();
+    }
+
+    private void ClearSearch(MouseEventArgs args)
+    {
+        searchTerm = string.Empty;
+        FilterTasks();
+    }
+
+    private void UpdatePagedTasks()
+    {
+        pagedTasks = filteredTasks
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void OnPageSizeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int newPageSize))
+        {
+            pageSize = newPageSize;
+            currentPage = 1;
+            UpdatePagedTasks();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (currentPage * pageSize < filteredTasks.Count)
+        {
+            currentPage++;
+            UpdatePagedTasks();
+        }
+    }
+
+    private void PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            UpdatePagedTasks();
         }
     }
 }

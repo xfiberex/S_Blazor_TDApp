@@ -1,82 +1,103 @@
 ﻿@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components
 
-<div class="sidebar bg-dark text-light">
+<div class="bg-dark text-light">
     <div class="top-row navbar navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="">
+            <a class="navbar-brand" href="registroProcesos">
                 <img src="/tareasicon.png" alt="L" width="30" height="30" class="textIcon me-2">
-                Todo App
+                @if (!Collapse)
+                {
+                    <span class="brand-text">Todo App</span>
+                }
             </a>
-            <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenuMobile">
                 <span class="navbar-toggler-icon"></span>
             </button>
         </div>
     </div>
 
-    <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <div class="@GetNavMenuCssClass() nav-scrollable">
         <nav class="flex-column">
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="registroProcesos" Match="NavLinkMatch.All">
                     <span aria-hidden="true">
-                        <i class="bi @("bi-house-gear-fill")"></i>
-                    </span> Procesos
+                        <i class="bi bi-house-gear-fill"></i>
+                    </span>
+                    <span>Procesos</span>
                 </NavLink>
             </div>
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="tareasRecurrentes">
                     <span aria-hidden="true">
-                        <i class="bi @("bi bi-list-task")"></i>
-                    </span> Recurrentes
+                        <i class="bi bi-list-task"></i>
+                    </span>
+                    <span>Recurrentes</span>
                 </NavLink>
             </div>
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="tareasCalendario">
                     <span aria-hidden="true">
-                        <i class="bi @("bi bi-calendar2-range-fill")"></i>
-                    </span> Calendario
+                        <i class="bi bi-calendar2-range-fill"></i>
+                    </span>
+                    <span>Calendario</span>
                 </NavLink>
             </div>
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="usuarios">
                     <span aria-hidden="true">
-                        <i class="bi @("bi bi-people-fill")"></i>
-                    </span> Usuarios
+                        <i class="bi bi-people-fill"></i>
+                    </span>
+                    <span>Usuarios</span>
                 </NavLink>
             </div>
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="tareasDias">
                     <span aria-hidden="true">
-                        <i class="bi @("bi bi-calendar3")"></i>
-                    </span> Disponibilidad
+                        <i class="bi bi-calendar3"></i>
+                    </span>
+                    <span>Disponibilidad</span>
                 </NavLink>
+            </div>
+
+            <!-- Botón para colapsar/expandir el sidebar - solo visible en desktop -->
+            <div class="nav-item px-3 mt-auto desktop-only">
+                <span aria-hidden="true" class="nav-link toggle-link" title="Toggle sidebar" @onclick="ToggleNavMenu">
+                    <i class="bi @(Collapse ? "bi-arrow-bar-right" : "bi-arrow-bar-left")"></i>
+                    <span>@(Collapse ? "Expandir" : "Contraer")</span>
+                </span>
             </div>
         </nav>
     </div>
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    [Parameter]
+    public bool Collapse { get; set; }
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    [Parameter]
+    public EventCallback<bool> CollapseChanged { get; set; }
+
+    // Variable para controlar el estado del menú móvil
+    private bool mobileMenuCollapsed = true;
+
+    // Método para obtener la clase CSS del menú
+    private string GetNavMenuCssClass()
+    {
+        // En vista móvil, usamos mobileMenuCollapsed
+        // En vista desktop, usamos Collapse
+        return mobileMenuCollapsed ? "collapse" : null!;
+    }
 
     private void ToggleNavMenu()
     {
-        collapseNavMenu = !collapseNavMenu;
+        Collapse = !Collapse;
+        CollapseChanged.InvokeAsync(Collapse);
     }
 
-    protected override void OnInitialized()
+    private void ToggleNavMenuMobile()
     {
-        NavigationManager.LocationChanged += LocationChanged;
-    }
-
-    private void LocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        collapseNavMenu = true;
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= LocationChanged;
+        // Cambiamos el estado del menú móvil
+        mobileMenuCollapsed = !mobileMenuCollapsed;
     }
 }

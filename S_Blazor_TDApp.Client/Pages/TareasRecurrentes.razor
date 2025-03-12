@@ -31,13 +31,23 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <h5 class="text-primary mb-0">
-                            <i class="bi bi-clock-history me-2"></i>Tareas Recurrentes
+                            <i class="bi bi-clock-history me-2"></i>Gestión - Tareas recurrentes
                         </h5>
                     </div>
                     <div class="col-auto">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Buscar..." @bind-value="searchTerm" @bind-value:event="oninput" @onkeyup="FilterTasks" />
+                            <input type="text" class="form-control" placeholder="Buscar..."
+                                   @oninput="OnSearchTermChanged"
+                                   value="@searchTerm" />
+
+                            @if (!string.IsNullOrEmpty(searchTerm))
+                            {
+                                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            }
+
                         </div>
                     </div>
                     <div class="col-auto">
@@ -61,7 +71,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in filteredTasks)
+                            @foreach (var item in pagedTasks)
                             {
                                 <tr>
                                     <td>@item.NombreTareaRecurr</td>
@@ -108,7 +118,25 @@
                 </div>
             </div>
             <div class="card-footer text-muted">
-                Total de tareas recurrentes: @filteredTasks.Count
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <label>Mostrar: </label>
+                        <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
+                            @foreach (var option in pageSizeOptions)
+                            {
+                                <option value="@option" selected="@(option == pageSize)">@option</option>
+                            }
+                        </select>
+                        usuarios de @filteredTasks.Count en total
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
+                        <span class="mx-2">
+                            Página @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
+                        </span>
+                        <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredTasks.Count)">Siguiente</button>
+                    </div>
+                </div>
             </div>
         </div>
         <br />
@@ -118,9 +146,19 @@
 @code {
     private List<TareasRecurrentesDTO> listaTareasRecurrentes = new List<TareasRecurrentesDTO>();
     private List<TareasRecurrentesDTO> filteredTasks = new List<TareasRecurrentesDTO>();
+    private List<TareasRecurrentesDTO> pagedTasks = new List<TareasRecurrentesDTO>();
+
     private bool isLoading = true;
     private string searchTerm = "";
     private TareasRecurrentesDTO? expandedItem = null; // Nueva propiedad para rastrear el elemento expandido
+
+    // Timers para el debounce o delay en la búsqueda
+    private System.Threading.Timer? _searchTimerTasks;
+
+    // Parámetros de paginación
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int[] pageSizeOptions = new int[] { 10, 15, 20 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,6 +172,7 @@
             isLoading = true;
             listaTareasRecurrentes = await TareaRecurrenteService.Lista();
             filteredTasks = listaTareasRecurrentes;
+            UpdatePagedTasks();
         }
         catch (Exception ex)
         {
@@ -203,6 +242,27 @@
         expandedItem = item.ShowFullDescription ? item : null;
     }
 
+    // Se llama cuando el usuario escribe en el input de "Tasks"
+    private void OnSearchTermChanged(ChangeEventArgs e)
+    {
+        // Actualiza la variable con el texto del usuario
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+
+        // Si el timer ya existe, lo descartamos (reiniciamos el conteo)
+        _searchTimerTasks?.Dispose();
+
+        // Iniciamos un nuevo timer con 500ms (medio segundo) de delay
+        _searchTimerTasks = new System.Threading.Timer(_ =>
+        {
+            // Llamamos al método de filtrado en el hilo de Blazor
+            InvokeAsync(() =>
+            {
+                FilterTasks();
+                StateHasChanged();
+            });
+        }, null, 500, System.Threading.Timeout.Infinite);
+    }
+
     private void FilterTasks()
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
@@ -216,6 +276,13 @@
                 t.DescripcionTareaRecurr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
             ).ToList();
         }
+        UpdatePagedTasks();
+    }
+
+    private void ClearSearch()
+    {
+        searchTerm = string.Empty;
+        FilterTasks();
     }
 
     private string ConvertirTiempoEjecucion(int minutos)
@@ -239,5 +306,42 @@
     private string ConvertirCantidadEjecuciones(int cantidad)
     {
         return cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
+    }
+
+    // Metodos de paginación
+    private void UpdatePagedTasks()
+    {
+        pagedTasks = filteredTasks
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void OnPageSizeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int newPageSize))
+        {
+            pageSize = newPageSize;
+            currentPage = 1;
+            UpdatePagedTasks();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (currentPage * pageSize < filteredTasks.Count)
+        {
+            currentPage++;
+            UpdatePagedTasks();
+        }
+    }
+
+    private void PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            UpdatePagedTasks();
+        }
     }
 }

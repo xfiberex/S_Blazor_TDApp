@@ -16,10 +16,10 @@ code {
 }
 
 .label-Custom {
-   font-weight: 600;
+    font-weight: 600;
 }
 
-/* Sidebar Styles */
+/* Sidebar Styles - Versión mejorada */
 .sidebar {
     width: 250px;
     height: 100vh;
@@ -27,16 +27,14 @@ code {
     top: 0;
     left: 0;
     overflow-x: hidden;
-    transition: 0.3s;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
 }
 
-@media (max-width: 640.98px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
+    /* Estilo para el sidebar cuando está colapsado */
+    .sidebar.collapsed {
+        width:87px;
     }
-}
 
 /* Top Row Styles */
 .top-row {
@@ -56,16 +54,35 @@ code {
 .navbar-brand {
     font-size: 1.1rem;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+    .navbar-brand img {
+        transition: margin 0.3s ease;
+    }
+
+.sidebar.collapsed .navbar-brand .brand-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
 }
 
 .nav-scrollable {
     height: calc(100% - 3.5rem);
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 @media (max-width: 640.98px) {
     .nav-scrollable {
         height: auto;
+    }
+
+    .desktop-only {
+        display: none !important;
     }
 }
 
@@ -75,27 +92,71 @@ code {
     }
 
     .nav-scrollable {
-        display: block !important;
+        display: flex !important;
     }
 }
 
-/* Navigation Link Styles */
+/* Navigation Link Styles - Mejorado */
 .nav-link {
     padding: 0.8rem 1rem;
     color: #d7d7d7;
     border-radius: 4px;
     margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
     .nav-link:hover {
         background-color: rgba(255,255,255,0.1);
         color: #fff;
+        transform: translateX(2px);
     }
 
     .nav-link.active {
         background-color: rgba(255,255,255,0.25);
         color: #fff;
     }
+
+    /* Animación para los iconos */
+    .nav-link i {
+        min-width: 1.5rem;
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    /* Animación para el texto dentro de los enlaces */
+    .nav-link span:not([aria-hidden="true"]) {
+        opacity: 1;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+/* Ocultar texto cuando el sidebar está colapsado */
+.sidebar.collapsed .nav-link span:not([aria-hidden="true"]) {
+    opacity: 0;
+    transform: translateX(-10px);
+    width: 0;
+    overflow: hidden;
+}
+
+/* Animación para el botón de toggle */
+.sidebar .bi-arrow-bar-left,
+.sidebar .bi-arrow-bar-right {
+    transition: transform 0.3s ease;
+}
+
+.sidebar.collapsed .bi-arrow-bar-right {
+    transform: rotate(180deg);
+}
+
+/* Animación para el hover en modo colapsado */
+.sidebar.collapsed .nav-link:hover {
+    background-color: rgba(255,255,255,0.15);
+    transform: translateX(3px);
+}
 
 /* Button Styles */
 .bi-button {
@@ -170,6 +231,42 @@ code {
 
 .slide-up {
     animation: slideUp 0.5s forwards;
+}
+
+/* Toggle button styles */
+.toggle-link {
+    margin-top: auto;
+    cursor: pointer;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.mt-auto {
+    margin-top: auto;
+}
+
+/* Media queries para responsive */
+@media (max-width: 640.98px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    main {
+        margin-left: 0;
+    }
+
+    .sidebar.collapsed ~ main {
+        margin-left: 0;
+    }
+
+    .sidebar.collapsed .nav-link span:not([aria-hidden="true"]) {
+        opacity: 1;
+        transform: none;
+        width: auto;
+    }
 }
 
 /* Blazor Error UI Styles */

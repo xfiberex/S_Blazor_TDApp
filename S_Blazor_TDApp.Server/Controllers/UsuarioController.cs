@@ -9,10 +9,16 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsuarioController(DbTdappContext context, IMapper mapper) : ControllerBase
+    public class UsuarioController : ControllerBase
     {
-        private readonly DbTdappContext _context = context;
-        private readonly IMapper _mapper = mapper;
+        private readonly DbTdappContext _context;
+        private readonly IMapper _mapper;
+
+        public UsuarioController(DbTdappContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
 
         [HttpGet]
         [Route("Lista")]

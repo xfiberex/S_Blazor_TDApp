@@ -9,10 +9,16 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProcesosRegistroController(DbTdappContext context, IMapper mapper) : ControllerBase
+    public class ProcesosRegistroController : ControllerBase
     {
-        private readonly DbTdappContext _context = context;
-        private readonly IMapper _mapper = mapper;
+        private readonly DbTdappContext _context;
+        private readonly IMapper _mapper;
+
+        public ProcesosRegistroController(DbTdappContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
 
         #region APIs para listar y buscar
 
@@ -48,7 +54,10 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var procesos = await _context.RegistroProcesos.ToListAsync();
+                var procesos = await _context.RegistroProcesos
+                    .Include(rp => rp.RefTareaRecurr) // Asegúrate de incluir solo la relación con TareaRecurrente
+                    .Include(rp => rp.RefUsuario) // Asegúrate de incluir solo la relación con Usuario
+                    .ToListAsync();
 
                 var listaProcesosDTO = _mapper.Map<List<RegistroProcesoDTO>>(procesos);
 

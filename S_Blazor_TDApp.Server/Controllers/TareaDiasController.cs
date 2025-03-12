@@ -9,10 +9,16 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TareaDiasController(DbTdappContext context, IMapper mapper) : ControllerBase
+    public class TareaDiasController : ControllerBase
     {
-        private readonly DbTdappContext _context = context;
-        private readonly IMapper _mapper = mapper;
+        private readonly DbTdappContext _context;
+        private readonly IMapper _mapper;
+
+        public TareaDiasController(DbTdappContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
 
         // GET: api/TareaDias/Lista
         [HttpGet]

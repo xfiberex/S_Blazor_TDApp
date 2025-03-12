@@ -1,7 +1,10 @@
 ﻿@inherits LayoutComponentBase
+
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
+    <!-- Se aplica la clase 'collapsed' en función del estado -->
+    <div class="sidebar @(collapseNavMenu ? "collapsed" : "")">
+        <!-- Se pasa el estado y un callback al NavMenu -->
+        <NavMenu Collapse="@collapseNavMenu" CollapseChanged="@ToggleNavMenu" />
     </div>
 
     <main>
@@ -14,3 +17,12 @@
         </article>
     </main>
 </div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private void ToggleNavMenu(bool collapse)
+    {
+        collapseNavMenu = collapse;
+    }
+}

@@ -8,7 +8,11 @@ namespace S_Blazor_TDApp.Shared
 
         public int TareaRecurrId { get; set; }
 
+        public TareasRecurrentesDTO? RefTareaRecurr { get; set; }
+
         public int UsuarioId { get; set; }
+
+        public UsuarioDTO? RefUsuario { get; set; }
 
         public DateTime FechaRegistro { get; set; }
 
