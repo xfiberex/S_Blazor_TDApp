@@ -106,6 +106,10 @@ GO
 --('Mantenimiento de equipos', 'Realizar mantenimiento preventivo a equipos', 1, '2025-02-21 18:00:00', '2025-02-21 19:00:00', 60, 1, 1);
 --GO
 
+ALTER TABLE Tareas_Recurrentes
+ADD FechaUltimaRenovacion DATETIME NOT NULL DEFAULT GETDATE();
+GO
+
 -- Tabla para los dias --
 CREATE TABLE Dias_Disponibles (
 	DiaId INT IDENTITY(1,1) PRIMARY KEY,

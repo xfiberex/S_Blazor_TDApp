@@ -120,6 +120,9 @@ public partial class DbTdappContext : DbContext
             entity.Property(e => e.HorasHasta).HasColumnType("datetime");
             entity.Property(e => e.NombreTareaRecurr).HasMaxLength(100);
             entity.Property(e => e.Recurrente).HasDefaultValue(true);
+            entity.Property(e => e.FechaUltimaRenovacion)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Usuario>(entity =>

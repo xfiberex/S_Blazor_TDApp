@@ -1,5 +1,5 @@
 ﻿@inject NavigationManager NavigationManager
-@using Microsoft.AspNetCore.Components
+@inject IJSRuntime JS
 
 <div class="bg-dark text-light">
     <div class="top-row navbar navbar-dark">
@@ -82,12 +82,8 @@
     private bool mobileMenuCollapsed = true;
 
     // Método para obtener la clase CSS del menú
-    private string GetNavMenuCssClass()
-    {
-        // En vista móvil, usamos mobileMenuCollapsed
-        // En vista desktop, usamos Collapse
-        return mobileMenuCollapsed ? "collapse" : null!;
-    }
+    private string GetNavMenuCssClass() =>
+        mobileMenuCollapsed ? "collapse" : string.Empty;
 
     private void ToggleNavMenu()
     {
@@ -97,7 +93,30 @@
 
     private void ToggleNavMenuMobile()
     {
-        // Cambiamos el estado del menú móvil
         mobileMenuCollapsed = !mobileMenuCollapsed;
+    }
+
+    // Se registra el listener para el evento resize de la ventana
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Registra el listener de resize y pasa la referencia del componente
+            await JS.InvokeVoidAsync("addResizeListener", DotNetObjectReference.Create(this));
+        }
+    }
+
+    // Método invocable desde JavaScript cuando se produce un cambio de tamaño
+    [JSInvokable]
+    public Task OnResize(int width)
+    {
+        // Umbral para considerar que es vista móvil (por ejemplo, menor a 641px)
+        if (width < 641 && Collapse)
+        {
+            Collapse = false;
+            CollapseChanged.InvokeAsync(Collapse);
+            StateHasChanged();
+        }
+        return Task.CompletedTask;
     }
 }

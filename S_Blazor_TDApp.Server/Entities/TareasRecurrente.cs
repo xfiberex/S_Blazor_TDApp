@@ -20,6 +20,8 @@ public partial class TareasRecurrente
 
     public bool Estado { get; set; }
 
+    public DateTime FechaUltimaRenovacion { get; set; } = DateTime.Now;
+
     public virtual ICollection<RegistroProceso> RegistroProcesos { get; set; } = new List<RegistroProceso>();
 
     public virtual ICollection<TareaDia> TareaDia { get; set; } = new List<TareaDia>();

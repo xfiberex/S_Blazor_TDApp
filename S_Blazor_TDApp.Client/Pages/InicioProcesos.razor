@@ -1,7 +1,4 @@
-﻿@* Simbolo como pagina "/", para que al carga la pagina en el navegado inicie desde esta pagina *@
-@page "/"
-
-@* Nombre de pagina *@
+﻿@page "/"
 @page "/registroProcesos"
 
 @using S_Blazor_TDApp.Shared
@@ -70,8 +67,7 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
-                                <th>Recurrente | Desde - Hasta</th>
-                                <th>Tiempo</th>
+                                <th>Recurrente | Tiempo</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -104,12 +100,18 @@
                                             <span>@item.DescripcionTareaRecurr</span>
                                         }
                                     </td>
-                                    <td align="center">
-                                        <span class="badge bg-@(item.Recurrente ? "primary" : "secondary")">
-                                            @(item.Recurrente ? "Si" : "No")
-                                        </span> | @item.HoraDesde.ToString("hh:mm tt") - @item.HorasHasta.ToString("hh:mm tt")
+                                    <td>
+                                        @if (item.Recurrente)
+                                        {
+                                            <span class="badge bg-primary">Si</span>
+                                            <span> | cada @ConvertirTiempoEjecucion(item.TiempoEjecucion)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">No</span>
+                                            <span> | @GetUserProcessCount(item.TareaRecurrId) de @item.CantidadEjecuciones</span>
+                                        }
                                     </td>
-                                    <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion)</td>
                                     <td align="center">
                                         <span class="badge bg-@(item.Estado ? "success" : "danger")">
                                             @(item.Estado ? "Renovada" : "Expirada")
@@ -117,7 +119,10 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <button class="btn btn-outline-primary btn-sm" @onclick="() => OpenModal(item)" title="Registrar">
+                                            <button class="btn btn-outline-primary btn-sm"
+                                                    @onclick="() => OpenModal(item)"
+                                                    title="Registrar"
+                                                    disabled="@( !item.Recurrente && GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones )">
                                                 <i class="bi bi-pencil-fill me-2"></i>Registrar
                                             </button>
                                         </div>
@@ -260,8 +265,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <InputTextArea id="comentario" class="form-control" placeholder="Escriba el informe..." 
-                            @bind-Value="registroProceso.DescripcionRegistro" />
+                        <InputTextArea id="comentario" class="form-control" placeholder="Escriba el informe..."
+                                       @bind-Value="registroProceso.DescripcionRegistro" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -293,15 +298,44 @@
     private TareasRecurrentesDTO? expandedItem = null;
     private TareasRecurrentesDTO? selectedTask = null;
 
-    // Timers para el debounce o delay en la búsqueda
+    // Timers para el debounce o delay en la búsqueda y para el refresco automático
     private System.Threading.Timer? _searchTimerTasks;
     private System.Threading.Timer? _searchTimerProcess;
+    private System.Threading.Timer? _refreshTimer;
 
-    // Método que se ejecuta al cargar la página
+    // Diccionario para contar cuántos registros (procesos) lleva el usuario actual en cada tarea
+    private Dictionary<int, int> userProcessCount = new();
+    private int currentUserId = 1; // ID de usuario fijo (hasta que se implemente autenticación real)
+
+    // Método que se ejecuta al cargar la página (OnInitializedAsync se encarga de la carga inicial y de iniciar el Timer de refresco)
     protected override async Task OnInitializedAsync()
     {
         await LoadTareasRecurrentes();
         await LoadProcesosRegistrados();
+
+        // Inicia un Timer para refrescar datos cada 30 segundos sin recargar la página completa
+        _refreshTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await RefreshData();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    // Método que refresca ambas listas (tareas y procesos) usando los servicios
+    private async Task RefreshData()
+    {
+        listaTareasRecurrentes = await TareaRecurrenteService.Lista();
+        filteredTasks = listaTareasRecurrentes;
+
+        listaRegistroProcesos = await RegistroProcesoService.ListaProcesos();
+        listaRegistroProcesos = listaRegistroProcesos.OrderByDescending(p => p.FechaRegistro).ToList();
+        filteredTasksProcess = listaRegistroProcesos;
+
+        // Construye/actualiza el conteo de registros por tarea
+        BuildUserProcessCount();
     }
 
     #region Métodos para cargar tareas, procesos, manejar modal y registrar procesos
@@ -317,11 +351,11 @@
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
-            {
-                Title = "Error",
-                Text = $"Error al cargar las tareas recurrentes: {ex.Message}",
-                Icon = SweetAlertIcon.Error
-            });
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar las tareas recurrentes: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
         }
         finally
         {
@@ -336,19 +370,22 @@
         {
             isLoading = true;
             listaRegistroProcesos = await RegistroProcesoService.ListaProcesos();
-            
+
             // Ordenar la lista de procesos por fecha de registro (descendente)
             listaRegistroProcesos = listaRegistroProcesos.OrderByDescending(p => p.FechaRegistro).ToList();
             filteredTasksProcess = listaRegistroProcesos;
+
+            // Construye/actualiza el conteo de registros por tarea
+            BuildUserProcessCount();
         }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
-            {
-                Title = "Error",
-                Text = $"Error al cargar los procesos registrados: {ex.Message}",
-                Icon = SweetAlertIcon.Error
-            });
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar los procesos registrados: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
         }
         finally
         {
@@ -357,15 +394,33 @@
         }
     }
 
+    private void BuildUserProcessCount()
+    {
+        // Agrupa los procesos por TareaRecurrId y cuenta solo los del usuario actual
+        userProcessCount = listaRegistroProcesos
+            .GroupBy(rp => rp.TareaRecurrId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Count(rp => rp.UsuarioId == currentUserId)
+            );
+    }
+
+    private int GetUserProcessCount(int tareaRecurrId)
+    {
+        return userProcessCount.ContainsKey(tareaRecurrId)
+            ? userProcessCount[tareaRecurrId]
+            : 0;
+    }
+
     private async Task OpenModal(TareasRecurrentesDTO task)
     {
         selectedTask = task;
         registroProceso = new RegistroProcesoDTO
-        {
-            TareaRecurrId = task.TareaRecurrId,
-            UsuarioId = 1, // ID de usuario temporal hasta implementar la autenticación
-            FechaRegistro = DateTime.Now
-        };
+            {
+                TareaRecurrId = task.TareaRecurrId,
+                UsuarioId = currentUserId, // ID de usuario temporal
+                FechaRegistro = DateTime.Now
+            };
         await JSRuntime.InvokeVoidAsync("showModal", "registroProcesoModal");
     }
 
@@ -374,17 +429,22 @@
         try
         {
             await RegistroProcesoService.GuardarProcesos(registroProceso);
+
+            // Recargar listas después de guardar
             await LoadProcesosRegistrados();
+            await LoadTareasRecurrentes();
+
+            // Ocultar modal para registrar
             await JSRuntime.InvokeVoidAsync("hideModal", "registroProcesoModal");
         }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
-            {
-                Title = "Error",
-                Text = $"Error al registrar el proceso: {ex.Message}",
-                Icon = SweetAlertIcon.Error
-            });
+                {
+                    Title = "Error",
+                    Text = $"Error al registrar el proceso: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
         }
     }
 
@@ -406,16 +466,11 @@
     // Se llama cuando el usuario escribe en el input de "Tasks"
     private void OnSearchTermTaskChanged(ChangeEventArgs e)
     {
-        // Actualiza la variable con el texto del usuario
         searchTermTask = e.Value?.ToString() ?? string.Empty;
-
-        // Si el timer ya existe, lo descartamos (reiniciamos el conteo)
         _searchTimerTasks?.Dispose();
 
-        // Iniciamos un nuevo timer con 500ms (medio segundo) de delay
         _searchTimerTasks = new System.Threading.Timer(_ =>
         {
-            // Llamamos al método de filtrado en el hilo de Blazor
             InvokeAsync(() =>
             {
                 FilterTasks();
@@ -428,7 +483,6 @@
     private void OnSearchTermProcessChanged(ChangeEventArgs e)
     {
         searchTermProcess = e.Value?.ToString() ?? string.Empty;
-
         _searchTimerProcess?.Dispose();
 
         _searchTimerProcess = new System.Threading.Timer(_ =>
@@ -474,12 +528,12 @@
 
     private string ConvertirTiempoEjecucion(int minutos)
     {
-        if (minutos >= 1440) // 1440 minutos en un día
+        if (minutos >= 1440)
         {
             int dias = minutos / 1440;
             return $"{dias} {(dias > 1 ? "días" : "día")}";
         }
-        else if (minutos >= 60) // 60 minutos en una hora
+        else if (minutos >= 60)
         {
             int horas = minutos / 60;
             return $"{horas} {(horas > 1 ? "horas" : "hora")}";
@@ -496,4 +550,11 @@
     }
 
     #endregion
+
+    public void Dispose()
+    {
+        _searchTimerTasks?.Dispose();
+        _searchTimerProcess?.Dispose();
+        _refreshTimer?.Dispose();
+    }
 }

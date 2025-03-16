@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Utilities.AutoMapper;
+using S_Blazor_TDApp.Server.Utilities.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,14 +13,17 @@ builder.Services.AddSwaggerGen();
 // Registrar AutoMapper indicando el assembly donde se encuentra el perfil
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
+// Registrar el servicio de expiración de tareas
+builder.Services.AddHostedService<TareaExpiracionService>();
+
 // Contexto de la base de datos
 builder.Services.AddDbContext<DbTdappContext>(options =>
 {
     // Conexion a la base de datos del equipo A
-    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
+    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
 
     // Conexion a la base de datos del equipo B
-    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
 });
 
 // CORS

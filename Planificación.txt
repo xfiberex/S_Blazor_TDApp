@@ -1,7 +1,6 @@
 -- Puntos a modificar en la pagina de tareas recurrentes --
 
-     1. Si la tarea recurrente, esta configurada para procesarse, ejemplo, Lunes y Viernes, en esos días estará habilitada, si no, seria deshabilitada.
-     2. Si la tarea es recurrente, no expirara, ni se podrá renovar y estará disponible en el rango de tiempo indicado.
+     1. Si la tarea recurrente referente a la tabla Tareas_Recurrentes, esta configurada para procesarse, ejemplo, Lunes y Viernes referente a la tabla Tarea_Dias que a su vez esta relacionada con la tabla Dias_Disponibles, en esos días estará habilitada, si no, seria deshabilitada en la tabla Tareas_Recurrentes
 
 -- Pagina de procesos --
 
@@ -13,4 +12,5 @@
      2. Implementar inicio de sesión, con roles y permisos, sin validación por correo.
      3. Implementar logica para cambio de contraseña, cada 30, 60 o 90 días configurables, para los usuarios.
 
+hhhhyuujj
 

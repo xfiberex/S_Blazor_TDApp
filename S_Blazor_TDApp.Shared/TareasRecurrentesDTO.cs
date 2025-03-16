@@ -2,7 +2,7 @@
 
 namespace S_Blazor_TDApp.Shared
 {
-    public class TareasRecurrentesDTO
+    public class TareasRecurrentesDTO : IValidatableObject
     {
         public int TareaRecurrId { get; set; }
 
@@ -14,8 +14,21 @@ namespace S_Blazor_TDApp.Shared
         [StringLength(100, MinimumLength = 3, ErrorMessage = "La descripción de la tarea debe tener entre 3 y 100 caracteres.")]
         public string DescripcionTareaRecurr { get; set; } = null!;
 
+        private bool _recurrente;
         [Required(ErrorMessage = "Seleccione si la tarea es recurrente.")]
-        public bool Recurrente { get; set; }
+        public bool Recurrente
+        {
+            get => _recurrente;
+            set
+            {
+                _recurrente = value;
+                if (_recurrente)
+                {
+                    // Se asigna CantidadEjecuciones en 1 cuando la tarea es recurrente
+                    CantidadEjecuciones = 1;
+                }
+            }
+        }
 
         [Required(ErrorMessage = "La hora de inicio es obligatoria.")]
         public DateTime HoraDesde { get; set; } = DateTime.Now;
@@ -31,7 +44,30 @@ namespace S_Blazor_TDApp.Shared
 
         public bool Estado { get; set; }
 
-        // Nueva propiedad para controlar la visibilidad de la descripción completa
+        public DateTime FechaUltimaRenovacion { get; set; } = DateTime.Now;
+
+        // Propiedad para controlar la visibilidad de la descripción completa
         public bool ShowFullDescription { get; set; } = false;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // Se valida que la hora de inicio sea menor que la hora de fin.
+            if (HoraDesde >= HorasHasta)
+            {
+                yield return new ValidationResult(
+                    "La hora de inicio debe ser menor que la hora de fin.",
+                    new[] { nameof(HoraDesde), nameof(HorasHasta) }
+                );
+            }
+
+            // Opcional: se valida que, si la tarea es recurrente, la cantidad de ejecuciones sea 1.
+            if (Recurrente && CantidadEjecuciones != 1)
+            {
+                yield return new ValidationResult(
+                    "Para una tarea recurrente, la cantidad de ejecuciones debe ser 1.",
+                    new[] { nameof(CantidadEjecuciones) }
+                );
+            }
+        }
     }
 }

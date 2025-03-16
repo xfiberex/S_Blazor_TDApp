@@ -23,9 +23,18 @@
 
                         @if (context.GetValidationMessages().Any())
                         {
-                            <div class="alert alert-danger mb-3">
+                            <div class="alert alert-danger shadow-sm mb-3">
                                 <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
                                 <ValidationSummary />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info shadow-sm mb-3">
+                                <h6 class="alert-heading"><i class="bi bi-info-circle me-1"></i>
+                                    Si una tarea <b>no es recurrente,</b> el tiempo existente pasará a ser un intervalo de tiempo específico y
+                                    estará disponible únicamente durante ese período en la sección de procesos.
+                                </h6>
                             </div>
                         }
 
@@ -56,7 +65,7 @@
                             <label for="recurrente" class="form-label">Recurrente</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-arrow-repeat"></i></span>
-                                <InputSelect id="recurrente" class="form-select" @bind-Value="tareaRecurrente.Recurrente">
+                                <InputSelect id="recurrente" class="form-select" @bind-Value="recurrente">
                                     <option value="true">Si</option>
                                     <option value="false">No</option>
                                 </InputSelect>
@@ -68,7 +77,8 @@
                             <label for="horaDesde" class="form-label">Hora Desde</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-clock"></i></span>
-                                <InputText id="horaDesde" type="time" class="form-control" step="1" @bind-Value="horaDesdeInput" />
+                                <InputText id="horaDesde" type="time" class="form-control" step="1"
+                                           @bind-Value="horaDesdeInput" />
                             </div>
                         </div>
 
@@ -77,16 +87,18 @@
                             <label for="horaHasta" class="form-label">Hora Hasta</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-clock-fill"></i></span>
-                                <InputText id="horaHasta" type="time" class="form-control" step="1" @bind-Value="horaHastaInput" />
+                                <InputText id="horaHasta" type="time" class="form-control" step="1"
+                                           @bind-Value="horaHastaInput" />
                             </div>
                         </div>
 
-                        <!-- Tiempo de ejecución -->
+                        <!-- Tiempo de ejecución (siempre calculado y no modificable) -->
                         <div class="mb-3">
                             <label for="tiempoEjecucion" class="form-label">Tiempo de Ejecución</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
-                                <InputNumber id="tiempoEjecucion" class="form-control" @bind-Value="tareaRecurrente.TiempoEjecucion" disabled />
+                                <InputNumber id="tiempoEjecucion" class="form-control"
+                                             @bind-Value="tareaRecurrente.TiempoEjecucion" disabled />
                             </div>
                         </div>
 
@@ -97,7 +109,8 @@
                                 <span class="input-group-text"><i class="bi bi-hash"></i></span>
                                 <InputNumber id="cantidadEjecucion" class="form-control"
                                              placeholder="Indica la cantidad de veces que se habilitará la tarea"
-                                             @bind-Value="tareaRecurrente.CantidadEjecuciones" />
+                                             @bind-Value="tareaRecurrente.CantidadEjecuciones"
+                                             disabled="@tareaRecurrente.Recurrente" />
                             </div>
                         </div>
 
@@ -153,6 +166,24 @@
     private string titulo = string.Empty;
     private string btnTexto = string.Empty;
     public bool isSaving = false;
+
+    private bool recurrente
+    {
+        get => tareaRecurrente.Recurrente;
+        set
+        {
+            tareaRecurrente.Recurrente = value;
+            if (value)
+            {
+                tareaRecurrente.CantidadEjecuciones = 1;
+                CalcularTiempoEjecucion();
+            }
+            else
+            {
+                CalcularTiempoEjecucion();
+            }
+        }
+    }
 
     private TareasRecurrentesDTO tareaRecurrente = new TareasRecurrentesDTO();
 
@@ -222,19 +253,13 @@
     private string horaDesdeInput
     {
         get => tareaRecurrente.HoraDesde.ToString("HH:mm:ss");
-        set
-        {
-            _ = SetHoraDesdeInputAsync(value);
-        }
+        set => _ = SetHoraDesdeInputAsync(value);
     }
 
     private string horaHastaInput
     {
         get => tareaRecurrente.HorasHasta.ToString("HH:mm:ss");
-        set
-        {
-            _ = SetHoraHastaInputAsync(value);
-        }
+        set => _ = SetHoraHastaInputAsync(value);
     }
 
     private async Task SetHoraDesdeInputAsync(string value)
@@ -307,7 +332,15 @@
 
     private void CalcularTiempoEjecucion()
     {
-        if (tareaRecurrente.HoraDesde != default && tareaRecurrente.HorasHasta != default)
+        if (tareaRecurrente.Recurrente)
+        {
+            if (tareaRecurrente.HoraDesde != default && tareaRecurrente.HorasHasta != default)
+            {
+                var tiempoEjecucion = (tareaRecurrente.HorasHasta - tareaRecurrente.HoraDesde).TotalMinutes;
+                tareaRecurrente.TiempoEjecucion = (int)tiempoEjecucion;
+            }
+        }
+        else
         {
             var tiempoEjecucion = (tareaRecurrente.HorasHasta - tareaRecurrente.HoraDesde).TotalMinutes;
             tareaRecurrente.TiempoEjecucion = (int)tiempoEjecucion;

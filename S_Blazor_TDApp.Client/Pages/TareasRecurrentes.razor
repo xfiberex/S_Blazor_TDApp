@@ -98,7 +98,7 @@
                                             <span>@item.DescripcionTareaRecurr</span>
                                         }
                                     </td>
-                                    <td align="center"><span class="badge bg-@(item.Recurrente ? "success" : "secondary")">@(item.Recurrente ? "Si" : "No")</span> | @item.HoraDesde.ToString("hh:mm tt") - @item.HorasHasta.ToString("hh:mm tt")</td>
+                                    <td><span class="badge bg-@(item.Recurrente ? "success" : "secondary")">@(item.Recurrente ? "Si" : "No")</span> | @item.HoraDesde.ToString("hh:mm tt") - @item.HorasHasta.ToString("hh:mm tt")</td>
                                     <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion) - @ConvertirCantidadEjecuciones(item.CantidadEjecuciones)</td>
                                     <td align="center"><span class="badge bg-@(item.Estado ? "primary" : "warning")">@(item.Estado ? "Habilitada" : "Deshabilitada")</span></td>
                                     <td>
@@ -243,6 +243,7 @@
     }
 
     // Se llama cuando el usuario escribe en el input de "Tasks"
+
     private void OnSearchTermChanged(ChangeEventArgs e)
     {
         // Actualiza la variable con el texto del usuario
@@ -309,6 +310,7 @@
     }
 
     // Metodos de paginación
+
     private void UpdatePagedTasks()
     {
         pagedTasks = filteredTasks
