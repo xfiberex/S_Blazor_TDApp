@@ -18,6 +18,10 @@ public partial class Usuario
 
     public DateTime? FechaActualizacion { get; set; }
 
+    public string Codigo { get; set; } = null!;
+
+    public string NombreCompleto { get; set; } = null!;
+
     public virtual ICollection<RegistroProceso> RegistroProcesos { get; set; } = new List<RegistroProceso>();
 
     public virtual Rol IdRolNavigation { get; set; } = null!;

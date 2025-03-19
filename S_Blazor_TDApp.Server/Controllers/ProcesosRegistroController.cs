@@ -142,26 +142,29 @@ namespace S_Blazor_TDApp.Server.Controllers
         public async Task<IActionResult> Guardar(RegistroProcesoDTO registroProcesosDTO)
         {
             var responseApi = new ResponseAPI<int>();
+
             try
             {
-                // Mapea y guarda el registro del proceso
                 var procesoEntity = _mapper.Map<RegistroProceso>(registroProcesosDTO);
+
                 _context.RegistroProcesos.Add(procesoEntity);
-
-                // Actualiza la fecha de renovación en la tarea asociada
-                var tarea = await _context.TareasRecurrentes
-                             .FirstOrDefaultAsync(t => t.TareaRecurrId == registroProcesosDTO.TareaRecurrId);
-                if (tarea != null)
-                {
-                    tarea.FechaUltimaRenovacion = DateTime.Now;
-                    // Opcional: Si la tarea estaba expirada, se puede reactivar.
-                    tarea.Estado = true;
-                }
-
                 await _context.SaveChangesAsync();
 
                 if (procesoEntity.ProcesoId != 0)
                 {
+                    // Actualizar la tarea recurrente asociada para renovar su expiración.
+                    var tarea = await _context.TareasRecurrentes
+                                              .FirstOrDefaultAsync(t => t.TareaRecurrId == registroProcesosDTO.TareaRecurrId);
+
+                    if (tarea != null && tarea.Recurrente)
+                    {
+                        // Se renueva la expiración: se actualiza la fecha de última renovación 
+                        // y se marca el estado de expiración como activo (según la lógica de negocio, true = renovada).
+                        tarea.FechaUltimaRenovacion = DateTime.Now;
+                        tarea.EstadoExpiracion = true;
+                        await _context.SaveChangesAsync();
+                    }
+
                     responseApi.EsCorrecto = true;
                     responseApi.Valor = procesoEntity.ProcesoId;
                 }

@@ -18,17 +18,17 @@
                     <h5 class="mb-0"><i class="bi bi-calendar-event me-2"></i>@titulo</h5>
                 </div>
                 <div class="card-body">
-                    <EditForm Model="tareaCalendario" OnValidSubmit="OnValidSubmit">
+                    <EditForm Model="tareaCalendario" OnValidSubmit="OnValidSubmit" Context="editContext">
                         <DataAnnotationsValidator />
-
-                        @if (context.GetValidationMessages().Any())
+                        @if (editContext.GetValidationMessages().Any())
                         {
                             <div class="alert alert-danger mb-3">
-                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                                <h5 class="alert-heading">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios
+                                </h5>
                                 <ValidationSummary />
                             </div>
                         }
-
                         <!-- Nombre de tarea -->
                         <div class="mb-3">
                             <label for="nombreTareaCal" class="form-label">Nombre</label>
@@ -39,7 +39,6 @@
                                            @bind-Value="tareaCalendario.NombreTarea" />
                             </div>
                         </div>
-
                         <!-- Descripción -->
                         <div class="mb-3">
                             <label for="descripcion" class="form-label">Descripción</label>
@@ -50,7 +49,6 @@
                                                @bind-Value="tareaCalendario.DescripcionTarea" />
                             </div>
                         </div>
-
                         <!-- Estado de la tarea -->
                         <div class="mb-3">
                             <label for="estado" class="form-label">Estado</label>
@@ -62,7 +60,6 @@
                                 </InputSelect>
                             </div>
                         </div>
-
                         <!-- Fecha de la tarea -->
                         <div class="mb-3">
                             <label for="fecha" class="form-label">Fecha</label>
@@ -71,8 +68,7 @@
                                 <InputDate id="fecha" class="form-control" @bind-Value="tareaCalendario.Fecha" />
                             </div>
                         </div>
-
-                        <!-- Entrada de la hora completa -->
+                        <!-- Hora -->
                         <div class="mb-3">
                             <label for="hora" class="form-label">Hora</label>
                             <div class="input-group">
@@ -80,7 +76,6 @@
                                 <InputText id="hora" type="time" class="form-control" step="1" @bind-Value="horaInput" />
                             </div>
                         </div>
-
                         <!-- Botones -->
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-primary" disabled="@isSaving">
@@ -88,20 +83,16 @@
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                 }
-                                else
+                                else if (btnTexto == "Guardar")
                                 {
-                                    @if (btnTexto == "Guardar")
-                                    {
-                                        <i class="bi bi-save me-2"></i>
-                                    }
-                                    else if (btnTexto == "Actualizar")
-                                    {
-                                        <i class="bi bi-pencil-square me-2"></i>
-                                    }
+                                    <i class="bi bi-save me-2"></i>
+                                }
+                                else if (btnTexto == "Actualizar")
+                                {
+                                    <i class="bi bi-pencil-square me-2"></i>
                                 }
                                 @btnTexto
                             </button>
-
                             <a class="btn btn-outline-secondary" href="/tareasCalendario">
                                 <i class="bi bi-arrow-left me-2"></i>Volver a la lista
                             </a>
@@ -118,6 +109,7 @@
     [Parameter]
     public int IdTareaCalendarioEditar { get; set; } = 0;
 
+    private EditContext editContext = null!;
     private string titulo = string.Empty;
     private string btnTexto = string.Empty;
     public bool isSaving = false;
@@ -139,6 +131,7 @@
                 btnTexto = "Guardar";
                 titulo = "Nueva tarea de calendario";
             }
+            editContext = new EditContext(tareaCalendario);
         }
         catch (Exception ex)
         {
@@ -156,16 +149,9 @@
         isSaving = true;
         try
         {
-            int idDevuelto = 0;
-
-            if (IdTareaCalendarioEditar == 0)
-            {
-                idDevuelto = await TareaCalendarioService.Guardar(tareaCalendario);
-            }
-            else
-            {
-                idDevuelto = await TareaCalendarioService.Editar(tareaCalendario);
-            }
+            int idDevuelto = (IdTareaCalendarioEditar == 0)
+                ? await TareaCalendarioService.Guardar(tareaCalendario)
+                : await TareaCalendarioService.Editar(tareaCalendario);
 
             if (idDevuelto != 0)
             {
@@ -190,10 +176,7 @@
     private string horaInput
     {
         get => tareaCalendario.Hora.ToString("HH:mm:ss");
-        set
-        {
-            _ = SetHoraInputAsync(value);
-        }
+        set => _ = SetHoraInputAsync(value);
     }
 
     private async Task SetHoraInputAsync(string value)

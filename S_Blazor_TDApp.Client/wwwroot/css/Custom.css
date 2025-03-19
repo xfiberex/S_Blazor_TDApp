@@ -149,7 +149,7 @@ code {
 }
 
 .sidebar.collapsed .bi-arrow-bar-right {
-    transform: rotate(180deg);
+    transform: rotate(0deg);
 }
 
 /* Animación para el hover en modo colapsado */

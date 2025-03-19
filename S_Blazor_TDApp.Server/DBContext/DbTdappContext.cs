@@ -34,7 +34,7 @@ public partial class DbTdappContext : DbContext
     {
         modelBuilder.Entity<DiasDisponible>(entity =>
         {
-            entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C76F3466B15");
+            entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C769386BFF9");
 
             entity.ToTable("Dias_Disponibles");
 
@@ -43,7 +43,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<RegistroProceso>(entity =>
         {
-            entity.HasKey(e => e.ProcesoId).HasName("PK__Registro__1C00FFD0A8B349D5");
+            entity.HasKey(e => e.ProcesoId).HasName("PK__Registro__1C00FFD04C611B91");
 
             entity.ToTable("Registro_Procesos");
 
@@ -65,7 +65,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<Rol>(entity =>
         {
-            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F146F08C8A");
+            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F1E5C6894E");
 
             entity.ToTable("Rol");
 
@@ -80,7 +80,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareaDia>(entity =>
         {
-            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D8D9A06111");
+            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D89DDB3DCF");
 
             entity.ToTable("Tarea_Dias");
 
@@ -97,7 +97,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareasCalendario>(entity =>
         {
-            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD8399198BF4AFB");
+            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD839916998F010");
 
             entity.ToTable("Tareas_Calendario");
 
@@ -110,32 +110,35 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareasRecurrente>(entity =>
         {
-            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1A55B7B91");
+            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1ABC043B1");
 
             entity.ToTable("Tareas_Recurrentes");
 
             entity.Property(e => e.DescripcionTareaRecurr).HasMaxLength(100);
             entity.Property(e => e.Estado).HasDefaultValue(true);
+            entity.Property(e => e.EstadoExpiracion).HasDefaultValue(true);
+            entity.Property(e => e.FechaUltimaRenovacion)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.HoraDesde).HasColumnType("datetime");
             entity.Property(e => e.HorasHasta).HasColumnType("datetime");
             entity.Property(e => e.NombreTareaRecurr).HasMaxLength(100);
             entity.Property(e => e.Recurrente).HasDefaultValue(true);
-            entity.Property(e => e.FechaUltimaRenovacion)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8DB60C54E");
+            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8593507B6");
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Clave).HasMaxLength(255);
+            entity.Property(e => e.Codigo).HasMaxLength(100);
             entity.Property(e => e.Email).HasMaxLength(150);
             entity.Property(e => e.FechaActualizacion).HasColumnType("datetime");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.NombreCompleto).HasMaxLength(100);
             entity.Property(e => e.NombreUsuario).HasMaxLength(100);
 
             entity.HasOne(d => d.IdRolNavigation).WithMany(p => p.Usuarios)

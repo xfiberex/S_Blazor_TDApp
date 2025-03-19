@@ -8,7 +8,6 @@
 @inject ITareaRecurrenteService TareaRecurrenteService
 
 <div class="container-fluid mt-4">
-
     @if (isLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
@@ -16,12 +15,6 @@
                 <span class="visually-hidden"></span>
             </div>
             <label>Cargando tareas recurrentes...</label>
-        </div>
-    }
-    else if (listaTareasRecurrentes == null || listaTareasRecurrentes.Count == 0)
-    {
-        <div class="alert alert-info shadow-sm">
-            <i class="bi bi-info-circle me-2"></i>No se encontraron tareas recurrentes.
         </div>
     }
     else
@@ -38,16 +31,13 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control" placeholder="Buscar..."
-                                   @oninput="OnSearchTermChanged"
-                                   value="@searchTerm" />
-
+                                   @oninput="OnSearchTermChanged" value="@searchTerm" />
                             @if (!string.IsNullOrEmpty(searchTerm))
                             {
                                 <button class="btn btn-outline-secondary" @onclick="ClearSearch">
                                     <i class="bi bi-x"></i>
                                 </button>
                             }
-
                         </div>
                     </div>
                     <div class="col-auto">
@@ -57,85 +47,119 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Recurrente | Desde - Hasta</th>
-                                <th>Tiemp - Eje</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in pagedTasks)
-                            {
+
+            @if (listaTareasRecurrentes is null || !listaTareasRecurrentes.Any())
+            {
+                <div class="alert alert-info shadow-sm m-3">
+                    <i class="bi bi-info-circle me-2"></i>No se encontraron tareas recurrentes.
+                    Presione el botón verde <b>"Nueva"</b> para crearla.
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>@item.NombreTareaRecurr</td>
-                                    <td>
-                                        @if (item.DescripcionTareaRecurr.Length > 35)
-                                        {
-                                            @if (item.ShowFullDescription)
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Recurrente | Desde - Hasta</th>
+                                    <th>Tiemp - Eje</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in pagedTasks)
+                                {
+                                    <tr>
+                                        <td>@item.NombreTareaRecurr</td>
+                                        <td>
+                                            @if (item.DescripcionTareaRecurr.Length > 35)
                                             {
-                                                <textarea class="form-control slide-down" rows="3" @bind="item.DescripcionTareaRecurr" readonly></textarea>
-                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
-                                                    <i class="bi bi-eye-slash"></i>
-                                                </button>
+                                                @if (item.ShowFullDescription)
+                                                {
+                                                    <textarea class="form-control slide-down" rows="3" @bind="item.DescripcionTareaRecurr" readonly></textarea>
+                                                    <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                        <i class="bi bi-eye-slash"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span>@item.DescripcionTareaRecurr.Substring(0, 35) ...</span>
+                                                    <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                }
                                             }
                                             else
                                             {
-                                                <span>@item.DescripcionTareaRecurr.Substring(0, 35) ...</span>
-                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
+                                                <span>@item.DescripcionTareaRecurr</span>
                                             }
-                                        }
-                                        else
-                                        {
-                                            <span>@item.DescripcionTareaRecurr</span>
-                                        }
-                                    </td>
-                                    <td><span class="badge bg-@(item.Recurrente ? "success" : "secondary")">@(item.Recurrente ? "Si" : "No")</span> | @item.HoraDesde.ToString("hh:mm tt") - @item.HorasHasta.ToString("hh:mm tt")</td>
-                                    <td align="center">@ConvertirTiempoEjecucion(item.TiempoEjecucion) - @ConvertirCantidadEjecuciones(item.CantidadEjecuciones)</td>
-                                    <td align="center"><span class="badge bg-@(item.Estado ? "primary" : "warning")">@(item.Estado ? "Habilitada" : "Deshabilitada")</span></td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a class="btn btn-outline-primary btn-sm" href="/tareaRecurrente/@item.TareaRecurrId" title="Editar">
-                                                <i class="bi bi-pencil-fill"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="(() => Eliminar(item.TareaRecurrId, item.DescripcionTareaRecurr!))" title="Eliminar">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@(item.Recurrente ? "success" : "secondary")">
+                                                @(item.Recurrente ? "Si" : "No")
+                                            </span>
+                                            | @item.HoraDesde.ToString("hh:mm tt") - @item.HorasHasta.ToString("hh:mm tt")
+                                        </td>
+                                        <td>
+                                            @ConvertirTiempoEjecucion(item.TiempoEjecucion) - @ConvertirCantidadEjecuciones(item.CantidadEjecuciones)
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@(item.Estado ? "primary" : "warning")">
+                                                @(item.Estado ? "Habilitada" : "Deshabilitada")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a class="btn btn-outline-primary btn-sm" href="/tareaRecurrente/@item.TareaRecurrId" title="Editar">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" @onclick="() => Eliminar(item.TareaRecurrId, item.DescripcionTareaRecurr)" title="Eliminar">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            }
+
             <div class="card-footer text-muted">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <label>Mostrar: </label>
-                        <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
-                            @foreach (var option in pageSizeOptions)
-                            {
-                                <option value="@option" selected="@(option == pageSize)">@option</option>
-                            }
-                        </select>
-                        usuarios de @filteredTasks.Count en total
-                    </div>
-                    <div>
-                        <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
-                        <span class="mx-2">
-                            Página @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
-                        </span>
-                        <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredTasks.Count)">Siguiente</button>
-                    </div>
+                    @if (filteredTasks.Count > 10)
+                    {
+                        <div>
+                            <label>Mostrar: </label>
+                            <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
+                                @foreach (var option in pageSizeOptions)
+                                {
+                                    <option value="@option" selected="@(option == pageSize)">@option</option>
+                                }
+                            </select>
+                            tareas de @filteredTasks.Count en total
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
+                            <span class="mx-2">
+                                Página @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
+                            </span>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredTasks.Count)">Siguiente</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <label>
+                                <b>@filteredTasks.Count</b> registros encontrados. Si hay mas de 10, se filtrará y paginará según la cantidad seleccionada.
+                            </label>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -144,21 +168,19 @@
 </div>
 
 @code {
-    private List<TareasRecurrentesDTO> listaTareasRecurrentes = new List<TareasRecurrentesDTO>();
-    private List<TareasRecurrentesDTO> filteredTasks = new List<TareasRecurrentesDTO>();
-    private List<TareasRecurrentesDTO> pagedTasks = new List<TareasRecurrentesDTO>();
+    private List<TareasRecurrentesDTO> listaTareasRecurrentes = new();
+    private List<TareasRecurrentesDTO> filteredTasks = new();
+    private List<TareasRecurrentesDTO> pagedTasks = new();
 
     private bool isLoading = true;
     private string searchTerm = "";
-    private TareasRecurrentesDTO? expandedItem = null; // Nueva propiedad para rastrear el elemento expandido
+    private TareasRecurrentesDTO? expandedItem = null;
 
-    // Timers para el debounce o delay en la búsqueda
     private System.Threading.Timer? _searchTimerTasks;
 
-    // Parámetros de paginación
     private int currentPage = 1;
     private int pageSize = 10;
-    private int[] pageSizeOptions = new int[] { 10, 15, 20 };
+    private readonly int[] pageSizeOptions = { 10, 15, 20 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -206,8 +228,7 @@
         {
             try
             {
-                var deletionResult = await TareaRecurrenteService.Eliminar(id);
-                if (deletionResult)
+                if (await TareaRecurrenteService.Eliminar(id))
                 {
                     listaTareasRecurrentes.RemoveAll(u => u.TareaRecurrId == id);
                     FilterTasks();
@@ -242,20 +263,12 @@
         expandedItem = item.ShowFullDescription ? item : null;
     }
 
-    // Se llama cuando el usuario escribe en el input de "Tasks"
-
     private void OnSearchTermChanged(ChangeEventArgs e)
     {
-        // Actualiza la variable con el texto del usuario
         searchTerm = e.Value?.ToString() ?? string.Empty;
-
-        // Si el timer ya existe, lo descartamos (reiniciamos el conteo)
         _searchTimerTasks?.Dispose();
-
-        // Iniciamos un nuevo timer con 500ms (medio segundo) de delay
         _searchTimerTasks = new System.Threading.Timer(_ =>
         {
-            // Llamamos al método de filtrado en el hilo de Blazor
             InvokeAsync(() =>
             {
                 FilterTasks();
@@ -266,17 +279,13 @@
 
     private void FilterTasks()
     {
-        if (string.IsNullOrWhiteSpace(searchTerm))
-        {
-            filteredTasks = listaTareasRecurrentes;
-        }
-        else
-        {
-            filteredTasks = listaTareasRecurrentes.Where(t =>
+        filteredTasks = string.IsNullOrWhiteSpace(searchTerm)
+            ? listaTareasRecurrentes
+            : listaTareasRecurrentes.Where(t =>
                 t.NombreTareaRecurr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                 t.DescripcionTareaRecurr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
-        }
+              ).ToList();
+        currentPage = 1;
         UpdatePagedTasks();
     }
 
@@ -288,15 +297,15 @@
 
     private string ConvertirTiempoEjecucion(int minutos)
     {
-        if (minutos >= 1440) // 1440 minutos en un día
+        if (minutos >= 1440)
         {
             int dias = minutos / 1440;
-            return $"{dias} día";
+            return $"{dias} {(dias > 1 ? "días" : "día")}";
         }
-        else if (minutos >= 60) // 60 minutos en una hora
+        else if (minutos >= 60)
         {
             int horas = minutos / 60;
-            return $"{horas} hora";
+            return $"{horas} {(horas > 1 ? "horas" : "hora")}";
         }
         else
         {
@@ -308,8 +317,6 @@
     {
         return cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
     }
-
-    // Metodos de paginación
 
     private void UpdatePagedTasks()
     {

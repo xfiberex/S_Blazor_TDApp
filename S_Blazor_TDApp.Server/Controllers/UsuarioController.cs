@@ -79,6 +79,29 @@ namespace S_Blazor_TDApp.Server.Controllers
             return Ok(responseApi);
         }
 
+        [HttpGet]
+        [Route("ExisteCodigo/{codigo}")]
+        public async Task<IActionResult> ExisteCodigo(string codigo)
+        {
+            var responseApi = new ResponseAPI<bool>();
+
+            try
+            {
+                // Se verifica si existe algún usuario con el código proporcionado.
+                bool existe = await _context.Usuarios.AnyAsync(u => u.Codigo == codigo);
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = existe;
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+                return BadRequest(responseApi);
+            }
+
+            return Ok(responseApi);
+        }
+
         [HttpPost]
         [Route("Guardar")]
         public async Task<IActionResult> Guardar(UsuarioDTO usuarioDTO)

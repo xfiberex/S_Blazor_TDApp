@@ -18,26 +18,26 @@
                     <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>@titulo</h5>
                 </div>
                 <div class="card-body">
-                    <EditForm Model="tareaRecurrente" OnValidSubmit="OnValidSubmit">
+                    <EditForm Model="tareaRecurrente" OnValidSubmit="OnValidSubmit" Context="editContext">
                         <DataAnnotationsValidator />
-
-                        @if (context.GetValidationMessages().Any())
+                        @if (editContext.GetValidationMessages().Any())
                         {
                             <div class="alert alert-danger shadow-sm mb-3">
-                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                                <h5 class="alert-heading">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios
+                                </h5>
                                 <ValidationSummary />
                             </div>
                         }
                         else
                         {
                             <div class="alert alert-info shadow-sm mb-3">
-                                <h6 class="alert-heading"><i class="bi bi-info-circle me-1"></i>
-                                    Si una tarea <b>no es recurrente,</b> el tiempo existente pasará a ser un intervalo de tiempo específico y
-                                    estará disponible únicamente durante ese período en la sección de procesos.
+                                <h6 class="alert-heading">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Si una tarea <b>no es recurrente,</b> el tiempo existente pasará a ser un intervalo específico y estará disponible solo durante ese período en la sección de procesos.
                                 </h6>
                             </div>
                         }
-
                         <!-- Nombre de tarea -->
                         <div class="mb-3">
                             <label for="nombreTareaRecurr" class="form-label">Nombre</label>
@@ -48,7 +48,6 @@
                                            @bind-Value="tareaRecurrente.NombreTareaRecurr" />
                             </div>
                         </div>
-
                         <!-- Descripción -->
                         <div class="mb-3">
                             <label for="descripcionTareaRecurr" class="form-label">Descripción</label>
@@ -59,8 +58,7 @@
                                                @bind-Value="tareaRecurrente.DescripcionTareaRecurr" />
                             </div>
                         </div>
-
-                        <!-- Recurrencia de la tarea -->
+                        <!-- Recurrencia -->
                         <div class="mb-3">
                             <label for="recurrente" class="form-label">Recurrente</label>
                             <div class="input-group">
@@ -71,7 +69,6 @@
                                 </InputSelect>
                             </div>
                         </div>
-
                         <!-- Hora Desde -->
                         <div class="mb-3">
                             <label for="horaDesde" class="form-label">Hora Desde</label>
@@ -81,7 +78,6 @@
                                            @bind-Value="horaDesdeInput" />
                             </div>
                         </div>
-
                         <!-- Hora Hasta -->
                         <div class="mb-3">
                             <label for="horaHasta" class="form-label">Hora Hasta</label>
@@ -91,8 +87,7 @@
                                            @bind-Value="horaHastaInput" />
                             </div>
                         </div>
-
-                        <!-- Tiempo de ejecución (siempre calculado y no modificable) -->
+                        <!-- Tiempo de ejecución -->
                         <div class="mb-3">
                             <label for="tiempoEjecucion" class="form-label">Tiempo de Ejecución</label>
                             <div class="input-group">
@@ -101,7 +96,6 @@
                                              @bind-Value="tareaRecurrente.TiempoEjecucion" disabled />
                             </div>
                         </div>
-
                         <!-- Cantidad de ejecución -->
                         <div class="mb-3">
                             <label for="cantidadEjecucion" class="form-label">Cantidad de Ejecución</label>
@@ -113,7 +107,6 @@
                                              disabled="@tareaRecurrente.Recurrente" />
                             </div>
                         </div>
-
                         <!-- Estado de la tarea -->
                         <div class="mb-3">
                             <label for="estado" class="form-label">Estado</label>
@@ -125,7 +118,6 @@
                                 </InputSelect>
                             </div>
                         </div>
-
                         <!-- Botones -->
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-primary" disabled="@isSaving">
@@ -133,20 +125,16 @@
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                 }
-                                else
+                                else if (btnTexto == "Guardar")
                                 {
-                                    @if (btnTexto == "Guardar")
-                                    {
-                                        <i class="bi bi-save me-2"></i>
-                                    }
-                                    else if (btnTexto == "Actualizar")
-                                    {
-                                        <i class="bi bi-pencil-square me-2"></i>
-                                    }
+                                    <i class="bi bi-save me-2"></i>
+                                }
+                                else if (btnTexto == "Actualizar")
+                                {
+                                    <i class="bi bi-pencil-square me-2"></i>
                                 }
                                 @btnTexto
                             </button>
-
                             <a class="btn btn-outline-secondary" href="/tareasRecurrentes">
                                 <i class="bi bi-arrow-left me-2"></i>Volver a la lista
                             </a>
@@ -163,9 +151,12 @@
     [Parameter]
     public int IdTareaRecurrenteEditar { get; set; } = 0;
 
+    private EditContext editContext = null!;
     private string titulo = string.Empty;
     private string btnTexto = string.Empty;
     public bool isSaving = false;
+
+    private TareasRecurrentesDTO tareaRecurrente = new TareasRecurrentesDTO();
 
     private bool recurrente
     {
@@ -173,19 +164,11 @@
         set
         {
             tareaRecurrente.Recurrente = value;
-            if (value)
-            {
-                tareaRecurrente.CantidadEjecuciones = 1;
-                CalcularTiempoEjecucion();
-            }
-            else
-            {
-                CalcularTiempoEjecucion();
-            }
+            // Si es recurrente, se fija la cantidad de ejecuciones en 1 por defecto.
+            tareaRecurrente.CantidadEjecuciones = value ? 1 : tareaRecurrente.CantidadEjecuciones;
+            CalcularTiempoEjecucion();
         }
     }
-
-    private TareasRecurrentesDTO tareaRecurrente = new TareasRecurrentesDTO();
 
     protected override async Task OnInitializedAsync()
     {
@@ -202,6 +185,7 @@
                 btnTexto = "Guardar";
                 titulo = "Nueva tarea recurrente";
             }
+            editContext = new EditContext(tareaRecurrente);
         }
         catch (Exception ex)
         {
@@ -219,16 +203,9 @@
         isSaving = true;
         try
         {
-            int idDevuelto = 0;
-
-            if (IdTareaRecurrenteEditar == 0)
-            {
-                idDevuelto = await TareaRecurrenteService.Guardar(tareaRecurrente);
-            }
-            else
-            {
-                idDevuelto = await TareaRecurrenteService.Editar(tareaRecurrente);
-            }
+            int idDevuelto = (IdTareaRecurrenteEditar == 0)
+                ? await TareaRecurrenteService.Guardar(tareaRecurrente)
+                : await TareaRecurrenteService.Editar(tareaRecurrente);
 
             if (idDevuelto != 0)
             {
@@ -276,21 +253,12 @@
                 throw new FormatException("El formato de la hora debe ser 'HH:mm:ss'.");
             }
         }
-        catch (FormatException ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error de formato",
-                    Text = ex.Message,
-                    Icon = SweetAlertIcon.Error
-                });
-        }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
                 {
                     Title = "Error",
-                    Text = $"Ha ocurrido un error al guardar la hora desde: {ex.Message}",
+                    Text = ex.Message,
                     Icon = SweetAlertIcon.Error
                 });
         }
@@ -310,21 +278,12 @@
                 throw new FormatException("El formato de la hora debe ser 'HH:mm:ss'.");
             }
         }
-        catch (FormatException ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error de formato",
-                    Text = ex.Message,
-                    Icon = SweetAlertIcon.Error
-                });
-        }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
                 {
                     Title = "Error",
-                    Text = $"Ha ocurrido un error al guardar la hora hasta: {ex.Message}",
+                    Text = ex.Message,
                     Icon = SweetAlertIcon.Error
                 });
         }
@@ -332,18 +291,10 @@
 
     private void CalcularTiempoEjecucion()
     {
-        if (tareaRecurrente.Recurrente)
+        if (tareaRecurrente.HoraDesde != default && tareaRecurrente.HorasHasta != default)
         {
-            if (tareaRecurrente.HoraDesde != default && tareaRecurrente.HorasHasta != default)
-            {
-                var tiempoEjecucion = (tareaRecurrente.HorasHasta - tareaRecurrente.HoraDesde).TotalMinutes;
-                tareaRecurrente.TiempoEjecucion = (int)tiempoEjecucion;
-            }
-        }
-        else
-        {
-            var tiempoEjecucion = (tareaRecurrente.HorasHasta - tareaRecurrente.HoraDesde).TotalMinutes;
-            tareaRecurrente.TiempoEjecucion = (int)tiempoEjecucion;
+            var diffMinutes = (tareaRecurrente.HorasHasta - tareaRecurrente.HoraDesde).TotalMinutes;
+            tareaRecurrente.TiempoEjecucion = (int)diffMinutes;
         }
     }
 }

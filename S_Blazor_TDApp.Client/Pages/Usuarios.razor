@@ -8,7 +8,6 @@
 @inject IUsuarioService UsuarioService
 
 <div class="container-fluid mt-4">
-
     @if (isLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
@@ -16,12 +15,6 @@
                 <span class="visually-hidden"></span>
             </div>
             <label>Cargando usuarios registrados...</label>
-        </div>
-    }
-    else if (listaUsuarios == null || listaUsuarios.Count == 0)
-    {
-        <div class="alert alert-info shadow-sm">
-            <i class="bi bi-info-circle me-2"></i>No se encontraron usuarios.
         </div>
     }
     else
@@ -38,9 +31,7 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control" placeholder="Buscar..."
-                                   @oninput="OnSearchTermChanged"
-                                   value="@searchTerm" />
-
+                                   @oninput="OnSearchTermChanged" value="@searchTerm" />
                             @if (!string.IsNullOrEmpty(searchTerm))
                             {
                                 <button class="btn btn-outline-secondary" @onclick="ClearSearch">
@@ -56,69 +47,100 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Usuario</th>
-                                <th>Correo</th>
-                                <th>Rol</th>
-                                <th>Estado</th>
-                                <th>Creación</th>
-                                <th>Actualización</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in pagedUsers)
-                            {
-                                <tr>
-                                    <td>@item.NombreUsuario</td>
-                                    <td>@item.Email</td>
-                                    <td>@item.Rol?.NombreRol</td>
-                                    <td>
-                                        <span class="badge bg-@(item.Activo ? "success" : "danger")">
-                                            @(item.Activo ? "Habilitado" : "Deshabilitado")
-                                        </span>
-                                    </td>
-                                    <td>@item.FechaCreacion.ToString("dd/MM/yyyy - hh:mm tt")</td>
-                                    <td>@(item.FechaActualizacion.HasValue ? item.FechaActualizacion.Value.ToString("dd/MM/yyyy - hh:mm tt") : "Nunca")</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a class="btn btn-outline-primary btn-sm" href="/usuario/@item.UsuarioId" title="Editar">
-                                                <i class="bi bi-pencil-fill"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="(() => Eliminar(item.UsuarioId, item.NombreUsuario))" title="Eliminar">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+
+            @if (listaUsuarios is null || !listaUsuarios.Any())
+            {
+                <div class="alert alert-info shadow-sm m-3">
+                    <i class="bi bi-info-circle me-2"></i>No se encontraron usuarios. Presione el botón verde <b>"Nuevo"</b> para crearlo.
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Codigo</th>
+                                    <th>Usuario</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th>Creación</th>
+                                    <th>Actualización</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in pagedUsers)
+                                {
+                                    <tr>
+                                        <td>@item.UsuarioId</td>
+                                        <td>@item.Codigo</td>
+                                        <td>@item.NombreUsuario</td>
+                                        <td>@item.NombreCompleto</td>
+                                        <td>@item.Email</td>
+                                        <td>@item.Rol?.NombreRol</td>
+                                        <td>
+                                            <span class="badge bg-@(item.Activo ? "success" : "danger")">
+                                                @(item.Activo ? "Habilitado" : "Deshabilitado")
+                                            </span>
+                                        </td>
+                                        <td>@item.FechaCreacion.ToString("dd/MM/yyyy - hh:mm tt")</td>
+                                        <td>@(item.FechaActualizacion.HasValue ? item.FechaActualizacion.Value.ToString("dd/MM/yyyy - hh:mm tt") : "Nunca")</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a class="btn btn-outline-primary btn-sm" href="/usuario/@item.UsuarioId" title="Editar">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                                        @onclick="(() => Eliminar(item.UsuarioId, item.NombreUsuario))" title="Eliminar">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
             <div class="card-footer text-muted">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <label>Mostrar: </label>
-                        <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
-                            @foreach (var option in pageSizeOptions)
-                            {
-                                <option value="@option" selected="@(option == pageSize)">@option</option>
-                            }
-                        </select>
-                        usuarios de @filteredUsers.Count en total
-                    </div>
-                    <div>
-                        <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
-                        <span class="mx-2">
-                            Página @currentPage de @Math.Ceiling((double)filteredUsers.Count / pageSize)
-                        </span>
-                        <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredUsers.Count)">Siguiente</button>
-                    </div>
+                    @if (filteredUsers.Count > 10)
+                    {
+                        <div>
+                            <label>Mostrar: </label>
+                            <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
+                                @foreach (var option in pageSizeOptions)
+                                {
+                                    <option value="@option" selected="@(option == pageSize)">
+                                        @option
+                                    </option>
+                                }
+                            </select>
+                            usuarios de @filteredUsers.Count en total
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
+                            <span class="mx-2">
+                                Página @currentPage de @Math.Ceiling((double)filteredUsers.Count / pageSize)
+                            </span>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredUsers.Count)">Siguiente</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <label>
+                                <b>@filteredUsers.Count</b> registros encontrados. Si hay mas de 10, se filtrará y paginará según la cantidad seleccionada.
+                            </label>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -127,9 +149,9 @@
 </div>
 
 @code {
-    private List<UsuarioDTO> listaUsuarios = new List<UsuarioDTO>();
-    private List<UsuarioDTO> filteredUsers = new List<UsuarioDTO>();
-    private List<UsuarioDTO> pagedUsers = new List<UsuarioDTO>();
+    private List<UsuarioDTO> listaUsuarios = new();
+    private List<UsuarioDTO> filteredUsers = new();
+    private List<UsuarioDTO> pagedUsers = new();
 
     private bool isLoading = true;
     private string searchTerm = "";
@@ -137,10 +159,10 @@
     // Parámetros de paginación
     private int currentPage = 1;
     private int pageSize = 10;
-    private int[] pageSizeOptions = new int[] { 10, 15, 20 };
+    private readonly int[] pageSizeOptions = { 10, 15, 20 };
 
-    // Timers para el debounce o delay en la búsqueda
-    private System.Threading.Timer? _searchTimerTasks;
+    // Timer para el debounce en la búsqueda
+    private System.Threading.Timer? _searchTimer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -189,10 +211,8 @@
         {
             try
             {
-                var deletionResult = await UsuarioService.Eliminar(id);
-                if (deletionResult)
+                if (await UsuarioService.Eliminar(id))
                 {
-                    // Actualiza la lista global y vuelve a aplicar el filtrado y la paginación.
                     listaUsuarios.RemoveAll(u => u.UsuarioId == id);
                     FilterUsers();
                     await SwalService.FireAsync(new SweetAlertOptions
@@ -215,19 +235,12 @@
         }
     }
 
-    // Se llama cuando el usuario escribe en el input de "Tasks"
     private void OnSearchTermChanged(ChangeEventArgs e)
     {
-        // Actualiza la variable con el texto del usuario
         searchTerm = e.Value?.ToString() ?? string.Empty;
-
-        // Si el timer ya existe, lo descartamos (reiniciamos el conteo)
-        _searchTimerTasks?.Dispose();
-
-        // Iniciamos un nuevo timer con 500ms (medio segundo) de delay
-        _searchTimerTasks = new System.Threading.Timer(_ =>
+        _searchTimer?.Dispose();
+        _searchTimer = new System.Threading.Timer(_ =>
         {
-            // Llamamos al método de filtrado en el hilo de Blazor
             InvokeAsync(() =>
             {
                 FilterUsers();
@@ -238,19 +251,13 @@
 
     private void FilterUsers()
     {
-        if (string.IsNullOrWhiteSpace(searchTerm))
-        {
-            filteredUsers = listaUsuarios;
-        }
-        else
-        {
-            filteredUsers = listaUsuarios.Where(u =>
+        filteredUsers = string.IsNullOrWhiteSpace(searchTerm)
+            ? listaUsuarios
+            : listaUsuarios.Where(u =>
                 u.NombreUsuario.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                (u.Email != null && u.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+                (u.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
                 (u.Rol?.NombreRol?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-        ).ToList();
-        }
-        // Reinicia a la primera página después de filtrar
+              ).ToList();
         currentPage = 1;
         UpdatePagedUsers();
     }

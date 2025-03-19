@@ -24,7 +24,7 @@ namespace S_Blazor_TDApp.Shared
                 _recurrente = value;
                 if (_recurrente)
                 {
-                    // Se asigna CantidadEjecuciones en 1 cuando la tarea es recurrente
+                    // Si la tarea es recurrente, se fuerza CantidadEjecuciones a 1
                     CantidadEjecuciones = 1;
                 }
             }
@@ -43,6 +43,8 @@ namespace S_Blazor_TDApp.Shared
         public int CantidadEjecuciones { get; set; }
 
         public bool Estado { get; set; }
+
+        public bool EstadoExpiracion { get; set; }
 
         public DateTime FechaUltimaRenovacion { get; set; } = DateTime.Now;
 

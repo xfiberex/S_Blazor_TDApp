@@ -16,7 +16,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? [];
+            return resultado.Valor ?? new List<TareasRecurrentesDTO>();
         }
 
         public async Task<List<RegistroProcesoDTO>> ListaProcesos()
@@ -27,7 +27,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? [];
+            return resultado.Valor ?? new List<RegistroProcesoDTO>();
         }
 
         public async Task<TareasRecurrentesDTO> Buscar(int id)

@@ -112,10 +112,19 @@
                                             <span> | @GetUserProcessCount(item.TareaRecurrId) de @item.CantidadEjecuciones</span>
                                         }
                                     </td>
-                                    <td align="center">
-                                        <span class="badge bg-@(item.Estado ? "success" : "danger")">
-                                            @(item.Estado ? "Renovada" : "Expirada")
-                                        </span>
+                                    <td>
+                                        @if (item.Recurrente)
+                                        {
+                                            <span class="badge bg-@(item.EstadoExpiracion ? "success" : "danger")">
+                                                @(item.EstadoExpiracion ? "Renovada" : "Expirada")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-@(GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones ? "success" : "warning")">
+                                                @(GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones ? "Completado" : "En proceso")
+                                            </span>
+                                        }
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
@@ -172,7 +181,7 @@
                     @* Filtrado por fecha *@
                     <div class="col-auto">
                         <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                            <span class="input-group-text"><i class="bi bi-calendar me-2"></i>Fecha</span>
                             <!-- Solo un input de fecha -->
                             <input type="date" class="form-control" @bind="startDate" @bind:after="FilterTasksProcess" />
                         </div>
@@ -254,12 +263,20 @@
                     {
                         <ul class="list-unstyled mt-2">
                             <li><strong>Nombre:</strong> @selectedTask.NombreTareaRecurr</li>
-                            <li><strong>Descripción:</strong> @selectedTask.DescripcionTareaRecurr</li>
                             <li><strong>Recurrente:</strong> @(selectedTask.Recurrente ? "Sí" : "No")</li>
-                            <li><strong>Desde:</strong> @selectedTask.HoraDesde.ToString("hh:mm tt")</li>
-                            <li><strong>Hasta:</strong> @selectedTask.HorasHasta.ToString("hh:mm tt")</li>
-                            <li><strong>Tiempo de Ejecución:</strong> @ConvertirTiempoEjecucion(selectedTask.TiempoEjecucion)</li>
-                            <li><strong>Estado:</strong> @(selectedTask.Estado ? "Renovada" : "Expirada")</li>
+
+                            @if (selectedTask.Recurrente)
+                            {
+                                <li><strong>Tiempo de Ejecución:</strong> cada @ConvertirTiempoEjecucion(selectedTask.TiempoEjecucion)</li>
+                            }
+                            else
+                            {
+                                <li><strong>Desde:</strong> @selectedTask.HoraDesde.ToString("hh:mm tt")</li>
+                                <li><strong>Hasta:</strong> @selectedTask.HorasHasta.ToString("hh:mm tt")</li>
+                                <li><strong>Cantidad de Ejecuciones:</strong> @GetUserProcessCount(selectedTask.TareaRecurrId) de @selectedTask.CantidadEjecuciones</li>
+                            }
+
+                            <li><strong>Estado:</strong> @(selectedTask.EstadoExpiracion ? "Renovada" : "Expirada")</li>
                         </ul>
                     }
                 </div>
@@ -279,6 +296,9 @@
 </div>
 
 @code {
+
+    #region Variables, dicionario y metodos de carga y actualización de datos
+
     // Variables que devuelven listas de datos
     private List<RegistroProcesoDTO> listaRegistroProcesos = new List<RegistroProcesoDTO>();
     private List<TareasRecurrentesDTO> listaTareasRecurrentes = new List<TareasRecurrentesDTO>();
@@ -307,7 +327,7 @@
     private Dictionary<int, int> userProcessCount = new();
     private int currentUserId = 1; // ID de usuario fijo (hasta que se implemente autenticación real)
 
-    // Método que se ejecuta al cargar la página (OnInitializedAsync se encarga de la carga inicial y de iniciar el Timer de refresco)
+    // Método que se ejecuta al cargar la página
     protected override async Task OnInitializedAsync()
     {
         await LoadTareasRecurrentes();
@@ -327,16 +347,36 @@
     // Método que refresca ambas listas (tareas y procesos) usando los servicios
     private async Task RefreshData()
     {
-        listaTareasRecurrentes = await TareaRecurrenteService.Lista();
-        filteredTasks = listaTareasRecurrentes;
+        try
+        {
+            // Actualiza la lista de tareas recurrentes, filtrando solo las habilitadas (Estado == true)
+            listaTareasRecurrentes = (await TareaRecurrenteService.Lista())
+                                        .Where(t => t.Estado)
+                                        .ToList();
+            filteredTasks = listaTareasRecurrentes;
 
-        listaRegistroProcesos = await RegistroProcesoService.ListaProcesos();
-        listaRegistroProcesos = listaRegistroProcesos.OrderByDescending(p => p.FechaRegistro).ToList();
-        filteredTasksProcess = listaRegistroProcesos;
+            // Actualiza la lista de procesos registrados ordenándolos de forma descendente por fecha
+            listaRegistroProcesos = (await RegistroProcesoService.ListaProcesos())
+                                        .OrderByDescending(p => p.FechaRegistro)
+                                        .ToList();
+            filteredTasksProcess = listaRegistroProcesos;
 
-        // Construye/actualiza el conteo de registros por tarea
-        BuildUserProcessCount();
+            // Actualiza el conteo de registros por tarea
+            BuildUserProcessCount();
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error al refrescar datos",
+                    Text = ex.Message,
+                    Icon = SweetAlertIcon.Error
+                });
+        }
     }
+
+    #endregion
+
 
     #region Métodos para cargar tareas, procesos, manejar modal y registrar procesos
 
@@ -345,7 +385,10 @@
         try
         {
             isLoading = true;
-            listaTareasRecurrentes = await TareaRecurrenteService.Lista();
+            // Filtrar solo tareas habilitadas (Estado == true)
+            listaTareasRecurrentes = (await TareaRecurrenteService.Lista())
+                                        .Where(t => t.Estado)
+                                        .ToList();
             filteredTasks = listaTareasRecurrentes;
         }
         catch (Exception ex)
@@ -369,10 +412,9 @@
         try
         {
             isLoading = true;
-            listaRegistroProcesos = await RegistroProcesoService.ListaProcesos();
-
-            // Ordenar la lista de procesos por fecha de registro (descendente)
-            listaRegistroProcesos = listaRegistroProcesos.OrderByDescending(p => p.FechaRegistro).ToList();
+            listaRegistroProcesos = (await RegistroProcesoService.ListaProcesos())
+                                        .OrderByDescending(p => p.FechaRegistro)
+                                        .ToList();
             filteredTasksProcess = listaRegistroProcesos;
 
             // Construye/actualiza el conteo de registros por tarea
@@ -448,7 +490,15 @@
         }
     }
 
+    public void Dispose()
+    {
+        _searchTimerTasks?.Dispose();
+        _searchTimerProcess?.Dispose();
+        _refreshTimer?.Dispose();
+    }
+
     #endregion
+
 
     #region Métodos para mostrar/ocultar descripción, filtrar y convertir tiempos
 
@@ -550,11 +600,4 @@
     }
 
     #endregion
-
-    public void Dispose()
-    {
-        _searchTimerTasks?.Dispose();
-        _searchTimerProcess?.Dispose();
-        _refreshTimer?.Dispose();
-    }
 }

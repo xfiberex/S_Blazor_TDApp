@@ -4,8 +4,8 @@ GO
 USE DB_TDApp;
 GO
 -- Para eliminación de datos y restablecimiento de tablas --
---DELETE FROM Tarea_Dias;
---DBCC CHECKIDENT ('Tarea_Dias', RESEED, 0);
+--DELETE FROM Tareas_Recurrentes;
+--DBCC CHECKIDENT ('Tareas_Recurrentes', RESEED, 0);
 
 -- Roles --
 CREATE TABLE Rol (
@@ -28,7 +28,9 @@ GO
 -- Usuarios --
 CREATE TABLE Usuarios (
     UsuarioId INT IDENTITY(1,1) PRIMARY KEY,
+	Codigo NVARCHAR(100) NOT NULL, -- Codigo de 5 digitos
     NombreUsuario NVARCHAR(100) NOT NULL,
+	NombreCompleto NVARCHAR(100) NOT NULL,
     Clave NVARCHAR(255) NOT NULL, -- Almacena la contraseña hasheada
     Email NVARCHAR(150) NULL,
     RolId INT NOT NULL,               -- Columna para relacionar con la tabla Rol
@@ -41,10 +43,19 @@ CREATE TABLE Usuarios (
 GO
 
 -- INSERCIONES DE USUARIOS PARA PRUEBAS --
---INSERT INTO Usuarios (NombreUsuario, Clave, Email, RolId) VALUES
---('rijimenez', '123', 'rijimenez@gmail.com', 1),
---('caperez', '123', 'caperez@gmail.com', 2),
---('mabaez', '123', 'mabaez@gmail.com', 3);
+-- Inserta 10 usuarios de prueba con nombres reales inventados
+--INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
+--VALUES
+--  ('49382', 'juanp',   'Juan Perez',         'pass123', 'juan.perez@example.com',        1, 1),
+--  ('27541', 'mariaL',  'Maria Lopez',        'pass123', 'maria.lopez@example.com',       2, 1),
+--  ('93618', 'carlosG', 'Carlos Garcia',      'pass123', 'carlos.garcia@example.com',     3, 1),
+--  ('15729', 'anaM',    'Ana Martinez',       'pass123', 'ana.martinez@example.com',      1, 1),
+--  ('82450', 'luisR',   'Luis Rodriguez',     'pass123', 'luis.rodriguez@example.com',    2, 1),
+--  ('31976', 'sofiaC',  'Sofia Castillo',     'pass123', 'sofia.castillo@example.com',    3, 1),
+--  ('56023', 'pabloD',  'Pablo Diaz',         'pass123', 'pablo.diaz@example.com',        1, 1),
+--  ('10854', 'carlaF',  'Carla Fernandez',    'pass123', 'carla.fernandez@example.com',   2, 1),
+--  ('76291', 'ricardoM','Ricardo Morales',    'pass123', 'ricardo.morales@example.com',   3, 1),
+--  ('64537', 'lauraS',  'Laura Sanchez',      'pass123', 'laura.sanchez@example.com',     1, 1);
 
 
 -- Tabla para tareas de calendario
@@ -87,6 +98,8 @@ CREATE TABLE Tareas_Recurrentes (
 	TiempoEjecucion INT NOT NULL,
 	CantidadEjecuciones INT NOT NULL,
 	Estado BIT NOT NULL DEFAULT 1,
+	FechaUltimaRenovacion DATETIME NOT NULL DEFAULT GETDATE(),
+	EstadoExpiracion BIT NOT NULL DEFAULT 1
 );
 GO
 
@@ -104,11 +117,11 @@ GO
 --('Reporte de incidencias', 'Elaborar reporte de incidencias y resolver problemas', 1, '2025-02-21 11:00:00', '2025-02-21 11:30:00', 30, 1, 1),
 --('Reunión de equipo', 'Coordinar y asistir a reunión de equipo', 1, '2025-02-21 16:00:00', '2025-02-21 17:00:00', 60, 1, 1),
 --('Mantenimiento de equipos', 'Realizar mantenimiento preventivo a equipos', 1, '2025-02-21 18:00:00', '2025-02-21 19:00:00', 60, 1, 1);
---GO
-
-ALTER TABLE Tareas_Recurrentes
-ADD FechaUltimaRenovacion DATETIME NOT NULL DEFAULT GETDATE();
 GO
+
+--ALTER TABLE Tareas_Recurrentes
+--ADD EstadoExpiracion BIT NOT NULL DEFAULT 1;
+--GO
 
 -- Tabla para los dias --
 CREATE TABLE Dias_Disponibles (
@@ -159,17 +172,3 @@ CREATE TABLE Registro_Procesos (
 	CONSTRAINT FK_Registro_Procesos_Usuarios FOREIGN KEY (UsuarioId) REFERENCES Usuarios(UsuarioId)
 );
 GO
-
---INSERT INTO Usuarios (NombreUsuario, Clave, Email, RolId)
---VALUES
---('Usuario1', '12345', 'usuario1@ejemplo.com', 1),
---('Usuario2', '12345', 'usuario2@ejemplo.com', 2),
---('Usuario3', '12345', 'usuario3@ejemplo.com', 3),
---('Usuario4', '12345', 'usuario4@ejemplo.com', 1),
---('Usuario5', '12345', 'usuario5@ejemplo.com', 2),
---('Usuario6', '12345', 'usuario6@ejemplo.com', 3),
---('Usuario7', '12345', 'usuario7@ejemplo.com', 1),
---('Usuario8', '12345', 'usuario8@ejemplo.com', 2),
---('Usuario9', '12345', 'usuario9@ejemplo.com', 3),
---('Usuario10', '12345', 'usuario10@ejemplo.com', 1);
-

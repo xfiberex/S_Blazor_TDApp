@@ -17,12 +17,6 @@
             <label>Cargando tareas de calendario...</label>
         </div>
     }
-    else if (listaTareasCalendario == null || listaTareasCalendario.Count == 0)
-    {
-        <div class="alert alert-info shadow-sm">
-            <i class="bi bi-info-circle me-2"></i>No se encontraron tareas de calendario.
-        </div>
-    }
     else
     {
         <div class="card shadow">
@@ -37,8 +31,7 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control" placeholder="Buscar..."
-                                   @oninput="OnSearchTermChanged"
-                                   value="@searchTerm" />
+                                   @oninput="OnSearchTermChanged" value="@searchTerm" />
                             @if (!string.IsNullOrEmpty(searchTerm))
                             {
                                 <button class="btn btn-outline-secondary" @onclick="ClearSearch">
@@ -54,91 +47,114 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Estado</th>
-                                <th>Fecha - Hora</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in pagedTasks)
-                            {
+
+            @if (listaTareasCalendario is null || !listaTareasCalendario.Any())
+            {
+                <div class="alert alert-info shadow-sm m-3">
+                    <i class="bi bi-info-circle me-2"></i>No se encontraron tareas de calendario.
+                    Presione el botón verde <b>"Nueva"</b> para crearla.
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>@item.NombreTarea</td>
-                                    <td>
-                                        @if (item.DescripcionTarea!.Length > 50)
-                                        {
-                                            @if (item.ShowFullDescription)
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Fecha - Hora</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in pagedTasks)
+                                {
+                                    <tr>
+                                        <td>@item.NombreTarea</td>
+                                        <td>
+                                            @if (item.DescripcionTarea?.Length > 50)
                                             {
-                                                <textarea class="form-control slide-down" rows="3" @bind="item.DescripcionTarea" readonly></textarea>
-                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
-                                                    <i class="bi bi-eye-slash"></i>
-                                                </button>
+                                                @if (item.ShowFullDescription)
+                                                {
+                                                    <textarea class="form-control slide-down" rows="3" @bind="item.DescripcionTarea" readonly></textarea>
+                                                    <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                        <i class="bi bi-eye-slash"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span>@item.DescripcionTarea.Substring(0, 50) ...</span>
+                                                    <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                }
                                             }
                                             else
                                             {
-                                                <span>@item.DescripcionTarea.Substring(0, 50) ...</span>
-                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
+                                                <span>@item.DescripcionTarea</span>
                                             }
-                                        }
-                                        else
-                                        {
-                                            <span>@item.DescripcionTarea</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-@(item.Habilitado ? "success" : "warning")">
-                                            @(item.Habilitado ? "Habilitada" : "Deshabilitada")
-                                        </span>
-                                    </td>
-                                    <td align="center">
-                                        @item.Fecha.ToString("dd/MM/yyyy") - @item.Hora.ToString("hh:mm tt")
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a class="btn btn-outline-primary btn-sm" href="/tareaCalendario/@item.TareaId" title="Editar">
-                                                <i class="bi bi-pencil-fill"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="(() => Eliminar(item.TareaId, item.DescripcionTarea!))" title="Eliminar">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@(item.Habilitado ? "success" : "warning")">
+                                                @(item.Habilitado ? "Habilitada" : "Deshabilitada")
+                                            </span>
+                                        </td>
+                                        <td align="center">
+                                            @item.Fecha.ToString("dd/MM/yyyy") - @item.Hora.ToString("hh:mm tt")
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a class="btn btn-outline-primary btn-sm" href="/tareaCalendario/@item.TareaId" title="Editar">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" @onclick="() => Eliminar(item.TareaId, item.DescripcionTarea!)" title="Eliminar">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            }
+
             <div class="card-footer text-muted">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <label>Mostrar: </label>
-                        <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
-                            @foreach (var option in pageSizeOptions)
-                            {
-                                <option value="@option" selected="@(option == pageSize)">
-                                    @option
-                                </option>
-                            }
-                        </select>
-                        tareas de @filteredTasks.Count en total
-                    </div>
-                    <div>
-                        <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
-                        <span class="mx-2">
-                            Página @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
-                        </span>
-                        <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredTasks.Count)">Siguiente</button>
-                    </div>
+                    @if (filteredTasks.Count > 10)
+                    {
+                        <div>
+                            <label>Mostrar: </label>
+                            <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
+                                @foreach (var option in pageSizeOptions)
+                                {
+                                    <option value="@option" selected="@(option == pageSize)">
+                                        @option
+                                    </option>
+                                }
+                            </select>
+                            tareas de @filteredTasks.Count en total
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
+                            <span class="mx-2">
+                                Página @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
+                            </span>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredTasks.Count)">Siguiente</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <label>
+                                <b>@filteredTasks.Count</b> registros encontrados. Si hay mas de 10, se filtrará y paginará según la cantidad seleccionada.
+                            </label>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -147,21 +163,19 @@
 </div>
 
 @code {
-    private List<TareasCalendarioDTO> listaTareasCalendario = new List<TareasCalendarioDTO>();
-    private List<TareasCalendarioDTO> filteredTasks = new List<TareasCalendarioDTO>();
-    private List<TareasCalendarioDTO> pagedTasks = new List<TareasCalendarioDTO>();
+    private List<TareasCalendarioDTO> listaTareasCalendario = new();
+    private List<TareasCalendarioDTO> filteredTasks = new();
+    private List<TareasCalendarioDTO> pagedTasks = new();
 
     private bool isLoading = true;
     private string searchTerm = "";
-    private TareasCalendarioDTO? expandedItem = null; // Propiedad para rastrear el elemento expandido
+    private TareasCalendarioDTO? expandedItem = null;
 
-    // Timer para el debounce en la búsqueda
-    private System.Threading.Timer? _searchTimerTasks;
+    private System.Threading.Timer? _searchTimer;
 
-    // Parámetros de paginación
     private int currentPage = 1;
     private int pageSize = 10;
-    private int[] pageSizeOptions = new int[] { 10, 15, 20 };
+    private readonly int[] pageSizeOptions = { 10, 15, 20 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -209,8 +223,7 @@
         {
             try
             {
-                var deletionResult = await TareaCalendarioService.Eliminar(id);
-                if (deletionResult)
+                if (await TareaCalendarioService.Eliminar(id))
                 {
                     listaTareasCalendario.RemoveAll(u => u.TareaId == id);
                     FilterTasks();
@@ -240,19 +253,15 @@
         {
             expandedItem.ShowFullDescription = false;
         }
-
         item.ShowFullDescription = !item.ShowFullDescription;
         expandedItem = item.ShowFullDescription ? item : null;
     }
 
-    // Se llama cuando el usuario escribe en el input de búsqueda
     private void OnSearchTermChanged(ChangeEventArgs e)
     {
         searchTerm = e.Value?.ToString() ?? string.Empty;
-
-        _searchTimerTasks?.Dispose();
-
-        _searchTimerTasks = new System.Threading.Timer(_ =>
+        _searchTimer?.Dispose();
+        _searchTimer = new System.Threading.Timer(_ =>
         {
             InvokeAsync(() =>
             {
@@ -264,22 +273,17 @@
 
     private void FilterTasks()
     {
-        if (string.IsNullOrWhiteSpace(searchTerm))
-        {
-            filteredTasks = listaTareasCalendario;
-        }
-        else
-        {
-            filteredTasks = listaTareasCalendario.Where(t =>
+        filteredTasks = string.IsNullOrWhiteSpace(searchTerm)
+            ? listaTareasCalendario
+            : listaTareasCalendario.Where(t =>
                 t.NombreTarea.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                t.DescripcionTarea!.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                (t.DescripcionTarea?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
             ).ToList();
-        }
         currentPage = 1;
         UpdatePagedTasks();
     }
 
-    private void ClearSearch(MouseEventArgs args)
+    private void ClearSearch()
     {
         searchTerm = string.Empty;
         FilterTasks();

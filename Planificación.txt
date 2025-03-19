@@ -2,10 +2,6 @@
 
      1. Si la tarea recurrente referente a la tabla Tareas_Recurrentes, esta configurada para procesarse, ejemplo, Lunes y Viernes referente a la tabla Tarea_Dias que a su vez esta relacionada con la tabla Dias_Disponibles, en esos días estará habilitada, si no, seria deshabilitada en la tabla Tareas_Recurrentes
 
--- Pagina de procesos --
-
-     1. Implementa código para cronometrar las tareas de acuerdo a tiempo en que fueron configuradas.
-
 -- Implementaciones para mas adelante--
 
      1. Implementar logica para activar o desactivar las tareas recurrentes, de acuerdo a sus días de disponibilidad.

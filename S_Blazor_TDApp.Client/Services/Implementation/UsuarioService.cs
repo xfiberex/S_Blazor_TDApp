@@ -30,6 +30,17 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             return resultado.Valor!;
         }
 
+        public async Task<bool> ExisteCodigo(string codigo)
+        {
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<bool>>($"api/Usuario/ExisteCodigo/{codigo}")
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!resultado.EsCorrecto)
+                throw new Exception(resultado.Mensaje);
+
+            return resultado.Valor!;
+        }
+
         public async Task<int> Guardar(UsuarioDTO usuario)
         {
             // Se utiliza PostAsJsonAsync y se comprueba el código de estado HTTP.
