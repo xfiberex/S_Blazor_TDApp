@@ -7,6 +7,7 @@
 
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
+@inject ITareaDiasService TareaDiasService
 @inject ITareaRecurrenteService TareaRecurrenteService
 @inject IRegistroProcesosService RegistroProcesoService
 @inject IJSRuntime JSRuntime
@@ -25,7 +26,8 @@
     else if (listaTareasRecurrentes == null || listaTareasRecurrentes.Count == 0)
     {
         <div class="alert alert-info shadow-sm">
-            <i class="bi bi-info-circle me-2"></i>No se encontraron tareas recurrentes para reportar. Cree las tareas desde el menú "<b>Recurrentes</b>" en la barra lateral izquierda.
+            <i class="bi bi-info-circle me-2"></i>
+            No se encontraron tareas recurrentes para reportar. Cree las tareas desde el menú <b>Recurrentes</b> en la barra lateral izquierda.
         </div>
     }
     else
@@ -44,7 +46,6 @@
                             <input type="text" class="form-control" placeholder="Buscar..."
                                    @oninput="OnSearchTermTaskChanged"
                                    value="@searchTermTask" />
-
                             @if (!string.IsNullOrEmpty(searchTermTask))
                             {
                                 <button class="btn btn-outline-secondary" @onclick="ClearSearch">
@@ -89,7 +90,7 @@
                                             }
                                             else
                                             {
-                                                <span>@item.DescripcionTareaRecurr.Substring(0, 35) ...</span>
+                                                <span>@item.DescripcionTareaRecurr.Substring(0, 35)...</span>
                                                 <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescription(item)">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -113,17 +114,24 @@
                                         }
                                     </td>
                                     <td>
-                                        @if (item.Recurrente)
+                                        @if (EstaProgramadaHoy(item.TareaRecurrId))
                                         {
-                                            <span class="badge bg-@(item.EstadoExpiracion ? "success" : "danger")">
-                                                @(item.EstadoExpiracion ? "Renovada" : "Expirada")
-                                            </span>
+                                            @if (item.Recurrente)
+                                            {
+                                                <span class="badge bg-@(item.EstadoExpiracion ? "success" : "danger")">
+                                                    @(item.EstadoExpiracion ? "Renovada" : "Expirada")
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-@(GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones ? "success" : "warning")">
+                                                    @(GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones ? "Completado" : "En proceso")
+                                                </span>
+                                            }
                                         }
                                         else
                                         {
-                                            <span class="badge bg-@(GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones ? "success" : "warning")">
-                                                @(GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones ? "Completado" : "En proceso")
-                                            </span>
+                                            <span class="badge bg-secondary">No programada</span>
                                         }
                                     </td>
                                     <td>
@@ -131,7 +139,7 @@
                                             <button class="btn btn-outline-primary btn-sm"
                                                     @onclick="() => OpenModal(item)"
                                                     title="Registrar"
-                                                    disabled="@( !item.Recurrente && GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones )">
+                                                    disabled="@( !EstaProgramadaHoy(item.TareaRecurrId) || (!item.Recurrente && GetUserProcessCount(item.TareaRecurrId) >= item.CantidadEjecuciones) )">
                                                 <i class="bi bi-pencil-fill me-2"></i>Registrar
                                             </button>
                                         </div>
@@ -177,24 +185,20 @@
                             <i class="bi bi-clock-history me-2"></i>Historial de tareas procesadas
                         </h5>
                     </div>
-
-                    @* Filtrado por fecha *@
+                    <!-- Filtrado por fecha -->
                     <div class="col-auto">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-calendar me-2"></i>Fecha</span>
-                            <!-- Solo un input de fecha -->
                             <input type="date" class="form-control" @bind="startDate" @bind:after="FilterTasksProcess" />
                         </div>
                     </div>
-
-                    @* Filtrado por texto *@
+                    <!-- Filtrado por texto -->
                     <div class="col-auto">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control" placeholder="Buscar..."
                                    @oninput="OnSearchTermProcessChanged"
                                    value="@searchTermProcess" />
-
                             @if (!string.IsNullOrEmpty(searchTermProcess))
                             {
                                 <button class="btn btn-outline-secondary" @onclick="ClearSearchProcess">
@@ -264,7 +268,6 @@
                         <ul class="list-unstyled mt-2">
                             <li><strong>Nombre:</strong> @selectedTask.NombreTareaRecurr</li>
                             <li><strong>Recurrente:</strong> @(selectedTask.Recurrente ? "Sí" : "No")</li>
-
                             @if (selectedTask.Recurrente)
                             {
                                 <li><strong>Tiempo de Ejecución:</strong> cada @ConvertirTiempoEjecucion(selectedTask.TiempoEjecucion)</li>
@@ -273,9 +276,11 @@
                             {
                                 <li><strong>Desde:</strong> @selectedTask.HoraDesde.ToString("hh:mm tt")</li>
                                 <li><strong>Hasta:</strong> @selectedTask.HorasHasta.ToString("hh:mm tt")</li>
-                                <li><strong>Cantidad de Ejecuciones:</strong> @GetUserProcessCount(selectedTask.TareaRecurrId) de @selectedTask.CantidadEjecuciones</li>
+                                <li>
+                                    <strong>Cantidad de Ejecuciones:</strong>
+                                    @GetUserProcessCount(selectedTask.TareaRecurrId) de @selectedTask.CantidadEjecuciones
+                                </li>
                             }
-
                             <li><strong>Estado:</strong> @(selectedTask.EstadoExpiracion ? "Renovada" : "Expirada")</li>
                         </ul>
                     }
@@ -296,21 +301,20 @@
 </div>
 
 @code {
+    #region Variables y métodos de carga y actualización de datos
 
-    #region Variables, dicionario y metodos de carga y actualización de datos
-
-    // Variables que devuelven listas de datos
+    // Listas de datos
     private List<RegistroProcesoDTO> listaRegistroProcesos = new List<RegistroProcesoDTO>();
     private List<TareasRecurrentesDTO> listaTareasRecurrentes = new List<TareasRecurrentesDTO>();
 
-    // Variables para filtrar la lista de tareas y procesos
+    // Listas filtradas para mostrar en la vista
     private List<TareasRecurrentesDTO> filteredTasks = new List<TareasRecurrentesDTO>();
     private List<RegistroProcesoDTO> filteredTasksProcess = new List<RegistroProcesoDTO>();
 
-    // Variables para la gestión de datos
+    // Datos para registrar procesos
     private RegistroProcesoDTO registroProceso = new RegistroProcesoDTO();
 
-    // Variables para controlar el estado de la página y filtros
+    // Variables de estado y filtros
     private bool isLoading = true;
     private string searchTermTask = "";
     private string searchTermProcess = "";
@@ -318,22 +322,61 @@
     private TareasRecurrentesDTO? expandedItem = null;
     private TareasRecurrentesDTO? selectedTask = null;
 
-    // Timers para el debounce o delay en la búsqueda y para el refresco automático
+    // Timers para debounce y refresco automático
     private System.Threading.Timer? _searchTimerTasks;
     private System.Threading.Timer? _searchTimerProcess;
     private System.Threading.Timer? _refreshTimer;
 
-    // Diccionario para contar cuántos registros (procesos) lleva el usuario actual en cada tarea
+    // Diccionario para contar registros por tarea (por usuario actual)
     private Dictionary<int, int> userProcessCount = new();
-    private int currentUserId = 1; // ID de usuario fijo (hasta que se implemente autenticación real)
+    private int currentUserId = 1; // ID de usuario fijo (hasta implementar autenticación real)
 
-    // Método que se ejecuta al cargar la página
+    // Diccionario para almacenar los días asignados a cada tarea, pero en formato TareaDiasDTO
+    private Dictionary<int, List<TareaDiasDTO>> taskDiasMap = new();
+
+    private async Task LoadTareaDiasForAllTasks()
+    {
+        taskDiasMap.Clear();
+        foreach (var tarea in listaTareasRecurrentes)
+        {
+            var dias = await TareaDiasService.ListaPorTareaRecurrId(tarea.TareaRecurrId);
+            // dias ya es List<TareaDiasDTO>, se asigna directamente
+            taskDiasMap[tarea.TareaRecurrId] = dias;
+        }
+    }
+
+    // Método auxiliar para convertir DayOfWeek a nombre en español
+    private string GetSpanishDayName(DayOfWeek day) => day switch
+    {
+        DayOfWeek.Monday => "Lunes",
+        DayOfWeek.Tuesday => "Martes",
+        DayOfWeek.Wednesday => "Miércoles",
+        DayOfWeek.Thursday => "Jueves",
+        DayOfWeek.Friday => "Viernes",
+        DayOfWeek.Saturday => "Sábado",
+        DayOfWeek.Sunday => "Domingo",
+        _ => ""
+    };
+
+    // Método que verifica si la tarea tiene configurado el día actual
+    private bool EstaProgramadaHoy(int tareaRecurrId)
+    {
+        if (taskDiasMap.ContainsKey(tareaRecurrId) && taskDiasMap[tareaRecurrId].Any())
+        {
+            var hoy = GetSpanishDayName(DateTime.Now.DayOfWeek);
+            return taskDiasMap[tareaRecurrId].Any(d => d.Dia.NombreDia!.Equals(hoy, StringComparison.OrdinalIgnoreCase));
+        }
+        // Si no se han configurado días, se asume que la tarea está programada
+        return true;
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await LoadTareasRecurrentes();
         await LoadProcesosRegistrados();
+        await LoadTareaDiasForAllTasks();
 
-        // Inicia un Timer para refrescar datos cada 30 segundos sin recargar la página completa
+        // Refresco automático cada 30 segundos
         _refreshTimer = new System.Threading.Timer(async _ =>
         {
             await InvokeAsync(async () =>
@@ -344,25 +387,22 @@
         }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
     }
 
-    // Método que refresca ambas listas (tareas y procesos) usando los servicios
     private async Task RefreshData()
     {
         try
         {
-            // Actualiza la lista de tareas recurrentes, filtrando solo las habilitadas (Estado == true)
             listaTareasRecurrentes = (await TareaRecurrenteService.Lista())
                                         .Where(t => t.Estado)
                                         .ToList();
             filteredTasks = listaTareasRecurrentes;
 
-            // Actualiza la lista de procesos registrados ordenándolos de forma descendente por fecha
             listaRegistroProcesos = (await RegistroProcesoService.ListaProcesos())
                                         .OrderByDescending(p => p.FechaRegistro)
                                         .ToList();
             filteredTasksProcess = listaRegistroProcesos;
 
-            // Actualiza el conteo de registros por tarea
             BuildUserProcessCount();
+            await LoadTareaDiasForAllTasks();
         }
         catch (Exception ex)
         {
@@ -377,15 +417,14 @@
 
     #endregion
 
-
-    #region Métodos para cargar tareas, procesos, manejar modal y registrar procesos
+    #region Métodos para cargar tareas, procesos y registrar procesos
 
     private async Task LoadTareasRecurrentes()
     {
         try
         {
             isLoading = true;
-            // Filtrar solo tareas habilitadas (Estado == true)
+            // Filtrar solo tareas habilitadas
             listaTareasRecurrentes = (await TareaRecurrenteService.Lista())
                                         .Where(t => t.Estado)
                                         .ToList();
@@ -416,8 +455,6 @@
                                         .OrderByDescending(p => p.FechaRegistro)
                                         .ToList();
             filteredTasksProcess = listaRegistroProcesos;
-
-            // Construye/actualiza el conteo de registros por tarea
             BuildUserProcessCount();
         }
         catch (Exception ex)
@@ -438,7 +475,6 @@
 
     private void BuildUserProcessCount()
     {
-        // Agrupa los procesos por TareaRecurrId y cuenta solo los del usuario actual
         userProcessCount = listaRegistroProcesos
             .GroupBy(rp => rp.TareaRecurrId)
             .ToDictionary(
@@ -447,12 +483,8 @@
             );
     }
 
-    private int GetUserProcessCount(int tareaRecurrId)
-    {
-        return userProcessCount.ContainsKey(tareaRecurrId)
-            ? userProcessCount[tareaRecurrId]
-            : 0;
-    }
+    private int GetUserProcessCount(int tareaRecurrId) =>
+        userProcessCount.ContainsKey(tareaRecurrId) ? userProcessCount[tareaRecurrId] : 0;
 
     private async Task OpenModal(TareasRecurrentesDTO task)
     {
@@ -470,13 +502,12 @@
     {
         try
         {
-            await RegistroProcesoService.GuardarProcesos(registroProceso);
+            // Pasar fecha al registrar el proceso
+            registroProceso.FechaRegistro = DateTime.Now;
 
-            // Recargar listas después de guardar
+            await RegistroProcesoService.GuardarProcesos(registroProceso);
             await LoadProcesosRegistrados();
             await LoadTareasRecurrentes();
-
-            // Ocultar modal para registrar
             await JSRuntime.InvokeVoidAsync("hideModal", "registroProcesoModal");
         }
         catch (Exception ex)
@@ -499,8 +530,7 @@
 
     #endregion
 
-
-    #region Métodos para mostrar/ocultar descripción, filtrar y convertir tiempos
+    #region Métodos de filtrado, conversión de tiempos y descripción
 
     private void ToggleDescription(TareasRecurrentesDTO item)
     {
@@ -508,17 +538,14 @@
         {
             expandedItem.ShowFullDescription = false;
         }
-
         item.ShowFullDescription = !item.ShowFullDescription;
         expandedItem = item.ShowFullDescription ? item : null;
     }
 
-    // Se llama cuando el usuario escribe en el input de "Tasks"
     private void OnSearchTermTaskChanged(ChangeEventArgs e)
     {
         searchTermTask = e.Value?.ToString() ?? string.Empty;
         _searchTimerTasks?.Dispose();
-
         _searchTimerTasks = new System.Threading.Timer(_ =>
         {
             InvokeAsync(() =>
@@ -529,12 +556,10 @@
         }, null, 500, System.Threading.Timeout.Infinite);
     }
 
-    // Se llama cuando el usuario escribe en el input de "Procesos"
     private void OnSearchTermProcessChanged(ChangeEventArgs e)
     {
         searchTermProcess = e.Value?.ToString() ?? string.Empty;
         _searchTimerProcess?.Dispose();
-
         _searchTimerProcess = new System.Threading.Timer(_ =>
         {
             InvokeAsync(() =>
@@ -594,10 +619,8 @@
         }
     }
 
-    private string ConvertirCantidadEjecuciones(int cantidad)
-    {
-        return cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
-    }
+    private string ConvertirCantidadEjecuciones(int cantidad) =>
+        cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
 
     #endregion
 }

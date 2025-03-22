@@ -22,7 +22,7 @@
                         <DataAnnotationsValidator />
                         @if (editContext.GetValidationMessages().Any())
                         {
-                            <div class="alert alert-danger mb-3">
+                            <div class="alert alert-danger mb-4">
                                 <h5 class="alert-heading">
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios
                                 </h5>
@@ -30,52 +30,52 @@
                             </div>
                         }
                         <!-- Nombre de tarea -->
-                        <div class="mb-3">
-                            <label for="nombreTareaCal" class="form-label">Nombre</label>
+                        <div class="mb-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-heading"></i></span>
                                 <InputText id="nombreTareaCal" class="form-control"
-                                           placeholder="Ingrese el nombre de la tarea"
+                                           placeholder="Ingrese el nombre de la tarea..."
                                            @bind-Value="tareaCalendario.NombreTarea" />
                             </div>
                         </div>
+
                         <!-- Descripción -->
-                        <div class="mb-3">
-                            <label for="descripcion" class="form-label">Descripción</label>
+                        <div class="mb-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-text"></i></span>
                                 <InputTextArea id="descripcion" class="form-control"
-                                               placeholder="Describa la tarea"
+                                               placeholder="Describa la tarea..."
                                                @bind-Value="tareaCalendario.DescripcionTarea" />
                             </div>
                         </div>
-                        <!-- Estado de la tarea -->
-                        <div class="mb-3">
-                            <label for="estado" class="form-label">Estado</label>
+
+                        <!-- Fecha de la tarea -->
+                        <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-toggle-on"></i></span>
+                                <span class="input-group-text"><i class="bi bi-calendar me-2"></i>Fecha</span>
+                                <InputDate id="fecha" class="form-control" @bind-Value="tareaCalendario.Fecha" />
+                            </div>
+                        </div>
+
+                        <!-- Hora -->
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-clock me-2"></i>Hora</span>
+                                <InputText id="hora" type="time" class="form-control" step="1" @bind-Value="horaInput" />
+                            </div>
+                        </div>
+
+                        <!-- Estado de la tarea -->
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-toggle-on me-2"></i>Estado</span>
                                 <InputSelect id="estado" class="form-select" @bind-Value="tareaCalendario.Habilitado">
                                     <option value="true">Habilitado</option>
                                     <option value="false">Deshabilitado</option>
                                 </InputSelect>
                             </div>
                         </div>
-                        <!-- Fecha de la tarea -->
-                        <div class="mb-3">
-                            <label for="fecha" class="form-label">Fecha</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
-                                <InputDate id="fecha" class="form-control" @bind-Value="tareaCalendario.Fecha" />
-                            </div>
-                        </div>
-                        <!-- Hora -->
-                        <div class="mb-3">
-                            <label for="hora" class="form-label">Hora</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
-                                <InputText id="hora" type="time" class="form-control" step="1" @bind-Value="horaInput" />
-                            </div>
-                        </div>
+
                         <!-- Botones -->
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-primary" disabled="@isSaving">

@@ -3,9 +3,10 @@ CREATE DATABASE DB_TDApp;
 GO
 USE DB_TDApp;
 GO
+
 -- Para eliminación de datos y restablecimiento de tablas --
---DELETE FROM Tareas_Recurrentes;
---DBCC CHECKIDENT ('Tareas_Recurrentes', RESEED, 0);
+--DELETE FROM Usuarios;
+--DBCC CHECKIDENT ('Usuarios', RESEED, 0);
 
 -- Roles --
 CREATE TABLE Rol (
@@ -23,7 +24,7 @@ GO
 --('Administrador', 'Acceso total'),
 --('Supervisor', 'Acceso parcial'),
 --('Empleado', 'Acceso especifico');
-GO
+--GO
 
 -- Usuarios --
 CREATE TABLE Usuarios (
@@ -43,7 +44,6 @@ CREATE TABLE Usuarios (
 GO
 
 -- INSERCIONES DE USUARIOS PARA PRUEBAS --
--- Inserta 10 usuarios de prueba con nombres reales inventados
 --INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
 --VALUES
 --  ('49382', 'juanp',   'Juan Perez',         'pass123', 'juan.perez@example.com',        1, 1),
@@ -56,6 +56,7 @@ GO
 --  ('10854', 'carlaF',  'Carla Fernandez',    'pass123', 'carla.fernandez@example.com',   2, 1),
 --  ('76291', 'ricardoM','Ricardo Morales',    'pass123', 'ricardo.morales@example.com',   3, 1),
 --  ('64537', 'lauraS',  'Laura Sanchez',      'pass123', 'laura.sanchez@example.com',     1, 1);
+--GO
 
 
 -- Tabla para tareas de calendario
@@ -70,10 +71,7 @@ CREATE TABLE Tareas_Calendario (
 GO
 
 -- Insercion de prueba para aumentar datos de Tareas_Calendario --
---INSERT INTO Tareas_Calendario (NombreTarea, DescripcionTarea,
---    Habilitado, Fecha, Hora
---)
---VALUES
+--INSERT INTO Tareas_Calendario (NombreTarea, DescripcionTarea, Habilitado, Fecha, Hora) VALUES
 --('Revisión de correos', 'Revisar y responder correos pendientes', 1, '2025-02-21 00:00:00', '2025-02-21 09:00:00'),
 --('Actualización de reportes', 'Actualizar reportes de ventas mensuales', 1, '2025-02-21 00:00:00', '2025-02-21 10:00:00'),
 --('Backup de base de datos', 'Realizar backup completo de la base de datos', 1, '2025-02-21 00:00:00', '2025-02-21 02:00:00'),
@@ -85,7 +83,6 @@ GO
 --('Reunión de equipo', 'Coordinar y asistir a reunión de equipo', 1, '2025-02-21 00:00:00', '2025-02-21 16:00:00'),
 --('Mantenimiento de equipos', 'Realizar mantenimiento preventivo a equipos', 1, '2025-02-21 00:00:00', '2025-02-21 18:00:00');
 --GO
-
 
 -- Tabla para tareas recurrentes --
 CREATE TABLE Tareas_Recurrentes (
@@ -105,7 +102,7 @@ GO
 
 -- Insercion de prueba para aumentar datos de Tareas_Recurrentes --
 --INSERT INTO Tareas_Recurrentes (NombreTareaRecurr, DescripcionTareaRecurr, Recurrente, HoraDesde, HorasHasta,
---    TiempoEjecucion, CantidadEjecuciones, Estado ) 
+--    TiempoEjecucion, CantidadEjecuciones, Estado) 
 --VALUES
 --('Revisión de correos', 'Revisar y responder correos pendientes', 1, '2025-02-21 09:00:00', '2025-02-21 09:30:00', 30, 1, 1),
 --('Actualización de reportes', 'Actualizar reportes de ventas mensuales', 1, '2025-02-21 10:00:00', '2025-02-21 11:00:00', 60, 1, 1),
@@ -117,10 +114,6 @@ GO
 --('Reporte de incidencias', 'Elaborar reporte de incidencias y resolver problemas', 1, '2025-02-21 11:00:00', '2025-02-21 11:30:00', 30, 1, 1),
 --('Reunión de equipo', 'Coordinar y asistir a reunión de equipo', 1, '2025-02-21 16:00:00', '2025-02-21 17:00:00', 60, 1, 1),
 --('Mantenimiento de equipos', 'Realizar mantenimiento preventivo a equipos', 1, '2025-02-21 18:00:00', '2025-02-21 19:00:00', 60, 1, 1);
-GO
-
---ALTER TABLE Tareas_Recurrentes
---ADD EstadoExpiracion BIT NOT NULL DEFAULT 1;
 --GO
 
 -- Tabla para los dias --
@@ -140,7 +133,6 @@ GO
 --('Domingo');
 --GO
 
-
 -- Tabla para configurar los días en que estará disponible una tarea recurrente
 CREATE TABLE Tarea_Dias (
     TareaDiaId INT IDENTITY(1,1) PRIMARY KEY,
@@ -154,11 +146,6 @@ CREATE TABLE Tarea_Dias (
         FOREIGN KEY (DiaId)
         REFERENCES Dias_Disponibles(DiaId)
 );
-GO
-
---INSERT INTO Tarea_Dias (TareaRecurrId, NombreTareaRecurrDia, Dia) VALUES
---(1, 'Revisión de correos', 'Lunes')
-
 GO
 
 -- Tabla para registrar los procesos entrantes de la tareas recurrentes --

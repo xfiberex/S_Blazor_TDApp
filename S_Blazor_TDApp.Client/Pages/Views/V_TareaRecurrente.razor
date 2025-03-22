@@ -22,7 +22,7 @@
                         <DataAnnotationsValidator />
                         @if (editContext.GetValidationMessages().Any())
                         {
-                            <div class="alert alert-danger shadow-sm mb-3">
+                            <div class="alert alert-danger shadow-sm mb-4">
                                 <h5 class="alert-heading">
                                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios
                                 </h5>
@@ -31,7 +31,7 @@
                         }
                         else
                         {
-                            <div class="alert alert-info shadow-sm mb-3">
+                            <div class="alert alert-info shadow-sm mb-4">
                                 <h6 class="alert-heading">
                                     <i class="bi bi-info-circle me-1"></i>
                                     Si una tarea <b>no es recurrente,</b> el tiempo existente pasará a ser un intervalo específico y estará disponible solo durante ese período en la sección de procesos.
@@ -39,85 +39,85 @@
                             </div>
                         }
                         <!-- Nombre de tarea -->
-                        <div class="mb-3">
-                            <label for="nombreTareaRecurr" class="form-label">Nombre</label>
+                        <div class="mb-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-heading"></i></span>
                                 <InputText id="nombreTareaRecurr" class="form-control"
-                                           placeholder="Ingrese el nombre de la tarea"
+                                           placeholder="Ingrese el nombre de la tarea..."
                                            @bind-Value="tareaRecurrente.NombreTareaRecurr" />
                             </div>
                         </div>
+
                         <!-- Descripción -->
-                        <div class="mb-3">
-                            <label for="descripcionTareaRecurr" class="form-label">Descripción</label>
+                        <div class="mb-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-text"></i></span>
                                 <InputTextArea id="descripcionTareaRecurr" class="form-control"
-                                               placeholder="Describa la tarea"
+                                               placeholder="Describa la tarea..."
                                                @bind-Value="tareaRecurrente.DescripcionTareaRecurr" />
                             </div>
                         </div>
+
                         <!-- Recurrencia -->
-                        <div class="mb-3">
-                            <label for="recurrente" class="form-label">Recurrente</label>
+                        <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-arrow-repeat"></i></span>
+                                <span class="input-group-text"><i class="bi bi-arrow-repeat me-2"></i>Recurrente</span>
                                 <InputSelect id="recurrente" class="form-select" @bind-Value="recurrente">
                                     <option value="true">Si</option>
                                     <option value="false">No</option>
                                 </InputSelect>
                             </div>
                         </div>
+
                         <!-- Hora Desde -->
-                        <div class="mb-3">
-                            <label for="horaDesde" class="form-label">Hora Desde</label>
+                        <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                                <span class="input-group-text"><i class="bi bi-clock me-2"></i>Desde</span>
                                 <InputText id="horaDesde" type="time" class="form-control" step="1"
                                            @bind-Value="horaDesdeInput" />
                             </div>
                         </div>
+
                         <!-- Hora Hasta -->
-                        <div class="mb-3">
-                            <label for="horaHasta" class="form-label">Hora Hasta</label>
+                        <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-clock-fill"></i></span>
+                                <span class="input-group-text"><i class="bi bi-clock-fill me-2"></i>Hasta</span>
                                 <InputText id="horaHasta" type="time" class="form-control" step="1"
                                            @bind-Value="horaHastaInput" />
                             </div>
                         </div>
+
                         <!-- Tiempo de ejecución -->
-                        <div class="mb-3">
-                            <label for="tiempoEjecucion" class="form-label">Tiempo de Ejecución</label>
+                        <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-hourglass-split"></i></span>
+                                <span class="input-group-text"><i class="bi bi-hourglass-split me-2"></i>Tiempo de Ejecución</span>
                                 <InputNumber id="tiempoEjecucion" class="form-control"
                                              @bind-Value="tareaRecurrente.TiempoEjecucion" disabled />
                             </div>
                         </div>
+
                         <!-- Cantidad de ejecución -->
-                        <div class="mb-3">
-                            <label for="cantidadEjecucion" class="form-label">Cantidad de Ejecución</label>
+                        <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                                <span class="input-group-text"><i class="bi bi-hash me-2"></i>Cantidad de Ejecución</span>
                                 <InputNumber id="cantidadEjecucion" class="form-control"
                                              placeholder="Indica la cantidad de veces que se habilitará la tarea"
                                              @bind-Value="tareaRecurrente.CantidadEjecuciones"
                                              disabled="@tareaRecurrente.Recurrente" />
                             </div>
                         </div>
+
                         <!-- Estado de la tarea -->
-                        <div class="mb-3">
-                            <label for="estado" class="form-label">Estado</label>
+                        <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-toggle-on"></i></span>
+                                <span class="input-group-text"><i class="bi bi-toggle-on me-2"></i>Estado</span>
                                 <InputSelect id="estado" class="form-select" @bind-Value="tareaRecurrente.Estado">
                                     <option value="true">Habilitado</option>
                                     <option value="false">Deshabilitado</option>
                                 </InputSelect>
                             </div>
                         </div>
+
                         <!-- Botones -->
                         <div class="d-flex justify-content-between">
                             <button type="submit" class="btn btn-primary" disabled="@isSaving">

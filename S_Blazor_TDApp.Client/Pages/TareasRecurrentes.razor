@@ -31,7 +31,7 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control" placeholder="Buscar..."
-                                   @oninput="OnSearchTermChanged" value="@searchTerm" />
+                            @oninput="OnSearchTermChanged" value="@searchTerm" />
                             @if (!string.IsNullOrEmpty(searchTerm))
                             {
                                 <button class="btn btn-outline-secondary" @onclick="ClearSearch">
@@ -57,6 +57,13 @@
             }
             else
             {
+                <div class="alert alert-info shadow-sm m-3 mb-0">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Las tareas que esten <b>deshabilitadas,</b> no se mostraran en la sección o menus llamados <b>"Recurrentes" o "Disponibilidad"</b>
+                    </h6>
+                </div>
+
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">

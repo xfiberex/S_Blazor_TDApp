@@ -22,7 +22,7 @@
                         <DataAnnotationsValidator />
                         @if (editContext.GetValidationMessages().Any())
                         {
-                            <div class="alert alert-danger mb-3">
+                            <div class="alert alert-danger mb-4">
                                 <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
                                 <ValidationSummary />
                             </div>
@@ -58,7 +58,7 @@
                         <!-- Nombre completo -->
                         <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
                                 <InputText id="nombreCompleto" class="form-control" placeholder="Ingrese su nombre completo"
                                            @bind-Value="usuario.NombreCompleto" />
                             </div>

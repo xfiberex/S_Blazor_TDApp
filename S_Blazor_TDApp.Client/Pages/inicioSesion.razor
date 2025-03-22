@@ -1,0 +1,123 @@
+﻿@page "/inicioSesion"
+
+@using System.ComponentModel.DataAnnotations
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+@using S_Blazor_TDApp.Shared
+
+@* @inject IAuthService AuthService *@
+@inject NavigationManager NavigationManager
+@inject SweetAlertService SwalService
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-11 col-md-7 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-box-arrow-in-right me-2"></i>Inicio de Sesión</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="loginModel" OnValidSubmit="OnValidSubmit" Context="editContext">
+                        <DataAnnotationsValidator />
+                        @if (editContext.GetValidationMessages().Any())
+                        {
+                            <div class="alert alert-danger mb-4">
+                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos inválidos</h5>
+                                <ValidationSummary />
+                            </div>
+                        }
+
+                        <!-- Campo de Usuario o Email -->
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <InputText id="usuario" class="form-control" placeholder="Ingrese su usuario o email"
+                                           @bind-Value="loginModel.Usuario" />
+                            </div>
+                        </div>
+
+                        <!-- Campo de Contraseña -->
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <InputText id="clave" type="password" class="form-control" placeholder="Ingrese su contraseña"
+                                           @bind-Value="loginModel.Clave" />
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary" disabled="@isLogging">
+                                @if (isLogging)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                }
+                                Ingresar
+                            </button>
+                            <a class="btn btn-outline-secondary" href="/">
+                                <i class="bi bi-house-door me-2"></i>Volver al inicio
+                            </a>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+            <br />
+        </div>
+    </div>
+</div>
+
+@code {
+    private EditContext editContext = null!;
+    private bool isLogging = false;
+    private LoginModel loginModel = new LoginModel();
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(loginModel);
+    }
+
+    private async Task OnValidSubmit()
+    {
+        isLogging = true;
+        // try
+        // {
+        //     // Se asume que el método LoginAsync devuelve un valor booleano para indicar el éxito
+        //     bool autenticado = await AuthService.LoginAsync(loginModel);
+        //     if (autenticado)
+        //     {
+        //         NavigationManager.NavigateTo("/dashboard");
+        //     }
+        //     else
+        //     {
+        //         await SwalService.FireAsync(new SweetAlertOptions
+        //             {
+        //                 Title = "Error",
+        //                 Text = "Credenciales inválidas. Por favor, verifique su usuario y contraseña.",
+        //                 Icon = SweetAlertIcon.Error
+        //             });
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     await SwalService.FireAsync(new SweetAlertOptions
+        //         {
+        //             Title = "Error",
+        //             Text = $"Ocurrió un error al iniciar sesión: {ex.Message}",
+        //             Icon = SweetAlertIcon.Error
+        //         });
+        // }
+        // finally
+        // {
+        //     isLogging = false;
+        // }
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "El usuario o email es requerido")]
+        public string Usuario { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La contraseña es requerida")]
+        public string Clave { get; set; } = string.Empty;
+    }
+}
