@@ -5,28 +5,23 @@ using S_Blazor_TDApp.Server.Utilities.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Registrar AutoMapper indicando el assembly donde se encuentra el perfil
+// Registrar AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// Registrar el servicio de expiración de tareas
+// Registrar el servicio en segundo plano
 builder.Services.AddHostedService<TareaExpiracionService>();
 
-// Contexto de la base de datos
+// Contexto de base de datos
 builder.Services.AddDbContext<DbTdappContext>(options =>
 {
-    // Conexion a la base de datos del equipo A
-    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
-
-    // Conexion a la base de datos del equipo B
-    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
+    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
 });
 
-// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("nuevaPolitica", app =>
@@ -37,7 +32,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// app.UseSwagger();
+// Habilitar Swagger y la UI solo en Desarrollo (o según prefieras)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -45,11 +40,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("nuevaPolitica");
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
