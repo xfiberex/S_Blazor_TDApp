@@ -1,0 +1,170 @@
+﻿@page "/rolCargo"
+@page "/rolCargo/{IdRolEditar:int}"
+
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+
+@inject IRolService RolService
+@inject NavigationManager NavigationManager
+@inject SweetAlertService SwalService
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-11 col-md-7 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>@titulo</h5>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="rolCargo" OnValidSubmit="OnValidSubmit" Context="editContext">
+                        <DataAnnotationsValidator />
+                        @if (editContext.GetValidationMessages().Any())
+                        {
+                            <div class="alert alert-danger mb-4">
+                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                                <ValidationSummary />
+                            </div>
+                        }
+
+                        <div class="row mb-4">
+                            <!-- ID del Rol -->
+                            <div class="col-md-4 col-lg-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">ID</span>
+                                    <InputText id="idRol" class="form-control text-center" @bind-Value="idRolDisplay" disabled />
+                                </div>
+                            </div>
+
+                            <!-- Nombre del Rol -->
+                            <div class="col-md-4 col-lg-7">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    <InputText id="nombreRol" class="form-control" placeholder="Ingrese el nombre del rol..."
+                                               @bind-Value="rolCargo.NombreRol" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                <InputTextArea id="descripcionRol" class="form-control"
+                                               placeholder="Describa los menus a los que tendra acceso..."
+                                               @bind-Value="rolCargo.Descripcion" />
+                            </div>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-toggle-on me-2"></i>Estado</span>
+                                <InputSelect id="estado" class="form-select" @bind-Value="rolCargo.Activo">
+                                    <option value="true">Habilitado</option>
+                                    <option value="false">Deshabilitado</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary" disabled="@isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                }
+                                @btnTexto
+                            </button>
+                            <a class="btn btn-outline-secondary" href="/rolesPermisos">
+                                <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                            </a>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+            <br />
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int IdRolEditar { get; set; } = 0;
+
+    private EditContext editContext = null!;
+    private string titulo = string.Empty;
+    private string btnTexto = string.Empty;
+    public bool isSaving = false;
+
+    private RolDTO rolCargo = new RolDTO();
+    
+    // Variables para mostrar el ID
+    private string idRolDisplay = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (IdRolEditar != 0)
+            {
+                rolCargo = await RolService.Buscar(IdRolEditar);
+                btnTexto = "Actualizar";
+                titulo = "Editar rol";
+                idRolDisplay = rolCargo.RolId.ToString();
+            }
+            else
+            {
+                btnTexto = "Guardar";
+                titulo = "Nuevo rol";
+
+                // Calcula el próximo ID basado en la lista de usuarios
+                var usuarios = await RolService.Lista();
+                int nextId = usuarios.Any() ? usuarios.Max(u => u.RolId) + 1 : 1;
+                idRolDisplay = nextId.ToString();
+                
+                // Establece el estado predeterminado a 'Habilitado'
+                rolCargo.Activo = true;
+            }
+            editContext = new EditContext(rolCargo);
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar datos: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        isSaving = true;
+        try
+        {
+            int idDevuelto = (IdRolEditar == 0)
+                ? await RolService.Guardar(rolCargo)
+                : await RolService.Editar(rolCargo);
+
+            if (idDevuelto != 0)
+            {
+                NavigationManager.NavigateTo("/rolesPermisos");
+            }
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Ha ocurrido un error al guardar el rol: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

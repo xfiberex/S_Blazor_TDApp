@@ -1,11 +1,12 @@
-﻿@page "/usuarios"
+﻿@page "/rolesPermisos"
 
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 
 @inject SweetAlertService SwalService
-@inject IUsuarioService UsuarioService
+@inject IRolService RolService
+@inject IJSRuntime JSRuntime
 
 <div class="container-fluid mt-4">
     @if (isLoading)
@@ -14,7 +15,7 @@
             <div class="spinner-border text-primary me-2" role="status">
                 <span class="visually-hidden"></span>
             </div>
-            <label>Cargando usuarios registrados...</label>
+            <label>Cargando roles registrados...</label>
         </div>
     }
     else
@@ -24,7 +25,7 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <h5 class="text-primary mb-0">
-                            <i class="bi bi-people-fill me-2"></i>Administración de usuarios
+                            <i class="bi bi-person-fill-gear me-2"></i>Configuración - Roles y permisos de usuarios
                         </h5>
                     </div>
                     <div class="col-auto">
@@ -41,17 +42,17 @@
                         </div>
                     </div>
                     <div class="col-auto">
-                        <a class="btn btn-success shadow-sm" href="/usuario">
+                        <a class="btn btn-success shadow-sm" href="/rolCargo">
                             <i class="bi bi-plus-circle me-2"></i>Nuevo
                         </a>
                     </div>
                 </div>
             </div>
 
-            @if (listaUsuarios is null || !listaUsuarios.Any())
+            @if (listaRoles is null || !listaRoles.Any())
             {
                 <div class="alert alert-info shadow-sm m-3">
-                    <i class="bi bi-info-circle me-2"></i>No se encontraron usuarios. Presione el botón verde <b>"Nuevo"</b> para crearlo.
+                    <i class="bi bi-info-circle me-2"></i>No se encontraron roles. Presione el botón verde <b>"Nuevo"</b> para crearlo.
                 </div>
             }
             else
@@ -62,11 +63,8 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Codigo</th>
-                                    <th>Usuario</th>
                                     <th>Nombre</th>
-                                    <th>Correo</th>
-                                    <th>Rol</th>
+                                    <th>Descripción</th>
                                     <th>Estado</th>
                                     <th>Creación</th>
                                     <th>Actualización</th>
@@ -74,15 +72,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in pagedUsers)
+                                @foreach (var item in pagedRoles)
                                 {
                                     <tr>
-                                        <td>@item.UsuarioId</td>
-                                        <td>@item.Codigo</td>
-                                        <td>@item.NombreUsuario</td>
-                                        <td>@item.NombreCompleto</td>
-                                        <td>@item.Email</td>
-                                        <td>@item.Rol?.NombreRol</td>
+                                        <td>@item.RolId</td>
+                                        <td>@item.NombreRol</td>
+                                        <td>@item.Descripcion</td>
                                         <td>
                                             <span class="badge bg-@(item.Activo ? "success" : "danger")">
                                                 @(item.Activo ? "Habilitado" : "Deshabilitado")
@@ -92,11 +87,11 @@
                                         <td>@(item.FechaActualizacion.HasValue ? item.FechaActualizacion.Value.ToString("dd/MM/yyyy - hh:mm tt") : "Nunca")</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a class="btn btn-outline-primary btn-sm" href="/usuario/@item.UsuarioId" title="Editar">
+                                                <a class="btn btn-outline-primary btn-sm" href="/rolCargo/@item.RolId" title="Editar">
                                                     <i class="bi bi-pencil-fill"></i>
                                                 </a>
                                                 <button type="button" class="btn btn-outline-danger btn-sm"
-                                                        @onclick="(() => Eliminar(item.UsuarioId, item.NombreUsuario))" title="Eliminar">
+                                                        @onclick="(() => Eliminar(item.RolId, item.NombreRol))" title="Eliminar">
                                                     <i class="bi bi-trash-fill"></i>
                                                 </button>
                                             </div>
@@ -111,7 +106,7 @@
 
             <div class="card-footer text-muted">
                 <div class="d-flex justify-content-between align-items-center">
-                    @if (filteredUsers.Count > 10)
+                    @if (filteredRoles.Count > 5)
                     {
                         <div>
                             <label>Mostrar: </label>
@@ -123,21 +118,21 @@
                                     </option>
                                 }
                             </select>
-                            usuarios de @filteredUsers.Count en total
+                            roles de @filteredRoles.Count en total
                         </div>
                         <div>
                             <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
                             <span class="mx-2">
-                                Página @currentPage de @Math.Ceiling((double)filteredUsers.Count / pageSize)
+                                Página @currentPage de @Math.Ceiling((double)filteredRoles.Count / pageSize)
                             </span>
-                            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredUsers.Count)">Siguiente</button>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredRoles.Count)">Siguiente</button>
                         </div>
                     }
                     else
                     {
                         <div>
                             <label>
-                                <b>@filteredUsers.Count</b> registros encontrados. Si hay mas de 10, se filtrará y paginará según la cantidad seleccionada.
+                                <b>@filteredRoles.Count</b> registros encontrados. Si hay más de 5, se filtrará y paginará según la cantidad seleccionada.
                             </label>
                         </div>
                     }
@@ -149,42 +144,42 @@
 </div>
 
 @code {
-    private List<UsuarioDTO> listaUsuarios = new();
-    private List<UsuarioDTO> filteredUsers = new();
-    private List<UsuarioDTO> pagedUsers = new();
+    private List<RolDTO> listaRoles = new();
+    private List<RolDTO> filteredRoles = new();
+    private List<RolDTO> pagedRoles = new();
 
     private bool isLoading = true;
     private string searchTerm = "";
 
     // Parámetros de paginación
     private int currentPage = 1;
-    private int pageSize = 10;
-    private readonly int[] pageSizeOptions = { 10, 15, 20 };
+    private int pageSize = 5;
+    private readonly int[] pageSizeOptions = { 5, 10, 15 };
 
     // Timer para el debounce en la búsqueda
     private System.Threading.Timer? _searchTimer;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadUsuarios();
+        await LoadRoles();
     }
 
-    private async Task LoadUsuarios()
+    private async Task LoadRoles()
     {
         try
         {
             isLoading = true;
-            listaUsuarios = await UsuarioService.Lista();
-            filteredUsers = listaUsuarios;
+            listaRoles = await RolService.Lista();
+            filteredRoles = listaRoles;
             currentPage = 1;
-            UpdatePagedUsers();
+            UpdatePagedRoles();
         }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
                 {
                     Title = "Error",
-                    Text = $"Error al cargar usuarios: {ex.Message}",
+                    Text = $"Error al cargar roles: {ex.Message}",
                     Icon = SweetAlertIcon.Error
                 });
         }
@@ -195,12 +190,12 @@
         }
     }
 
-    private async Task Eliminar(int id, string nombreUsuario)
+    private async Task Eliminar(int id, string nombreRol)
     {
         var result = await SwalService.FireAsync(new SweetAlertOptions
             {
                 Title = "¿Estás seguro?",
-                Text = $"¿Deseas eliminar el usuario {nombreUsuario}?",
+                Text = $"¿Deseas eliminar el rol {nombreRol}?",
                 Icon = SweetAlertIcon.Warning,
                 ShowCancelButton = true,
                 ConfirmButtonText = "Sí, eliminar",
@@ -211,14 +206,14 @@
         {
             try
             {
-                if (await UsuarioService.Eliminar(id))
+                if (await RolService.Eliminar(id))
                 {
-                    listaUsuarios.RemoveAll(u => u.UsuarioId == id);
-                    FilterUsers();
+                    listaRoles.RemoveAll(u => u.RolId == id);
+                    FilterRoles();
                     await SwalService.FireAsync(new SweetAlertOptions
                         {
                             Title = "Eliminado",
-                            Text = "El usuario ha sido eliminado correctamente.",
+                            Text = "El rol ha sido eliminado correctamente.",
                             Icon = SweetAlertIcon.Success
                         });
                 }
@@ -228,12 +223,14 @@
                 await SwalService.FireAsync(new SweetAlertOptions
                     {
                         Title = "Error",
-                        Text = $"Ha ocurrido un error al eliminar el usuario: {ex.Message}",
+                        Text = $"Ha ocurrido un error al eliminar el rol: {ex.Message}",
                         Icon = SweetAlertIcon.Error
                     });
             }
         }
     }
+
+    #region Métodos para la paginación y buqueda
 
     private void OnSearchTermChanged(ChangeEventArgs e)
     {
@@ -243,34 +240,33 @@
         {
             InvokeAsync(() =>
             {
-                FilterUsers();
+                FilterRoles();
                 StateHasChanged();
             });
         }, null, 500, System.Threading.Timeout.Infinite);
     }
 
-    private void FilterUsers()
+    private void FilterRoles()
     {
-        filteredUsers = string.IsNullOrWhiteSpace(searchTerm)
-            ? listaUsuarios
-            : listaUsuarios.Where(u =>
-                u.NombreUsuario.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                (u.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (u.Rol?.NombreRol?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-              ).ToList();
+        filteredRoles = string.IsNullOrWhiteSpace(searchTerm)
+            ? listaRoles
+            : listaRoles.Where(u =>
+                u.NombreRol.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                (u.Descripcion?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+
         currentPage = 1;
-        UpdatePagedUsers();
+        UpdatePagedRoles();
     }
 
     private void ClearSearch()
     {
         searchTerm = string.Empty;
-        FilterUsers();
+        FilterRoles();
     }
 
-    private void UpdatePagedUsers()
+    private void UpdatePagedRoles()
     {
-        pagedUsers = filteredUsers
+        pagedRoles = filteredRoles
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)
             .ToList();
@@ -282,16 +278,16 @@
         {
             pageSize = newPageSize;
             currentPage = 1;
-            UpdatePagedUsers();
+            UpdatePagedRoles();
         }
     }
 
     private void NextPage()
     {
-        if (currentPage * pageSize < filteredUsers.Count)
+        if (currentPage * pageSize < filteredRoles.Count)
         {
             currentPage++;
-            UpdatePagedUsers();
+            UpdatePagedRoles();
         }
     }
 
@@ -300,7 +296,9 @@
         if (currentPage > 1)
         {
             currentPage--;
-            UpdatePagedUsers();
+            UpdatePagedRoles();
         }
     }
+
+    #endregion
 }

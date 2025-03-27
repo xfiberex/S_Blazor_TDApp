@@ -5,8 +5,8 @@ USE DB_TDApp;
 GO
 
 -- Para eliminación de datos y restablecimiento de tablas --
---DELETE FROM Usuarios;
---DBCC CHECKIDENT ('Usuarios', RESEED, 0);
+--DELETE FROM Rol;
+--DBCC CHECKIDENT ('Rol', RESEED, 0);
 
 -- Roles --
 CREATE TABLE Rol (
@@ -47,14 +47,14 @@ GO
 --INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
 --VALUES
 --  ('49382', 'juanp',   'Juan Perez',         'pass123', 'juan.perez@example.com',        1, 1),
---  ('27541', 'mariaL',  'Maria Lopez',        'pass123', 'maria.lopez@example.com',       2, 1),
---  ('93618', 'carlosG', 'Carlos Garcia',      'pass123', 'carlos.garcia@example.com',     3, 1),
+--  ('27541', 'mariaL',  'Maria Lopez',        'pass123', 'maria.lopez@example.com',       2, 0),
+--  ('93618', 'carlosG', 'Carlos Garcia',      'pass123', 'carlos.garcia@example.com',     3, 0),
 --  ('15729', 'anaM',    'Ana Martinez',       'pass123', 'ana.martinez@example.com',      1, 1),
 --  ('82450', 'luisR',   'Luis Rodriguez',     'pass123', 'luis.rodriguez@example.com',    2, 1),
---  ('31976', 'sofiaC',  'Sofia Castillo',     'pass123', 'sofia.castillo@example.com',    3, 1),
+--  ('31976', 'sofiaC',  'Sofia Castillo',     'pass123', 'sofia.castillo@example.com',    3, 0),
 --  ('56023', 'pabloD',  'Pablo Diaz',         'pass123', 'pablo.diaz@example.com',        1, 1),
 --  ('10854', 'carlaF',  'Carla Fernandez',    'pass123', 'carla.fernandez@example.com',   2, 1),
---  ('76291', 'ricardoM','Ricardo Morales',    'pass123', 'ricardo.morales@example.com',   3, 1),
+--  ('76291', 'ricardoM','Ricardo Morales',    'pass123', 'ricardo.morales@example.com',   3, 0),
 --  ('64537', 'lauraS',  'Laura Sanchez',      'pass123', 'laura.sanchez@example.com',     1, 1);
 --GO
 

@@ -8,6 +8,7 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
     {
         public MappingProfile()
         {
+            // Mapeo entre Rol y RolDTO
             CreateMap<Rol, RolDTO>()
                 .ReverseMap();
 
@@ -24,8 +25,8 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
                 // Mapea la entidad Rol en IdRolNavigation hacia la propiedad Rol del DTO
                 .ForMember(dest => dest.Rol, opt => opt.MapFrom(src => src.IdRolNavigation))
                 .ReverseMap()
-                // Al mapear de DTO a entidad, no solemos asignar el objeto Rol directamente,
-                // sino usar la clave foránea RolId. También se setea FechaActualizacion.
+                // Al mapear de DTO a entidad, ignoramos la propiedad de navegación
+                // y asignamos FechaActualizacion a DateTime.Now
                 .ForMember(dest => dest.IdRolNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.Now));
 

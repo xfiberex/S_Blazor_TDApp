@@ -12,6 +12,7 @@ namespace S_Blazor_TDApp.Shared
         [StringLength(100, MinimumLength = 3, ErrorMessage = "El nombre de usuario debe tener entre 3 y 100 caracteres.")]
         public string NombreUsuario { get; set; } = null!;
 
+        [Required(ErrorMessage = "El nombre completo es obligatorio.")]
         public string NombreCompleto { get; set; } = null!;
 
         [Required(ErrorMessage = "La contraseña es obligatoria.")]

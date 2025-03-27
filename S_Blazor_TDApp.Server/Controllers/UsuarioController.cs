@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
 using S_Blazor_TDApp.Shared;
+using System.Xml;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
@@ -113,6 +114,10 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Mapea el DTO a la entidad utilizando AutoMapper
                 var usuarioEntity = _mapper.Map<Usuario>(usuarioDTO);
 
+                // Asigna la fecha de creación y sin la de actualización al guardar
+                usuarioEntity.FechaCreacion = DateTime.Now;
+                usuarioEntity.FechaActualizacion = null;
+
                 _context.Usuarios.Add(usuarioEntity);
                 await _context.SaveChangesAsync();
 
@@ -155,6 +160,9 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 // Mapea los valores del DTO a la entidad existente
                 _mapper.Map(usuarioDTO, usuarioEntity);
+
+                // Asignamos la fecha de actualización solo al editar
+                usuarioEntity.FechaActualizacion = DateTime.Now;
 
                 _context.Usuarios.Update(usuarioEntity);
                 await _context.SaveChangesAsync();

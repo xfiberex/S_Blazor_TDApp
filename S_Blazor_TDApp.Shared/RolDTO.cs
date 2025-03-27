@@ -13,5 +13,9 @@
         public DateTime FechaCreacion { get; set; }
 
         public DateTime? FechaActualizacion { get; set; }
+
+        public string FechaActualizacionStr => FechaActualizacion.HasValue
+        ? FechaActualizacion.Value.ToString("dd/MM/yyyy")
+        : string.Empty;
     }
 }
