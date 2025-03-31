@@ -1,10 +1,14 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
 using S_Blazor_TDApp.Shared;
-using System.Xml;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
@@ -13,12 +17,63 @@ namespace S_Blazor_TDApp.Server.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly DbTdappContext _context;
+        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
-        public UsuarioController(DbTdappContext context, IMapper mapper)
+        public UsuarioController(DbTdappContext context, IMapper mapper, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
+            _configuration = configuration;
+        }
+
+        [HttpPost]
+        [Route("Login")]
+        public async Task<IActionResult> Login(Shared.LoginRequest request)
+        {
+            var responseApi = new ResponseAPI<LoginResponse>();
+
+            try
+            {
+                // Buscar al usuario por nombre (o email, según convenga)
+                var usuarioEntity = await _context.Usuarios
+                    .Include(u => u.IdRolNavigation)
+                    .FirstOrDefaultAsync(u => u.NombreUsuario == request.Username);
+
+                if (usuarioEntity == null)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "Usuario no encontrado.";
+                    return NotFound(responseApi);
+                }
+
+                // Validar la contraseña (en producción se debe trabajar con contraseñas hasheadas)
+                if (usuarioEntity.Clave != request.Password)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "Contraseña incorrecta.";
+                    return Unauthorized(responseApi);
+                }
+
+                // Generar token JWT
+                var token = GenerateJwtToken(usuarioEntity);
+
+                var loginResponse = new LoginResponse
+                {
+                    Token = token,
+                    Usuario = _mapper.Map<UsuarioDTO>(usuarioEntity)
+                };
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = loginResponse;
+                return Ok(responseApi);
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+                return BadRequest(responseApi);
+            }
         }
 
         [HttpGet]
@@ -208,6 +263,34 @@ namespace S_Blazor_TDApp.Server.Controllers
                 return BadRequest(responseApi);
             }
             return Ok(responseApi);
+        }
+
+        // Token de autenticación
+        private string GenerateJwtToken(Usuario usuario)
+        {
+            // Obtener la configuración de JWT desde appsettings.json
+            var secret = _configuration["JWT:Secret"];
+            var issuer = _configuration["JWT:Issuer"];
+            var audience = _configuration["JWT:Audience"];
+            var tokenValidity = Convert.ToDouble(_configuration["JWT:TokenValidityInMinutes"]);
+
+            var key = Encoding.ASCII.GetBytes(secret!);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+            new Claim(ClaimTypes.Name, usuario.NombreUsuario),
+            new Claim(ClaimTypes.Role, usuario.IdRolNavigation.NombreRol)
+        }),
+                Expires = DateTime.UtcNow.AddMinutes(tokenValidity),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

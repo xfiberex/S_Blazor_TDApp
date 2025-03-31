@@ -1,9 +1,9 @@
-using CurrieTechnologies.Razor.SweetAlert2;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using S_Blazor_TDApp.Client;
-using S_Blazor_TDApp.Client.Services.Implementation;
+using Microsoft.AspNetCore.Components.Web;
+using CurrieTechnologies.Razor.SweetAlert2;
 using S_Blazor_TDApp.Client.Services.Interfaces;
+using S_Blazor_TDApp.Client.Services.Implementation;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

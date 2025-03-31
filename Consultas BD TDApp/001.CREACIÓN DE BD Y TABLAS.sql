@@ -5,8 +5,8 @@ USE DB_TDApp;
 GO
 
 -- Para eliminación de datos y restablecimiento de tablas --
---DELETE FROM Rol;
---DBCC CHECKIDENT ('Rol', RESEED, 0);
+--DELETE FROM Usuarios;
+--DBCC CHECKIDENT ('Usuarios', RESEED, 0);
 
 -- Roles --
 CREATE TABLE Rol (
