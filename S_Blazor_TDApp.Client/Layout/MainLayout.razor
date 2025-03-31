@@ -1,15 +1,18 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@* Si utilizas un servicio para el almacenamiento de tokens, inyecta aquí *@
 
 <div class="page">
-    <!-- Se aplica la clase 'collapsed' en función del estado -->
+    <!-- Sidebar -->
     <div class="sidebar @(collapseNavMenu ? "collapsed" : "")">
-        <!-- Se pasa el estado y un callback al NavMenu -->
         <NavMenu Collapse="@collapseNavMenu" CollapseChanged="@ToggleNavMenu" />
     </div>
 
     <main>
-        <div class="top-row px-4">
+        <!-- Top bar con el botón de cerrar sesión -->
+        <div class="top-row px-4 d-flex justify-content-between align-items-center">
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <button class="btn btn-outline-danger" @onclick="Logout">Cerrar sesión</button>
         </div>
 
         <article class="content px-4">
@@ -24,5 +27,15 @@
     private void ToggleNavMenu(bool collapse)
     {
         collapseNavMenu = collapse;
+    }
+
+    private async Task Logout()
+    {
+        // Si estás utilizando almacenamiento local para guardar el token,
+        // elimínalo aquí. Por ejemplo, si usas Blazored.LocalStorage:
+        // await localStorage.RemoveItemAsync("authToken");
+
+        // Redirige al usuario a la página de inicio de sesión.
+        Navigation.NavigateTo("/", forceLoad: true);
     }
 }

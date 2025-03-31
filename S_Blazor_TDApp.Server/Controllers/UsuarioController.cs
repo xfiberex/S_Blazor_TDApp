@@ -280,9 +280,9 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-            new Claim(ClaimTypes.Name, usuario.NombreUsuario),
-            new Claim(ClaimTypes.Role, usuario.IdRolNavigation.NombreRol)
-        }),
+                    new Claim(ClaimTypes.Name, usuario.NombreUsuario),
+                    new Claim(ClaimTypes.Role, usuario.IdRolNavigation.NombreRol)
+                }),
                 Expires = DateTime.UtcNow.AddMinutes(tokenValidity),
                 Issuer = issuer,
                 Audience = audience,
