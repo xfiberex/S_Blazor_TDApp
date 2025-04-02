@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S_Blazor_TDApp.Client", "S_
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S_Blazor_TDApp.Server", "S_Blazor_TDApp.Server\S_Blazor_TDApp.Server.csproj", "{BA0EFC8E-BCFA-30F3-62C0-2D73163E70CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "S_Blazor_TDApp.Password", "S_Blazor_TDApp.Password\S_Blazor_TDApp.Password.csproj", "{94B748F0-B826-4495-8C44-FD6BEE108C7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{BA0EFC8E-BCFA-30F3-62C0-2D73163E70CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA0EFC8E-BCFA-30F3-62C0-2D73163E70CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA0EFC8E-BCFA-30F3-62C0-2D73163E70CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94B748F0-B826-4495-8C44-FD6BEE108C7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94B748F0-B826-4495-8C44-FD6BEE108C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94B748F0-B826-4495-8C44-FD6BEE108C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94B748F0-B826-4495-8C44-FD6BEE108C7C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

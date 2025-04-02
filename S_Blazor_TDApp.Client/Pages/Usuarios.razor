@@ -4,8 +4,13 @@
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 
+@* Using para la autorización de usuarios *@
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador, Supervisor")]
+
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
+@inject NavigationManager Navigation
 
 <div class="container-fluid mt-4">
     @if (isLoading)

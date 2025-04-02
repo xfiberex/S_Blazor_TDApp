@@ -56,7 +56,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 var rolEntity = await _context.Roles.FirstOrDefaultAsync(u => u.RolId == id);
-                
+
                 if (rolEntity == null)
                 {
                     responseApi.EsCorrecto = false;

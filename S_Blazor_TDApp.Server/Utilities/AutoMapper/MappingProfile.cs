@@ -22,11 +22,10 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
                 .ReverseMap();
 
             CreateMap<Usuario, UsuarioDTO>()
-                // Mapea la entidad Rol en IdRolNavigation hacia la propiedad Rol del DTO
                 .ForMember(dest => dest.Rol, opt => opt.MapFrom(src => src.IdRolNavigation))
                 .ReverseMap()
-                // Al mapear de DTO a entidad, ignoramos la propiedad de navegación
-                // y asignamos FechaActualizacion a DateTime.Now
+
+                .ForMember(dest => dest.Clave, opt => opt.Ignore())
                 .ForMember(dest => dest.IdRolNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.Now));
 

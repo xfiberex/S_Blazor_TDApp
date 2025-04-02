@@ -4,6 +4,10 @@
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 
+@* Using para la autorización de usuarios *@
+@using Microsoft.AspNetCore.Authorization;
+@attribute [Authorize(Roles = "Administrador")]
+
 @inject SweetAlertService SwalService
 @inject IRolService RolService
 @inject IJSRuntime JSRuntime

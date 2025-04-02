@@ -1,24 +1,49 @@
-﻿@inherits LayoutComponentBase
-@inject NavigationManager Navigation
-@* Si utilizas un servicio para el almacenamiento de tokens, inyecta aquí *@
+﻿@using S_Blazor_TDApp.Client.Extensions
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 
-<div class="page">
+@attribute [Authorize]
+@inherits LayoutComponentBase
+
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider autenticacionProvider
+
+<div class="page d-flex">
     <!-- Sidebar -->
     <div class="sidebar @(collapseNavMenu ? "collapsed" : "")">
         <NavMenu Collapse="@collapseNavMenu" CollapseChanged="@ToggleNavMenu" />
     </div>
 
-    <main>
-        <!-- Top bar con el botón de cerrar sesión -->
-        <div class="top-row px-4 d-flex justify-content-between align-items-center">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-            <button class="btn btn-outline-danger" @onclick="Logout">Cerrar sesión</button>
+    <!-- Main Content -->
+    <div class="main-content flex-grow-1">
+        <!-- Top Bar -->
+        <div class="top-row d-flex justify-content-between align-items-center px-4 py-2 border-bottom">
+            <div>
+                <AuthorizeView Context="authContext">
+                    <Authorized>
+                        @{
+                            // Extraer el nombre y el email del usuario autenticado
+                            var nombre = authContext.User.Identity?.Name ?? "Usuario";
+                            var email = authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                        }
+                        <span>Sesión iniciada: @nombre - (@email)</span>
+                    </Authorized>
+                    <NotAuthorized>
+                        <span>Invitado</span>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+            <div>
+                <a class="me-3" href="https://learn.microsoft.com/aspnet/core/" target="_blank">Acerca de</a>
+                <a href="javascript:void(0)" @onclick="CerrarSesion">Salir</a>
+            </div>
         </div>
 
-        <article class="content px-4">
+        <!-- Page Body -->
+        <article class="content px-4 py-3">
             @Body
         </article>
-    </main>
+    </div>
 </div>
 
 @code {
@@ -29,13 +54,10 @@
         collapseNavMenu = collapse;
     }
 
-    private async Task Logout()
+    private async Task CerrarSesion()
     {
-        // Si estás utilizando almacenamiento local para guardar el token,
-        // elimínalo aquí. Por ejemplo, si usas Blazored.LocalStorage:
-        // await localStorage.RemoveItemAsync("authToken");
-
-        // Redirige al usuario a la página de inicio de sesión.
-        Navigation.NavigateTo("/", forceLoad: true);
+        var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
+        await autenticacionExt.ActualizarEstadoAutenticacion(null);
+        Navigation.NavigateTo("/", true);
     }
 }

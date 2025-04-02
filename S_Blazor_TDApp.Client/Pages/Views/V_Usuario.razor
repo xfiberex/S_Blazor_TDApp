@@ -5,6 +5,11 @@
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 
+@* Using para la autorización de usuarios *@
+@using Microsoft.AspNetCore.Authorization;
+@using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Roles = "Administrador, Supervisor")]
+
 @inject IUsuarioService UsuarioService
 @inject IRolService RolService
 @inject NavigationManager NavigationManager
@@ -27,7 +32,7 @@
                                 <ValidationSummary />
                             </div>
                         }
-                        
+
                         @if (listaRoles is null || !listaRoles.Any())
                         {
                             <div class="alert alert-warning shadow-sm mb-0">
@@ -48,7 +53,7 @@
                                 <!-- Código del Usuario -->
                                 <div class="col-md-4 col-lg-4">
                                     <div class="input-group">
-                                        <span class="input-group-text">Codigo</span>
+                                        <span class="input-group-text">Código</span>
                                         <InputText id="codigoUsuario" class="form-control text-center" @bind-Value="codigoUsuarioDisplay" disabled />
                                     </div>
                                 </div>
@@ -72,14 +77,27 @@
                                 </div>
                             </div>
 
-                            <!-- Contraseña -->
-                            <div class="mb-4">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                    <InputText id="clave" type="password" class="form-control" placeholder="Ingrese la contraseña"
-                                               @bind-Value="usuario.Clave" />
+                            <!-- Contraseña o botón para cambiarla -->
+                            @if (IdUsuarioEditar == 0)
+                            {
+                                <!-- Para un usuario nuevo se muestra el input de contraseña -->
+                                <div class="mb-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                        <InputText id="clave" type="password" class="form-control" placeholder="Ingrese la contraseña"
+                                                   @bind-Value="usuario.Clave" />
+                                    </div>
                                 </div>
-                            </div>
+                            }
+                            else
+                            {
+                                <!-- En modo edición se oculta el input y se muestra un botón para cambiar la contraseña -->
+                                <div class="mb-4">
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="AbrirModalCambioClave">
+                                        <i class="bi bi-key"></i> Cambiar Contraseña
+                                    </button>
+                                </div>
+                            }
 
                             <!-- Correo Electrónico -->
                             <div class="mb-4">
@@ -137,6 +155,39 @@
     </div>
 </div>
 
+
+@if (mostrarModalCambioClave)
+{
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cambiar Contraseña</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModalCambioClave"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="cambioClaveModel" OnValidSubmit="GuardarCambioClave">
+                        <DataAnnotationsValidator />
+                        <div class="mb-3">
+                            <label for="nuevaClave" class="form-label">Nueva Contraseña</label>
+                            <InputText id="nuevaClave" type="password" class="form-control"
+                                       @bind-Value="cambioClaveModel.NuevaClave" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmarClave" class="form-label">Confirmar Contraseña</label>
+                            <InputText id="confirmarClave" type="password" class="form-control"
+                                       @bind-Value="cambioClaveModel.ConfirmarClave" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+
 @code {
     [Parameter]
     public int IdUsuarioEditar { get; set; } = 0;
@@ -152,6 +203,10 @@
     // Variables para mostrar el ID y Código del usuario
     private string idUsuarioDisplay = string.Empty;
     private string codigoUsuarioDisplay = string.Empty;
+
+    // Variables para el modal de cambio de contraseña
+    private bool mostrarModalCambioClave = false;
+    private CambioClaveModel cambioClaveModel = new CambioClaveModel();
 
     protected override async Task OnInitializedAsync()
     {
@@ -241,5 +296,74 @@
         {
             isSaving = false;
         }
+    }
+
+    // Métodos para el modal de cambio de contraseña
+    private void AbrirModalCambioClave()
+    {
+        cambioClaveModel = new CambioClaveModel();
+        mostrarModalCambioClave = true;
+    }
+
+    private void CerrarModalCambioClave()
+    {
+        mostrarModalCambioClave = false;
+    }
+
+    private async Task GuardarCambioClave()
+    {
+        if (cambioClaveModel.NuevaClave != cambioClaveModel.ConfirmarClave)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = "Las contraseñas no coinciden.",
+                    Icon = SweetAlertIcon.Error
+                });
+            return;
+        }
+
+        try
+        {
+            // Se llama al método del servicio para cambiar la clave del usuario
+            await UsuarioService.CambiarClave(usuario.UsuarioId, new CambioClaveDTO
+                {
+                    UsuarioId = usuario.UsuarioId,
+                    NuevaClave = cambioClaveModel.NuevaClave,
+                    ConfirmarClave = cambioClaveModel.ConfirmarClave
+                });
+
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Éxito",
+                    Text = "La contraseña se actualizó correctamente.",
+                    Icon = SweetAlertIcon.Success
+                });
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cambiar la contraseña: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            mostrarModalCambioClave = false;
+        }
+    }
+
+    // Modelo para el cambio de contraseña (igual que en el DTO, puede usarse también un modelo de validación aquí)
+    public class CambioClaveModel
+    {
+        [Required(ErrorMessage = "La nueva contraseña es obligatoria.")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener entre 6 y 100 caracteres.")]
+        public string NuevaClave { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Debe confirmar la nueva contraseña.")]
+        [Compare("NuevaClave", ErrorMessage = "Las contraseñas no coinciden.")]
+        public string ConfirmarClave { get; set; } = string.Empty;
     }
 }

@@ -1,14 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
+using S_Blazor_TDApp.Server.Utilities;
 using S_Blazor_TDApp.Shared;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
@@ -17,63 +13,42 @@ namespace S_Blazor_TDApp.Server.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly DbTdappContext _context;
-        private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
 
-        public UsuarioController(DbTdappContext context, IMapper mapper, IConfiguration configuration)
+        public UsuarioController(DbTdappContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _configuration = configuration;
         }
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login(Shared.LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
-            var responseApi = new ResponseAPI<LoginResponse>();
+            // Busca al usuario en la base de datos por correo (sin comparar la contraseña en la consulta)
+            var usuarioEntity = await _context.Usuarios
+                .Include(u => u.IdRolNavigation)
+                .FirstOrDefaultAsync(u => u.Email == login.Email);
 
-            try
+            // Verifica que el usuario exista y que la contraseña sea válida
+            if (usuarioEntity == null || !PasswordHelper.VerifyPassword(login.Clave, usuarioEntity.Clave))
             {
-                // Buscar al usuario por nombre (o email, según convenga)
-                var usuarioEntity = await _context.Usuarios
-                    .Include(u => u.IdRolNavigation)
-                    .FirstOrDefaultAsync(u => u.NombreUsuario == request.Username);
-
-                if (usuarioEntity == null)
-                {
-                    responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "Usuario no encontrado.";
-                    return NotFound(responseApi);
-                }
-
-                // Validar la contraseña (en producción se debe trabajar con contraseñas hasheadas)
-                if (usuarioEntity.Clave != request.Password)
-                {
-                    responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "Contraseña incorrecta.";
-                    return Unauthorized(responseApi);
-                }
-
-                // Generar token JWT
-                var token = GenerateJwtToken(usuarioEntity);
-
-                var loginResponse = new LoginResponse
-                {
-                    Token = token,
-                    Usuario = _mapper.Map<UsuarioDTO>(usuarioEntity)
-                };
-
-                responseApi.EsCorrecto = true;
-                responseApi.Valor = loginResponse;
-                return Ok(responseApi);
+                return Unauthorized(new { Message = "Credenciales inválidas." });
             }
-            catch (Exception ex)
+
+            if (!usuarioEntity.Activo)
             {
-                responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                return Unauthorized(new { Message = "Usuario inactivo, contacte al administrador." });
             }
+
+            var inicioSesion = new InicioSesionDTO
+            {
+                Nombre = usuarioEntity.NombreUsuario,
+                Correo = usuarioEntity.Email ?? string.Empty,
+                Rol = usuarioEntity.IdRolNavigation != null ? usuarioEntity.IdRolNavigation.NombreRol : "Sin Rol"
+            };
+
+            return Ok(inicioSesion);
         }
 
         [HttpGet]
@@ -158,6 +133,40 @@ namespace S_Blazor_TDApp.Server.Controllers
             return Ok(responseApi);
         }
 
+        [HttpGet]
+        [Route("ObtenerPorEmail/{email}")]
+        public async Task<IActionResult> ObtenerPorEmail(string email)
+        {
+            var responseApi = new ResponseAPI<UsuarioDTO>();
+
+            try
+            {
+                var usuarioEntity = await _context.Usuarios
+                    .Include(u => u.IdRolNavigation)
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                if (usuarioEntity == null)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El usuario no existe.";
+                    return NotFound(responseApi);
+                }
+
+                var usuarioDTO = _mapper.Map<UsuarioDTO>(usuarioEntity);
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = usuarioDTO;
+            }
+            catch (Exception ex)
+            {
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+                return BadRequest(responseApi);
+            }
+
+            return Ok(responseApi);
+        }
+
         [HttpPost]
         [Route("Guardar")]
         public async Task<IActionResult> Guardar(UsuarioDTO usuarioDTO)
@@ -169,7 +178,10 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Mapea el DTO a la entidad utilizando AutoMapper
                 var usuarioEntity = _mapper.Map<Usuario>(usuarioDTO);
 
-                // Asigna la fecha de creación y sin la de actualización al guardar
+                // Hashea la contraseña antes de guardar
+                usuarioEntity.Clave = PasswordHelper.HashPassword(usuarioEntity.Clave);
+
+                // Asigna la fecha de creación y deja nula la de actualización al guardar
                 usuarioEntity.FechaCreacion = DateTime.Now;
                 usuarioEntity.FechaActualizacion = null;
 
@@ -216,7 +228,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Mapea los valores del DTO a la entidad existente
                 _mapper.Map(usuarioDTO, usuarioEntity);
 
-                // Asignamos la fecha de actualización solo al editar
+                // Asigna la fecha de actualización
                 usuarioEntity.FechaActualizacion = DateTime.Now;
 
                 _context.Usuarios.Update(usuarioEntity);
@@ -265,32 +277,32 @@ namespace S_Blazor_TDApp.Server.Controllers
             return Ok(responseApi);
         }
 
-        // Token de autenticación
-        private string GenerateJwtToken(Usuario usuario)
+        [HttpPut]
+        [Route("CambiarClave/{id}")]
+        public async Task<IActionResult> CambiarClave(int id, [FromBody] CambioClaveDTO cambioClaveDto)
         {
-            // Obtener la configuración de JWT desde appsettings.json
-            var secret = _configuration["JWT:Secret"];
-            var issuer = _configuration["JWT:Issuer"];
-            var audience = _configuration["JWT:Audience"];
-            var tokenValidity = Convert.ToDouble(_configuration["JWT:TokenValidityInMinutes"]);
-
-            var key = Encoding.ASCII.GetBytes(secret!);
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenDescriptor = new SecurityTokenDescriptor
+            if (id != cambioClaveDto.UsuarioId)
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, usuario.NombreUsuario),
-                    new Claim(ClaimTypes.Role, usuario.IdRolNavigation.NombreRol)
-                }),
-                Expires = DateTime.UtcNow.AddMinutes(tokenValidity),
-                Issuer = issuer,
-                Audience = audience,
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
+                return BadRequest(new { Message = "El ID del usuario no coincide." });
+            }
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id);
+            if (usuarioEntity == null)
+            {
+                return NotFound(new { Message = "Usuario no encontrado." });
+            }
+
+            // Aquí se puede validar adicionalmente si se requiere algún control extra
+            // ya que el DTO ya tiene validaciones (Compare) para asegurar que las contraseñas coincidan
+
+            // Hashea la nueva contraseña usando el helper
+            usuarioEntity.Clave = PasswordHelper.HashPassword(cambioClaveDto.NuevaClave);
+            usuarioEntity.FechaActualizacion = DateTime.Now;
+
+            _context.Usuarios.Update(usuarioEntity);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Contraseña actualizada correctamente." });
         }
     }
 }

@@ -15,9 +15,7 @@ namespace S_Blazor_TDApp.Shared
         [Required(ErrorMessage = "El nombre completo es obligatorio.")]
         public string NombreCompleto { get; set; } = null!;
 
-        [Required(ErrorMessage = "La contraseña es obligatoria.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener entre 6 y 100 caracteres.")]
-        public string Clave { get; set; } = null!;
+        public string? Clave { get; set; }
 
         [Required(ErrorMessage = "El correo electronico es obligatorio.")]
         [EmailAddress(ErrorMessage = "El formato del correo electrónico no es válido.")]

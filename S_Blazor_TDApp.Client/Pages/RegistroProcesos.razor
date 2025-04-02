@@ -1,9 +1,14 @@
-﻿@* @page "/" *@
-@page "/registroProcesos"
+﻿@page "/registroProcesos"
 
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
+
+@* Using para la autorización de usuarios *@
+@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@attribute [Authorize(Roles = "Administrador, Supervisor, Empleado")]
 
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
@@ -11,6 +16,9 @@
 @inject ITareaRecurrenteService TareaRecurrenteService
 @inject IRegistroProcesosService RegistroProcesoService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider authStateProvider
+
 
 <!-- Lista de tareas recurrentes reportables -->
 <div id="tareas" class="container-fluid mt-4">
@@ -329,7 +337,7 @@
 
     // Diccionario para contar registros por tarea (por usuario actual)
     private Dictionary<int, int> userProcessCount = new();
-    private int currentUserId = 1; // ID de usuario fijo (hasta implementar autenticación real)
+    private int currentUserId;
 
     // Diccionario para almacenar los días asignados a cada tarea, pero en formato TareaDiasDTO
     private Dictionary<int, List<TareaDiasDTO>> taskDiasMap = new();
@@ -340,7 +348,6 @@
         foreach (var tarea in listaTareasRecurrentes)
         {
             var dias = await TareaDiasService.ListaPorTareaRecurrId(tarea.TareaRecurrId);
-            // dias ya es List<TareaDiasDTO>, se asigna directamente
             taskDiasMap[tarea.TareaRecurrId] = dias;
         }
     }
@@ -372,6 +379,25 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Obtener el estado de autenticación actual
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            // Extraer el email del usuario autenticado
+            var email = user.FindFirst(ClaimTypes.Email)?.Value;
+            if (!string.IsNullOrEmpty(email))
+            {
+                // Utilizar el servicio para obtener el usuario por email
+                var usuario = await UsuarioService.ObtenerPorEmail(email);
+                if (usuario != null)
+                {
+                    currentUserId = usuario.UsuarioId;
+                }
+            }
+        }
+
         await LoadTareasRecurrentes();
         await LoadProcesosRegistrados();
         await LoadTareaDiasForAllTasks();
@@ -492,7 +518,7 @@
         registroProceso = new RegistroProcesoDTO
             {
                 TareaRecurrId = task.TareaRecurrId,
-                UsuarioId = currentUserId, // ID de usuario temporal
+                UsuarioId = currentUserId,
                 FechaRegistro = DateTime.Now
             };
 
@@ -503,7 +529,7 @@
     {
         try
         {
-            // Pasar fecha al registrar el proceso
+            // Actualizar la fecha de registro
             registroProceso.FechaRegistro = DateTime.Now;
 
             await RegistroProcesoService.GuardarProcesos(registroProceso);

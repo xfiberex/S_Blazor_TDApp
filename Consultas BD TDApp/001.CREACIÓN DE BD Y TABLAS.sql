@@ -32,7 +32,7 @@ CREATE TABLE Usuarios (
 	Codigo NVARCHAR(100) NOT NULL, -- Codigo de 5 digitos
     NombreUsuario NVARCHAR(100) NOT NULL,
 	NombreCompleto NVARCHAR(100) NOT NULL,
-    Clave NVARCHAR(255) NOT NULL, -- Almacena la contraseña hasheada
+    Clave NVARCHAR(MAX) NOT NULL, -- Almacena la contraseña hasheada
     Email NVARCHAR(150) NULL,
     RolId INT NOT NULL,               -- Columna para relacionar con la tabla Rol
     Activo BIT NOT NULL DEFAULT 1,    -- 1 = activo, 0 = inactivo
@@ -43,9 +43,16 @@ CREATE TABLE Usuarios (
 );
 GO
 
+-- INSERCIÓN POR DEFECTO PARA TENER AL ADMINISTRADOR COMO PRIMER USUARIO, NO CAMBIAR NADA, CONTRASEÑA: pass123 --
+-- LOS DATOS SOLO PUEDEN CAMBIARSE EN LA PAGINA DESPUES DE INICIAR SESIÓN ---
+
+--INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
+--VALUES ('00001', 'Admin', 'Admin', '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NYqCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGslz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==', 'admin@example.com', 1, 1);
+
 -- INSERCIONES DE USUARIOS PARA PRUEBAS --
 --INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
 --VALUES
+--  ('00001', 'juanp',   'Juan Perez',         'pass123', 'juan.perez@example.com',        1, 1),
 --  ('49382', 'juanp',   'Juan Perez',         'pass123', 'juan.perez@example.com',        1, 1),
 --  ('27541', 'mariaL',  'Maria Lopez',        'pass123', 'maria.lopez@example.com',       2, 0),
 --  ('93618', 'carlosG', 'Carlos Garcia',      'pass123', 'carlos.garcia@example.com',     3, 0),

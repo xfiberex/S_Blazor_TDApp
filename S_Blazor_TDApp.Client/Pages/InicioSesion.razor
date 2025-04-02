@@ -1,0 +1,183 @@
+﻿@page "/"
+@layout LoginLayout
+
+@using S_Blazor_TDApp.Shared
+@using S_Blazor_TDApp.Client.Extensions
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject HttpClient httpClient
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider autenticacionProvider
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center py-4">
+    <div class="row w-100 justify-content-center">
+        <div class="col-11 col-md-8 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-lg overflow-hidden mx-auto">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 d-flex align-items-center">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        Inicio de Sesión
+                    </h5>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger d-flex align-items-center mb-3 rounded-3 border-0 shadow-sm">
+                            <i class="bi bi-exclamation-triangle-fill fs-6 me-2"></i>
+                            <div>@errorMessage</div>
+                        </div>
+                    }
+
+                    <EditForm Model="login" OnValidSubmit="IniciarSesion" Context="editContext">
+                        <DataAnnotationsValidator />
+                        @if (editContext.GetValidationMessages().Any())
+                        {
+                            <div class="alert alert-danger mb-3 rounded-3 border-0 shadow-sm">
+                                <h6 class="alert-heading d-flex align-items-center mb-1">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    Datos necesarios
+                                </h6>
+                                <ValidationSummary />
+                            </div>
+                        }
+
+                        <!-- Campo para Correo Electrónico -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label small text-muted mb-1">Correo Electrónico</label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-envelope-fill text-primary"></i>
+                                </span>
+                                <InputText id="email" type="email" class="form-control border-start-0"
+                                           placeholder="ejemplo@dominio.com"
+                                           @bind-Value="login.Email" />
+                            </div>
+                        </div>
+
+                        <!-- Campo para Contraseña -->
+                        <div class="mb-4">
+                            <label for="clave" class="form-label small text-muted mb-1">Contraseña</label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-key-fill text-primary"></i>
+                                </span>
+                                <InputText id="clave" type="@(showPassword ? "text" : "password")"
+                                           class="form-control border-start-0 border-end-0"
+                                           placeholder="Ingrese su contraseña"
+                                           @bind-Value="login.Clave" />
+                                <button type="button" class="input-group-text bg-light border-start-0"
+                                        @onclick="TogglePasswordVisibility">
+                                    <i class="bi @(showPassword ? "bi-eye-slash-fill" : "bi-eye-fill") text-primary"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Botón de envío -->
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary py-2 fw-medium shadow" disabled="@isSaving">
+                                @if (isSaving)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span>Iniciando sesión...</span>
+                                }
+                                else
+                                {
+                                    <span>Iniciar Sesión</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+
+                <div class="card-footer bg-light py-3 text-center">
+                    <small class="text-muted">
+                        Si la cuenta está inactiva, contacte al administrador mediante este correo: <b>@adminEmail</b>
+                    </small>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    © @DateTime.Now.Year Task Management System By Ricky Jimenez. Todos los derechos reservados.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private EditContext editContext = null!;
+    private LoginDTO login = new LoginDTO();
+    private bool isSaving = false;
+    private string? errorMessage;
+    private bool showPassword = false;
+    private string adminEmail = "admin@example.com"; // Valor por defecto
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new EditContext(login);
+        await GetAdminEmail();
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private async Task GetAdminEmail()
+    {
+        try
+        {
+            var response = await httpClient.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>("api/Usuario/Buscar/1");
+
+            if (response != null && response.EsCorrecto && response.Valor != null)
+            {
+                adminEmail = response.Valor.Email ?? adminEmail;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener el email del administrador: {ex.Message}");
+            // Se puede dejar el valor por defecto o asignar otro
+        }
+    }
+
+    private async Task IniciarSesion()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            var loginResponse = await httpClient.PostAsJsonAsync("/api/Usuario/Login", login);
+
+            if (loginResponse.IsSuccessStatusCode)
+            {
+                var sesionUsuario = await loginResponse.Content.ReadFromJsonAsync<InicioSesionDTO>();
+                var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
+                await autenticacionExt.ActualizarEstadoAutenticacion(sesionUsuario);
+                navManager.NavigateTo("/registroProcesos");
+            }
+            else
+            {
+                var errorResult = await loginResponse.Content.ReadFromJsonAsync<ErrorResponse>();
+                errorMessage = errorResult?.Message ?? "Error al iniciar sesión. Verifique sus credenciales e intente nuevamente.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error de conexión. Por favor, intente nuevamente más tarde.";
+            Console.WriteLine($"Error en inicio de sesión: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    public class ErrorResponse
+    {
+        public string Message { get; set; } = string.Empty;
+    }
+}

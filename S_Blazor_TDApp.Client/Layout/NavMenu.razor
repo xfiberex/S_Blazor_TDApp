@@ -1,14 +1,16 @@
-﻿@inject NavigationManager NavigationManager
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 
 <div class="bg-dark text-light">
     <div class="top-row navbar navbar-dark">
-        <div class="container-fluid">
+        <div class="container-fluid px-4">
             <a class="navbar-brand" href="registroProcesos">
-                <img src="/Task_Logo.png" alt="L" width="30" height="30" class="textIcon me-2">
+                <img src="/Logo_30x30.png" alt="L" width="30" height="30" class="textIcon me-2 rounded-image">
                 @if (!Collapse)
                 {
-                    <span class="brand-text">Todo App</span>
+                    <span class="brand-text">Task Management</span>
                 }
             </a>
             <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenuMobile">
@@ -19,55 +21,73 @@
 
     <div class="@GetNavMenuCssClass() nav-scrollable">
         <nav class="flex-column">
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="registroProcesos" Match="NavLinkMatch.All">
-                    <span aria-hidden="true">
-                        <i class="bi bi-house-gear-fill"></i>
-                    </span>
-                    <span>Procesos</span>
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="tareasRecurrentes">
-                    <span aria-hidden="true">
-                        <i class="bi bi-list-task"></i>
-                    </span>
-                    <span>Recurrentes</span>
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="tareasDias">
-                    <span aria-hidden="true">
-                        <i class="bi bi-calendar3"></i>
-                    </span>
-                    <span>Disponibilidad</span>
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="tareasCalendario">
-                    <span aria-hidden="true">
-                        <i class="bi bi-calendar2-range-fill"></i>
-                    </span>
-                    <span>Calendario</span>
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="usuarios">
-                    <span aria-hidden="true">
-                        <i class="bi bi-people-fill"></i>
-                    </span>
-                    <span>Usuarios</span>
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="rolesPermisos">
-                    <span aria-hidden="true">
-                        <i class="bi bi-person-fill-gear"></i>
-                    </span>
-                    <span>Roles y Permisos</span>
-                </NavLink>
-            </div>
+
+            @* Se utiliza AuthorizeView Roles, para que puedan ver los menús los usuarios con esos roles *@
+            <AuthorizeView Roles="Administrador, Supervisor, Empleado">
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="registroProcesos" Match="NavLinkMatch.All">
+                            <span aria-hidden="true">
+                                <i class="bi bi-house-gear-fill"></i>
+                            </span>
+                            <span>Procesos</span>
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="tareasRecurrentes">
+                            <span aria-hidden="true">
+                                <i class="bi bi-list-task"></i>
+                            </span>
+                            <span>Recurrentes</span>
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="tareasDias">
+                            <span aria-hidden="true">
+                                <i class="bi bi-calendar3"></i>
+                            </span>
+                            <span>Disponibilidad</span>
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="tareasCalendario">
+                            <span aria-hidden="true">
+                                <i class="bi bi-calendar2-range-fill"></i>
+                            </span>
+                            <span>Calendario</span>
+                        </NavLink>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
             
+            <AuthorizeView Roles="Administrador, Supervisor">
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="usuarios">
+                            <span aria-hidden="true">
+                                <i class="bi bi-people-fill"></i>
+                            </span>
+                            <span>Usuarios</span>
+                        </NavLink>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+
+            <AuthorizeView Roles="Administrador">
+                <Authorized>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="rolesPermisos">
+                            <span aria-hidden="true">
+                                <i class="bi bi-person-fill-gear"></i>
+                            </span>
+                            <span>Roles y Permisos</span>
+                        </NavLink>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
 
             <!-- Botón para colapsar/expandir el sidebar - solo visible en desktop -->
             <div class="nav-item px-3 mt-auto desktop-only">

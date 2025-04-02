@@ -41,6 +41,17 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             return resultado.Valor!;
         }
 
+        public async Task<UsuarioDTO?> ObtenerPorEmail(string email)
+        {
+            var response = await _http.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>($"api/Usuario/ObtenerPorEmail/{email}")
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor;
+        }
+
         public async Task<int> Guardar(UsuarioDTO usuario)
         {
             // Se utiliza PostAsJsonAsync y se comprueba el código de estado HTTP.
@@ -95,6 +106,16 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
             // Retorna true en caso de éxito
             return true;
+        }
+
+        public async Task CambiarClave(int usuarioId, CambioClaveDTO cambioClaveDto)
+        {
+            var httpResponse = await _http.PutAsJsonAsync($"api/Usuario/CambiarClave/{usuarioId}", cambioClaveDto);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
         }
     }
 }
