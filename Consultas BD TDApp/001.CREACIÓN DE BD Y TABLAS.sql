@@ -108,20 +108,25 @@ CREATE TABLE Tareas_Recurrentes (
 GO
 
 -- Insercion de prueba para aumentar datos de Tareas_Recurrentes --
---INSERT INTO Tareas_Recurrentes (NombreTareaRecurr, DescripcionTareaRecurr, Recurrente, HoraDesde, HorasHasta,
---    TiempoEjecucion, CantidadEjecuciones, Estado) 
+--INSERT INTO Tareas_Recurrentes
+--    (NombreTareaRecurr, DescripcionTareaRecurr, Recurrente, HoraDesde, HorasHasta, TiempoEjecucion, CantidadEjecuciones, Estado, FechaUltimaRenovacion, EstadoExpiracion)
 --VALUES
---('Revisión de correos', 'Revisar y responder correos pendientes', 1, '2025-02-21 09:00:00', '2025-02-21 09:30:00', 30, 1, 1),
---('Actualización de reportes', 'Actualizar reportes de ventas mensuales', 1, '2025-02-21 10:00:00', '2025-02-21 11:00:00', 60, 1, 1),
---('Backup de base de datos', 'Realizar backup completo de la base de datos', 1, '2025-02-21 02:00:00', '2025-02-21 03:00:00', 60, 1, 1),
---('Limpieza de sistema', 'Eliminar archivos temporales y limpiar el sistema', 1, '2025-02-21 01:00:00', '2025-02-21 01:15:00', 15, 1, 1),
---('Sincronización de servidores', 'Sincronizar datos entre servidores principales y secundarios', 1, '2025-02-21 12:00:00', '2025-02-21 12:30:00', 30, 1, 1),
---('Monitoreo de red', 'Verificar el estado de la red y conexiones', 1, '2025-02-21 08:00:00', '2025-02-21 08:45:00', 45, 1, 1),
---('Actualización de software', 'Actualizar aplicaciones y sistemas operativos', 1, '2025-02-21 14:00:00', '2025-02-21 15:30:00', 90, 1, 1),
---('Reporte de incidencias', 'Elaborar reporte de incidencias y resolver problemas', 1, '2025-02-21 11:00:00', '2025-02-21 11:30:00', 30, 1, 1),
---('Reunión de equipo', 'Coordinar y asistir a reunión de equipo', 1, '2025-02-21 16:00:00', '2025-02-21 17:00:00', 60, 1, 1),
---('Mantenimiento de equipos', 'Realizar mantenimiento preventivo a equipos', 1, '2025-02-21 18:00:00', '2025-02-21 19:00:00', 60, 1, 1);
---GO
+--('Backup de Servidores', 'Realizar respaldo diario de servidores críticos.', 1, '2025-04-03 01:00:00', '2025-04-03 02:00:00', 60, 1, 1, GETDATE(), 1),
+--('Actualización de Antivirus', 'Actualizar definiciones de antivirus en todas las máquinas.', 0, '2025-04-03 03:00:00', '2025-04-03 04:30:00', 90, 3, 1, GETDATE(), 1),
+--('Monitoreo de Red', 'Revisar el rendimiento de la red y detectar posibles fallas.', 1, '2025-04-03 05:00:00', '2025-04-03 06:00:00', 60, 1, 1, GETDATE(), 1),
+--('Actualización de Software', 'Actualizar el software de gestión TI en todas las estaciones de trabajo.', 0, '2025-04-03 07:00:00', '2025-04-03 09:00:00', 120, 2, 1, GETDATE(), 1),
+--('Revisión de Logs', 'Revisar y analizar logs de sistemas críticos.', 1, '2025-04-03 09:30:00', '2025-04-03 10:00:00', 30, 1, 1, GETDATE(), 1),
+--('Verificación de Backup', 'Comprobar que los backups se hayan completado correctamente.', 0, '2025-04-03 10:30:00', '2025-04-03 11:00:00', 30, 1, 1, GETDATE(), 1),
+--('Limpieza de Disco', 'Eliminar archivos temporales y limpiar disco en servidores.', 1, '2025-04-03 11:15:00', '2025-04-03 11:45:00', 30, 1, 1, GETDATE(), 1),
+--('Inspección de Hardware', 'Revisar el estado físico de los equipos de red.', 0, '2025-04-03 12:00:00', '2025-04-03 12:30:00', 30, 1, 1, GETDATE(), 1),
+--('Actualización de Parches', 'Instalar parches de seguridad en sistemas operativos.', 1, '2025-04-03 13:00:00', '2025-04-03 14:00:00', 60, 1, 1, GETDATE(), 1),
+--('Capacitación TI', 'Realizar capacitación interna sobre nuevas tecnologías.', 0, '2025-04-03 14:30:00', '2025-04-03 16:00:00', 90, 1, 1, GETDATE(), 1),
+--('Verificación de Seguridad', 'Revisar configuraciones de seguridad en sistemas.', 1, '2025-04-03 16:30:00', '2025-04-03 17:00:00', 30, 1, 1, GETDATE(), 1),
+--('Informe de Actividades', 'Generar informe semanal de actividades TI.', 0, '2025-04-03 17:15:00', '2025-04-03 18:15:00', 60, 1, 1, GETDATE(), 1),
+--('Chequeo de Sistemas', 'Realizar chequeo general de sistemas críticos.', 1, '2025-04-03 18:30:00', '2025-04-03 19:00:00', 30, 1, 1, GETDATE(), 1),
+--('Mantenimiento de Redes', 'Ejecutar mantenimiento preventivo en la infraestructura de red.', 0, '2025-04-03 19:15:00', '2025-04-03 20:15:00', 60, 1, 1, GETDATE(), 1),
+--('Actualización de Inventario', 'Actualizar inventario de equipos TI.', 1, '2025-04-03 20:30:00', '2025-04-03 21:00:00', 30, 1, 1, GETDATE(), 1);
+GO
 
 -- Tabla para los dias --
 CREATE TABLE Dias_Disponibles (
@@ -130,6 +135,7 @@ CREATE TABLE Dias_Disponibles (
 );
 GO
 
+-- INSERCIÓN DE DIAS POR DEFECTO OBLIGATORIO, PARA PODER CONFIGURAR LAS TAREAS RECURRENTES --
 --INSERT INTO Dias_Disponibles (NombreDia) VALUES
 --('Lunes'),
 --('Martes'),

@@ -8,8 +8,8 @@ namespace S_Blazor_TDApp.Client.Services.Interfaces
         Task<UsuarioDTO> Buscar(int id);
         Task<bool> ExisteCodigo(string codigo);
         Task<UsuarioDTO?> ObtenerPorEmail(string email);
-        Task<int> Guardar(UsuarioDTO empleado);
-        Task<int> Editar(UsuarioDTO empleado);
+        Task<int> Guardar(UsuarioDTO usuario);
+        Task<int> Editar(UsuarioDTO usuario);
         Task<bool> Eliminar(int id);
         Task CambiarClave(int usuarioId, CambioClaveDTO cambioClaveDto);
     }

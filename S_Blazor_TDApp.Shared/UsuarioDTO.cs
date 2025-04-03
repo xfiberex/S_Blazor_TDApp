@@ -33,9 +33,10 @@ namespace S_Blazor_TDApp.Shared
         public DateTime? FechaActualizacion { get; set; }
 
         public string FechaActualizacionStr => FechaActualizacion.HasValue
-        ? FechaActualizacion.Value.ToString("dd/MM/yyyy")
-        : string.Empty;
+            ? FechaActualizacion.Value.ToString("dd/MM/yyyy")
+            : string.Empty;
 
         public RolDTO? Rol { get; set; }
+
     }
 }

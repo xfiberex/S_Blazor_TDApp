@@ -1,21 +1,3 @@
--- Para mas adelante--
+-- Siguiente implementación --
    
-1. Menú de roles y permisos. NOTA: CRUD para los roles realizado, faltan los permiso de los roles
-
-	1.1 CRUD para roles y los permisos se configuraran similar a la configuración de tareas días.
-
-	1.2 Despues de crear los roles, se mostraran en permisos y al seleccionarlos van a aparecer los menús disponibles para ese rol.
-
-	1.3 Si un rol ya tiene menús configurados, solo aparecerán los menús que no lo estan, similar a tareas días menú (Disponibilidad).
-
-2. Inicio de sesión, con validación por correo al crear usuarios. 
-      
-	2.1 Solo el administrador creara los usuario y se le generara una contraseña para su inicio de sesión, en caso de cambiar, 
-            lo podrá hacer si lo desea. 
-
-	2.2 Esto se ubicara en un sección 
-
-3. Logica para cambio de contraseña, cada 30, 60 o 90 días configurables, para los usuarios con vista.
-
-4. Funcionalidades al menú de tareas de calendario y que se muestren para registrar en procesos, similares a la recurrentes.
-
+	1. Hacer funcional las tareas de calendario, es decir, solo tendrán un fecha y hora fija en la cual estarán disponibles, y se validaran con un botón el cual sumara un mes a la fecha y hora fija.

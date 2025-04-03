@@ -155,7 +155,6 @@
     </div>
 </div>
 
-
 @if (mostrarModalCambioClave)
 {
     <div class="modal fade show d-block" tabindex="-1">
@@ -187,7 +186,6 @@
     <div class="modal-backdrop fade show"></div>
 }
 
-
 @code {
     [Parameter]
     public int IdUsuarioEditar { get; set; } = 0;
@@ -206,7 +204,7 @@
 
     // Variables para el modal de cambio de contraseña
     private bool mostrarModalCambioClave = false;
-    private CambioClaveModel cambioClaveModel = new CambioClaveModel();
+    private CambioClaveDTO cambioClaveModel = new CambioClaveDTO();
 
     protected override async Task OnInitializedAsync()
     {
@@ -301,7 +299,8 @@
     // Métodos para el modal de cambio de contraseña
     private void AbrirModalCambioClave()
     {
-        cambioClaveModel = new CambioClaveModel();
+        // Se crea una nueva instancia del modelo correcto (CambioClaveDTO)
+        cambioClaveModel = new CambioClaveDTO();
         mostrarModalCambioClave = true;
     }
 
@@ -353,17 +352,5 @@
         {
             mostrarModalCambioClave = false;
         }
-    }
-
-    // Modelo para el cambio de contraseña (igual que en el DTO, puede usarse también un modelo de validación aquí)
-    public class CambioClaveModel
-    {
-        [Required(ErrorMessage = "La nueva contraseña es obligatoria.")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "La contraseña debe tener entre 6 y 100 caracteres.")]
-        public string NuevaClave { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Debe confirmar la nueva contraseña.")]
-        [Compare("NuevaClave", ErrorMessage = "Las contraseñas no coinciden.")]
-        public string ConfirmarClave { get; set; } = string.Empty;
     }
 }

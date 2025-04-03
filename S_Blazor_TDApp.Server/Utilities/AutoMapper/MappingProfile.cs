@@ -25,7 +25,6 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
                 .ForMember(dest => dest.Rol, opt => opt.MapFrom(src => src.IdRolNavigation))
                 .ReverseMap()
 
-                .ForMember(dest => dest.Clave, opt => opt.Ignore())
                 .ForMember(dest => dest.IdRolNavigation, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.Now));
 

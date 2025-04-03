@@ -18,8 +18,8 @@ builder.Services.AddHostedService<TareaExpiracionService>();
 // Contexto de base de datos
 builder.Services.AddDbContext<DbTdappContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
-    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
+    //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
 });
 
 builder.Services.AddCors(options =>

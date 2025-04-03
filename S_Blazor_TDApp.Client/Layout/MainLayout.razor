@@ -25,16 +25,23 @@
                             // Extraer el nombre y el email del usuario autenticado
                             var nombre = authContext.User.Identity?.Name ?? "Usuario";
                             var email = authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                            var permiso = authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
                         }
-                        <span>Sesión iniciada: @nombre - (@email)</span>
+                        <div class="session-info">
+                            <span class="session-status">Sesión iniciada</span>
+                            <span class="separator">|</span>
+                            <span class="user-info">Usuario: <span class="user-name">@nombre</span> (<span class="user-email">@email</span>)</span>
+                            <span class="separator">|</span>
+                            <span class="user-permissions">Permisos: <span class="permissions">@permiso</span></span>
+                        </div>
                     </Authorized>
                     <NotAuthorized>
                         <span>Invitado</span>
                     </NotAuthorized>
                 </AuthorizeView>
             </div>
-            <div>
-                <a class="me-3" href="https://learn.microsoft.com/aspnet/core/" target="_blank">Acerca de</a>
+            <div class="nav-links">
+                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">Acerca de</a>
                 <a href="javascript:void(0)" @onclick="CerrarSesion">Salir</a>
             </div>
         </div>
