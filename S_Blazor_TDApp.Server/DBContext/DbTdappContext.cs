@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.Entities;
 
 namespace S_Blazor_TDApp.Server.DBContext;
@@ -22,7 +24,9 @@ public partial class DbTdappContext : DbContext
 
     public virtual DbSet<TareaDia> TareaDias { get; set; }
 
-    public virtual DbSet<TareasCalendario> TareasCalendarios { get; set; }
+    public virtual DbSet<TareasCalendario> TareasCalendario { get; set; }
+
+    public virtual DbSet<TareasCalendarioCompletado> TareasCalendarioCompletados { get; set; }
 
     public virtual DbSet<TareasRecurrente> TareasRecurrentes { get; set; }
 
@@ -34,7 +38,7 @@ public partial class DbTdappContext : DbContext
     {
         modelBuilder.Entity<DiasDisponible>(entity =>
         {
-            entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C769386BFF9");
+            entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C7690A3E442");
 
             entity.ToTable("Dias_Disponibles");
 
@@ -43,7 +47,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<RegistroProceso>(entity =>
         {
-            entity.HasKey(e => e.ProcesoId).HasName("PK__Registro__1C00FFD04C611B91");
+            entity.HasKey(e => e.ProcesoId).HasName("PK__Registro__1C00FFD0EE15BC6B");
 
             entity.ToTable("Registro_Procesos");
 
@@ -65,7 +69,7 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<Rol>(entity =>
         {
-            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F1E5C6894E");
+            entity.HasKey(e => e.RolId).HasName("PK__Rol__F92302F16D1448F2");
 
             entity.ToTable("Rol");
 
@@ -80,16 +84,16 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareaDia>(entity =>
         {
-            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D89DDB3DCF");
+            entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D82062B2ED");
 
             entity.ToTable("Tarea_Dias");
 
-            entity.HasOne(d => d.IdDiaNavegation).WithMany(p => p.TareaDia)
+            entity.HasOne(d => d.IdDiaNavigation).WithMany(p => p.TareaDia)
                 .HasForeignKey(d => d.DiaId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_TareaDias_DiasDisponibles");
 
-            entity.HasOne(d => d.IdTareaRecurrNavegation).WithMany(p => p.TareaDia)
+            entity.HasOne(d => d.IdTareaRecurrNavigation).WithMany(p => p.TareaDia)
                 .HasForeignKey(d => d.TareaRecurrId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_TareaDias_TareasRecurrentes");
@@ -97,20 +101,38 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<TareasCalendario>(entity =>
         {
-            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD839916998F010");
+            entity.HasKey(e => e.TareaId).HasName("PK__Tareas_C__5CD8399119C6B4AF");
 
             entity.ToTable("Tareas_Calendario");
 
             entity.Property(e => e.DescripcionTarea).HasMaxLength(250);
-            entity.Property(e => e.Fecha).HasColumnType("datetime");
             entity.Property(e => e.Habilitado).HasDefaultValue(true);
-            entity.Property(e => e.Hora).HasColumnType("datetime");
             entity.Property(e => e.NombreTarea).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<TareasCalendarioCompletado>(entity =>
+        {
+            entity.HasKey(e => e.TareaCompletoId).HasName("PK__Tareas_C__D1FBB9491F2977FE");
+
+            entity.ToTable("Tareas_Calendario_Completado");
+
+            entity.Property(e => e.DescripcionTareaCompletado).HasMaxLength(250);
+            entity.Property(e => e.Fecha_Hora)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.RefTarea).WithMany(p => p.TareasCalendarioCompletados)
+                .HasForeignKey(d => d.TareaId)
+                .HasConstraintName("FK_Tareas_Calendario_Completado_Tareas_Calendario");
+
+            entity.HasOne(d => d.RefUsuario).WithMany(p => p.TareasCalendarioCompletados)
+                .HasForeignKey(d => d.UsuarioId)
+                .HasConstraintName("FK_Tareas_Calendario_Completado_Usuarios");
         });
 
         modelBuilder.Entity<TareasRecurrente>(entity =>
         {
-            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1ABC043B1");
+            entity.HasKey(e => e.TareaRecurrId).HasName("PK__Tareas_R__E95278B1D9E68F2A");
 
             entity.ToTable("Tareas_Recurrentes");
 
@@ -128,10 +150,9 @@ public partial class DbTdappContext : DbContext
 
         modelBuilder.Entity<Usuario>(entity =>
         {
-            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8593507B6");
+            entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8DC6BA519");
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
-            entity.Property(e => e.Clave).HasMaxLength(255);
             entity.Property(e => e.Codigo).HasMaxLength(100);
             entity.Property(e => e.Email).HasMaxLength(150);
             entity.Property(e => e.FechaActualizacion).HasColumnType("datetime");

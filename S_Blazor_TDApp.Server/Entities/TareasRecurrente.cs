@@ -1,4 +1,7 @@
-﻿namespace S_Blazor_TDApp.Server.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class TareasRecurrente
 {
@@ -20,9 +23,9 @@ public partial class TareasRecurrente
 
     public bool Estado { get; set; }
 
-    public bool EstadoExpiracion { get; set; }
-
     public DateTime FechaUltimaRenovacion { get; set; }
+
+    public bool EstadoExpiracion { get; set; }
 
     public virtual ICollection<RegistroProceso> RegistroProcesos { get; set; } = new List<RegistroProceso>();
 

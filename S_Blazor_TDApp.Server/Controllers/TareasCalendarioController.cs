@@ -28,7 +28,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var tareasCalendario = await _context.TareasCalendarios.ToListAsync();
+                var tareasCalendario = await _context.TareasCalendario.ToListAsync();
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaTareasRecurrentesDTO = _mapper.Map<List<TareasCalendarioDTO>>(tareasCalendario);
@@ -53,7 +53,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var tareaCalendarioEntity = await _context.TareasCalendarios
+                var tareaCalendarioEntity = await _context.TareasCalendario
                                                 .FirstOrDefaultAsync(tc => tc.TareaId == id);
 
                 if (tareaCalendarioEntity == null)
@@ -88,7 +88,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Mapea el DTO a la entidad utilizando AutoMapper
                 var tareaCalendarioEntity = _mapper.Map<TareasCalendario>(tareasCalendarioDTO);
 
-                _context.TareasCalendarios.Add(tareaCalendarioEntity);
+                _context.TareasCalendario.Add(tareaCalendarioEntity);
                 await _context.SaveChangesAsync();
 
                 if (tareaCalendarioEntity.TareaId != 0)
@@ -119,7 +119,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var tareaCalendarioEntity = await _context.TareasCalendarios
+                var tareaCalendarioEntity = await _context.TareasCalendario
                                                 .FirstOrDefaultAsync(tc => tc.TareaId == id);
 
                 if (tareaCalendarioEntity == null)
@@ -155,7 +155,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var tareaCalendarioEntity = await _context.TareasCalendarios
+                var tareaCalendarioEntity = await _context.TareasCalendario
                                                 .FirstOrDefaultAsync(tc => tc.TareaId == id);
 
                 if (tareaCalendarioEntity == null)
@@ -165,7 +165,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                _context.TareasCalendarios.Remove(tareaCalendarioEntity);
+                _context.TareasCalendario.Remove(tareaCalendarioEntity);
                 await _context.SaveChangesAsync();
 
                 responseApi.EsCorrecto = true;

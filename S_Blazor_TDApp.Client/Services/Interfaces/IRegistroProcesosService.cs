@@ -9,5 +9,6 @@ namespace S_Blazor_TDApp.Client.Services.Interfaces
         Task<TareasRecurrentesDTO> Buscar(int id);
         Task<RegistroProcesoDTO> BuscarProcesos(int id);
         Task<int> GuardarProcesos(RegistroProcesoDTO proceso);
+        Task<int> RegistrarTareaCalendario(TareasCalendarioCompletadoDTO calendarioDTO);
     }
 }

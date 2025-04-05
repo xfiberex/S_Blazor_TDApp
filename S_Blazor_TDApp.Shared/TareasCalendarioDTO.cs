@@ -24,5 +24,7 @@ namespace S_Blazor_TDApp.Shared
 
         // Nueva propiedad para controlar la visibilidad de la descripción completa
         public bool ShowFullDescription { get; set; } = false;
+
+        public TareasCalendarioCompletadoDTO? ReftareasCalendarioCompletado { get; set; }
     }
 }

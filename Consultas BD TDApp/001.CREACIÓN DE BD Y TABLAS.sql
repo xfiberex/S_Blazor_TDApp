@@ -72,8 +72,27 @@ CREATE TABLE Tareas_Calendario (
     NombreTarea NVARCHAR(100) NOT NULL,
     DescripcionTarea NVARCHAR(250) NULL,
     Habilitado BIT NOT NULL DEFAULT 1,
-    Fecha DATETIME NOT NULL,
-	Hora DATETIME NOT NULL
+    Fecha DATE NOT NULL,
+	Hora TIME NOT NULL
+);
+GO
+
+-- Borrar tablas de calendarios las dos y volverla a crear --
+
+-- Tabla para registrar el completado de las tareas de calendario, la tarea solo estara disponible el dia y hora en la que se asigno mediante el usuario --
+CREATE TABLE Tareas_Calendario_Completado (
+	TareaCompletoId INT IDENTITY(1,1) PRIMARY KEY,
+	TareaId INT,
+	UsuarioId INT,
+	EstadoCompletado BIT NOT NULL DEFAULT 0,
+	DescripcionTareaCompletado NVARCHAR(250) NULL,
+	Fecha DATETIME NOT NULL DEFAULT GETDATE(),
+	CONSTRAINT FK_Tareas_Calendario_Completado_Tareas_Calendario 
+        FOREIGN KEY (TareaId)
+        REFERENCES Tareas_Calendario(TareaId),
+	CONSTRAINT FK_Tareas_Calendario_Completado_Usuarios
+        FOREIGN KEY (UsuarioId)
+        REFERENCES Usuarios(UsuarioId)
 );
 GO
 

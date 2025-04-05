@@ -1,4 +1,7 @@
-﻿namespace S_Blazor_TDApp.Server.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class TareaDia
 {
@@ -8,7 +11,7 @@ public partial class TareaDia
 
     public int DiaId { get; set; }
 
-    public virtual DiasDisponible IdDiaNavegation { get; set; } = null!;
+    public virtual DiasDisponible IdDiaNavigation { get; set; } = null!;
 
-    public virtual TareasRecurrente IdTareaRecurrNavegation { get; set; } = null!;
+    public virtual TareasRecurrente IdTareaRecurrNavigation { get; set; } = null!;
 }

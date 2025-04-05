@@ -31,8 +31,8 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 // Incluir la navegación tanto a TareasRecurrente como a DiasDisponible
                 var TareaDias = await _context.TareaDias
-                                                  .Include(td => td.IdTareaRecurrNavegation)
-                                                  .Include(td => td.IdDiaNavegation)
+                                                  .Include(td => td.IdTareaRecurrNavigation)
+                                                  .Include(td => td.IdDiaNavigation)
                                                   .ToListAsync();
 
                 // Mapea la lista de entidades a una lista de DTOs
@@ -62,15 +62,15 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Se filtra por TareaRecurrId y se incluye la navegación a DiasDisponible
                 var listaDTO = await _context.TareaDias
                                              .Where(td => td.TareaRecurrId == tareaRecurrId)
-                                             .Include(td => td.IdDiaNavegation)
+                                             .Include(td => td.IdDiaNavigation)
                                              .Select(td => new TareaDiasDTO
                                              {
                                                  TareaDiaId = td.TareaDiaId,
                                                  TareaRecurrId = td.TareaRecurrId,
                                                  Dia = new DiasDisponiblesDTO
                                                  {
-                                                     DiaId = td.IdDiaNavegation.DiaId,
-                                                     NombreDia = td.IdDiaNavegation.NombreDia
+                                                     DiaId = td.IdDiaNavigation.DiaId,
+                                                     NombreDia = td.IdDiaNavigation.NombreDia
                                                  }
                                              })
                                              .ToListAsync();
@@ -98,8 +98,8 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 // Se incluye la navegación a DiasDisponible
                 var entity = await _context.TareaDias
-                                           .Include(td => td.IdTareaRecurrNavegation)
-                                           .Include(td => td.IdDiaNavegation)
+                                           .Include(td => td.IdTareaRecurrNavigation)
+                                           .Include(td => td.IdDiaNavigation)
                                            .FirstOrDefaultAsync(td => td.TareaDiaId == id);
 
                 if (entity == null)
@@ -115,8 +115,8 @@ namespace S_Blazor_TDApp.Server.Controllers
                     TareaRecurrId = entity.TareaRecurrId,
                     Dia = new DiasDisponiblesDTO
                     {
-                        DiaId = entity.IdDiaNavegation.DiaId,
-                        NombreDia = entity.IdDiaNavegation.NombreDia
+                        DiaId = entity.IdDiaNavigation.DiaId,
+                        NombreDia = entity.IdDiaNavigation.NombreDia
                     }
                 };
 

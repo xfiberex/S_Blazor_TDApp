@@ -1,3 +1,5 @@
 -- Siguiente implementación --
    
 	1. Hacer funcional las tareas de calendario, es decir, solo tendrán un fecha y hora fija en la cual estarán disponibles, y se validaran con un botón el cual sumara un mes a la fecha y hora fija.
+
+ESTA EN PROCESO, SE HARA CON FECHA Y HORA, DOS PROPIEDADES Y DESPUES SE CONVERTIRAR EN EL AUTOMAPPER

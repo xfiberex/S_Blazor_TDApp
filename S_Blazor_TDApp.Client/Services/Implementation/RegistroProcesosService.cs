@@ -69,5 +69,23 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
             return response.Valor!;
         }
+
+        public async Task<int> RegistrarTareaCalendario(TareasCalendarioCompletadoDTO calendarioDTO)
+        {
+            var httpResponse = await _http.PostAsJsonAsync("api/ProcesosRegistro/RegistrarTareaCalendario", calendarioDTO);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<int>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor!;
+        }
     }
 }
