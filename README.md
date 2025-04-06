@@ -42,7 +42,7 @@
 ## 📦 Instalación y Ejecución
 
 ### 1. Clonar el repositorio
-`bash git clone https://github.com/tu-usuario/S_Blazor_TDApp.git`
+``bash git clone https://github.com/tu-usuario/S_Blazor_TDApp.git``
 
 ### 2. Configurar la base de datos
 - Crea la BD, Tablas e inserciones por defecto.
