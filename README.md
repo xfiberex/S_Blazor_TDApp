@@ -1,7 +1,7 @@
 # 🧩 Task Management System  
 **Gestor de Tareas Estáticas, Dinámicas y Recurrentes**
 
-**S_Blazor_TDApp** es una solución moderna para la gestión de tareas que combina el poder de **Blazor WebAssembly** y **.NET 9**, permitiendo construir aplicaciones web interactivas, escalables y fáciles de mantener. Está diseñada para manejar tareas de distintos tipos: estáticas, dinámicas o recurrentes, con una arquitectura robusta, flexible y extensible.
+**Task Management System (S_Blazor_TDApp)** es una solución moderna para la gestión de tareas que combina el poder de **Blazor WebAssembly** y **.NET 9**, permitiendo construir aplicaciones web interactivas, escalables y fáciles de mantener. Está diseñada para manejar tareas de distintos tipos: estáticas, dinámicas o recurrentes, con una arquitectura robusta, flexible y extensible.
 
 ---
 
@@ -42,7 +42,7 @@
 ## 📦 Instalación y Ejecución
 
 ### 1. Clonar el repositorio
-```bash git clone https://github.com/tu-usuario/S_Blazor_TDApp.git```
+```bash git clone https://github.com/tu-usuario/S_Blazor_TDApp.git
 
 ### 2. Configurar la base de datos
 - Crea la BD, Tablas e inserciones por defecto.
