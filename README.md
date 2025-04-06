@@ -42,5 +42,17 @@
 ## 📦 Instalación y Ejecución
 
 ### 1. Clonar el repositorio
-```bash
-git clone https://github.com/tu-usuario/S_Blazor_TDApp.git
+```bash git clone https://github.com/tu-usuario/S_Blazor_TDApp.git```
+
+### 2. Configurar la base de datos
+Crea la BD, Tablas e inserciones por defecto.
+Edita el archivo appsettings.json y ajusta la cadena de conexión para tu instancia de SQL Server.
+
+### 3. Ejecutar la solución
+- 1. Abre el proyecto con Visual Studio.
+- 2. Ejecuta primero el Server (S_Blazor_TDApp.Server), el cual tendra la UI de Swagger para probar las APIs.
+- 3. Despues ejecuta el Cliente (S_Blazor_TDApp.Client), iniciara la interfaz del proyecto hacia el login.
+ 
+## Licencia
+
+- Este proyecto se distribuye bajo la licencia MIT. Consulta el archivo LICENSE para más detalles.
