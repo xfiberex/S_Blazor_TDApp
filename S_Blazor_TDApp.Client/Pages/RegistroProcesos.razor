@@ -8,12 +8,14 @@
 @using Microsoft.AspNetCore.Authorization;
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
+@using System.Globalization
 @attribute [Authorize(Roles = "Administrador, Supervisor, Empleado")]
 
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
 @inject ITareaDiasService TareaDiasService
 @inject ITareaRecurrenteService TareaRecurrenteService
+@inject ITareaCalendarioService TareaCalendarioService
 @inject IRegistroProcesosService RegistroProcesoService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
@@ -168,7 +170,7 @@
 
 <!-- Lista de tareas de calendario -->
 <div id="tareasCalendario" class="container-fluid mt-4">
-    @if (isLoading)
+    @if (isLoadingCalendario)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
             <div class="spinner-border text-primary me-2" role="status">
@@ -191,32 +193,8 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <h5 class="text-primary mb-0">
-                            <i class="bi bi-card-checklist me-2"></i>Reportar tareas recurrente
+                            <i class="bi bi-calendar-check me-2"></i>Validar tareas de calendario
                         </h5>
-                    </div>
-                    <div class="col-auto">
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-search"></i></span>
-                            <input type="text" class="form-control" placeholder="Buscar..."
-                                   @oninput="OnSearchTermTaskChanged"
-                                   value="@searchTermTask" />
-                            @if (!string.IsNullOrEmpty(searchTermTask))
-                            {
-                                <button class="btn btn-outline-secondary" @onclick="ClearSearch">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <a class="btn btn-success shadow-sm" href="#tareas">
-                            <i class="bi bi-arrow-bar-down me-2"></i>Tareas
-                        </a>
-                    </div>
-                    <div class="col-auto">
-                        <a class="btn btn-success shadow-sm" href="#procesos">
-                            <i class="bi bi-arrow-bar-down me-2"></i>Procesos
-                        </a>
                     </div>
                 </div>
             </div>
@@ -227,12 +205,49 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
-                                <th>Fecha</th>
-                                <th>Hora</th>
+                                <th>Fecha y Hora</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
+                        <tbody>
+                            @foreach (var item in listaCalendario)
+                            {
+                                <tr>
+                                    <td>@item.NombreTarea</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.DescripcionTarea) && item.DescripcionTarea.Length > 35)
+                                        {
+                                            <span>@item.DescripcionTarea.Substring(0, 35)...</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.DescripcionTarea</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @item.Fecha.ToString("dd/MM/yyyy") - @item.Hora.ToString("HH:mm:ss tt")
+                                    </td>
+                                    <td>
+                                        @if (IsTaskAvailable(item))
+                                        {
+                                            <span class="badge bg-warning">Revisar</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">No programado</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-outline-primary btn-sm"
+                                                @onclick="() => OpenValidarTareaCalendarioModal(item)"
+                                                disabled="@( !IsTaskAvailable(item) )">
+                                            Validar
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -382,6 +397,53 @@
     </div>
 </div>
 
+<!-- Modal para validar tarea de calendario -->
+<div class="modal fade" id="validarTareaCalendarioModal" tabindex="-1" aria-labelledby="validarTareaCalendarioModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <EditForm Model="tareaCalendarioCompleto" OnValidSubmit="ValidarTareaCalendario">
+                <DataAnnotationsValidator />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="validarTareaCalendarioModalLabel">Validar Tarea de Calendario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="alert alert-info shadow-sm m-3">
+                    <strong>Detalles de la tarea seleccionada:</strong>
+                    @if (selectedTareaCalendario != null)
+                    {
+                        <ul class="list-unstyled mt-2">
+                            <li><strong>Nombre:</strong> @selectedTareaCalendario.NombreTarea</li>
+                            <li><strong>Estado:</strong> @(IsTaskAvailable(selectedTareaCalendario) ? "Revisar" : "No programado")</li>
+                            <li><strong>Fecha y Hora actuales:</strong> @selectedTareaCalendario.Fecha.ToString("dd/MM/yyyy") - @selectedTareaCalendario.Hora.ToString("HH:mm:ss tt")</li>
+                        </ul>
+                    }
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text">Nueva fecha</span>
+                            <InputDate @bind-Value="tareaCalendarioCompleto.RefTareaCalendario!.Fecha" class="form-control" onchange="OnDateChanged" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text">Nueva hora</span>
+                            <InputText @bind-Value="horaInput" type="time" step="1" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <InputTextArea @bind-Value="tareaCalendarioCompleto.DescripcionTareaCompletado" class="form-control" placeholder="Comentario sobre la validación..." />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Validar</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
 @code {
     #region Variables y métodos de carga y actualización de datos
 
@@ -397,14 +459,20 @@
 
     // Datos para registrar procesos
     private RegistroProcesoDTO registroProceso = new RegistroProcesoDTO();
+    private TareasCalendarioCompletadoDTO tareaCalendarioCompleto = new TareasCalendarioCompletadoDTO { RefTareaCalendario = new TareasCalendarioDTO() };
+    private TareasCalendarioDTO tareaCalendario = new TareasCalendarioDTO { Fecha = DateTime.Now, Hora = DateTime.Now };
 
     // Variables de estado y filtros
     private bool isLoading = true;
+    private bool isLoadingCalendario = true;
+
     private string searchTermTask = "";
     private string searchTermProcess = "";
     private DateTime? startDate;
+
     private TareasRecurrentesDTO? expandedItem = null;
     private TareasRecurrentesDTO? selectedTask = null;
+    private TareasCalendarioDTO? selectedTareaCalendario = null;
 
     // Timers para debounce y refresco automático
     private System.Threading.Timer? _searchTimerTasks;
@@ -475,6 +543,7 @@
         }
 
         await LoadTareasRecurrentes();
+        await LoadTareasCalendario();
         await LoadProcesosRegistrados();
         await LoadTareaDiasForAllTasks();
 
@@ -519,6 +588,7 @@
 
     #endregion
 
+
     #region Métodos para cargar tareas, procesos y registrar procesos
 
     private async Task LoadTareasRecurrentes()
@@ -544,6 +614,31 @@
         finally
         {
             isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadTareasCalendario()
+    {
+        try
+        {
+            isLoadingCalendario = true;
+            listaCalendario = (await TareaCalendarioService.Lista())
+                                        .Where(t => t.Habilitado)
+                                        .ToList();
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al cargar tareas de calendario: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        finally
+        {
+            isLoadingCalendario = false;
             StateHasChanged();
         }
     }
@@ -632,6 +727,133 @@
     }
 
     #endregion
+
+
+    #region Metodo relacionado con las tareas de calendario
+
+    // Método que determina si la tarea está disponible para revisión (Revisar)
+    private bool IsTaskAvailable(TareasCalendarioDTO task)
+    {
+        // Combinar la Fecha y la Hora para obtener el DateTime programado
+        var scheduled = new DateTime(task.Fecha.Year, task.Fecha.Month, task.Fecha.Day, task.Hora.Hour, task.Hora.Minute, task.Hora.Second);
+        return DateTime.Now >= scheduled && task.Habilitado;
+    }
+
+    // Método para abrir el modal y preparar los datos de la tarea de calendario
+    private async Task OpenValidarTareaCalendarioModal(TareasCalendarioDTO task)
+    {
+        selectedTareaCalendario = task;
+        tareaCalendarioCompleto = new TareasCalendarioCompletadoDTO
+            {
+                TareaId = task.TareaId,
+                UsuarioId = currentUserId,
+                RefTareaCalendario = new TareasCalendarioDTO
+                {
+                    TareaId = task.TareaId,
+                    NombreTarea = task.NombreTarea,               
+                    DescripcionTarea = task.DescripcionTarea,   
+                    Fecha = task.Fecha,
+                    Hora = task.Hora,
+                    Habilitado = task.Habilitado
+                }
+            };
+        await JSRuntime.InvokeVoidAsync("showModal", "validarTareaCalendarioModal");
+    }
+
+    // Método que se ejecuta al validar la tarea de calendario
+    private async Task ValidarTareaCalendario()
+    {
+        // Verificar que la nueva fecha/hora sean diferentes a las actuales
+        if (selectedTareaCalendario != null)
+        {
+            if (selectedTareaCalendario.Fecha.Date == tareaCalendarioCompleto.RefTareaCalendario!.Fecha.Date &&
+               selectedTareaCalendario.Hora.TimeOfDay == tareaCalendarioCompleto.RefTareaCalendario.Hora.TimeOfDay)
+            {
+                await SwalService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Validación",
+                        Text = "La nueva fecha y hora no pueden ser iguales a las actuales.",
+                        Icon = SweetAlertIcon.Warning
+                    });
+                return;
+            }
+        }
+        try
+        {
+            await RegistroProcesoService.RegistrarTareaCalendario(tareaCalendarioCompleto);
+            await LoadTareasCalendario(); // Refrescar la lista de tareas de calendario
+            await JSRuntime.InvokeVoidAsync("hideModal", "validarTareaCalendarioModal");
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Éxito",
+                    Text = "La tarea de calendario ha sido validada.",
+                    Icon = SweetAlertIcon.Success
+                });
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Error al validar la tarea de calendario: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+
+    // Captura el cambio en la fecha y asigna solo la parte de la fecha (la hora queda en 00:00:00)
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime selectedDate))
+        {
+            tareaCalendarioCompleto.RefTareaCalendario!.Fecha = selectedDate.Date;
+        }
+    }
+
+    // Propiedad para enlazar la hora en formato "HH:mm:ss"
+    private string horaInput
+    {
+        get => tareaCalendarioCompleto.RefTareaCalendario!.Hora.ToString("HH:mm:ss");
+        set => _ = SetHoraInputAsync(value);
+    }
+
+    // Método asíncrono para actualizar la propiedad 'Hora' validando el formato ingresado
+    private async Task SetHoraInputAsync(string value)
+    {
+        try
+        {
+            if (DateTime.TryParseExact(value, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
+            {
+                // Se conserva la fecha original de 'Hora' y se actualiza solo el TimeOfDay
+                tareaCalendarioCompleto.RefTareaCalendario!.Hora = tareaCalendarioCompleto.RefTareaCalendario.Hora.Date.Add(parsedTime.TimeOfDay);
+            }
+            else
+            {
+                throw new FormatException("El formato de la hora debe ser 'HH:mm:ss'.");
+            }
+        }
+        catch (FormatException ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error de formato",
+                    Text = ex.Message,
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = $"Ha ocurrido un error al guardar la hora: {ex.Message}",
+                    Icon = SweetAlertIcon.Error
+                });
+        }
+    }
+
+    #endregion
+
 
     #region Métodos de filtrado, conversión de tiempos y descripción
 

@@ -169,14 +169,14 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPost]
         [Route("Guardar")]
-        public async Task<IActionResult> Guardar(UsuarioDTO usuarioCrearDTO)
+        public async Task<IActionResult> Guardar(UsuarioDTO usuarioDTO)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
-                // Mapea el DTO de creación a la entidad Usuario utilizando AutoMapper
-                var usuarioEntity = _mapper.Map<Usuario>(usuarioCrearDTO);
+                // Mapea el DTO a la entidad utilizando AutoMapper
+                var usuarioEntity = _mapper.Map<Usuario>(usuarioDTO);
 
                 // Hashea la contraseña antes de guardar
                 usuarioEntity.Clave = PasswordHelper.HashPassword(usuarioEntity.Clave);

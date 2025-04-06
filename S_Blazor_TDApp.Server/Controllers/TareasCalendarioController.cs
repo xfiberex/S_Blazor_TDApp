@@ -31,10 +31,10 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var tareasCalendario = await _context.TareasCalendario.ToListAsync();
 
                 // Mapea la lista de entidades a una lista de DTOs
-                var listaTareasRecurrentesDTO = _mapper.Map<List<TareasCalendarioDTO>>(tareasCalendario);
+                var listaTareasCalendarioDTO = _mapper.Map<List<TareasCalendarioDTO>>(tareasCalendario);
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaTareasRecurrentesDTO;
+                responseApi.Valor = listaTareasCalendarioDTO;
             }
             catch (Exception ex)
             {

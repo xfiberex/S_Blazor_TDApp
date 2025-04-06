@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace S_Blazor_TDApp.Server.Entities;
+﻿namespace S_Blazor_TDApp.Server.Entities;
 
 public partial class TareasCalendario
 {
@@ -13,9 +10,9 @@ public partial class TareasCalendario
 
     public bool Habilitado { get; set; }
 
-    public DateOnly Fecha { get; set; }
+    public DateTime Fecha { get; set; }
 
-    public TimeOnly Hora { get; set; }
+    public DateTime Hora { get; set; }
 
     public virtual ICollection<TareasCalendarioCompletado> TareasCalendarioCompletados { get; set; } = new List<TareasCalendarioCompletado>();
 }

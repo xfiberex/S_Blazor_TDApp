@@ -31,7 +31,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 // Incluir la navegación tanto a TareasRecurrente como a DiasDisponible
                 var TareaDias = await _context.TareaDias
-                                                  .Include(td => td.IdTareaRecurrNavigation)
+                                                  .Include(td => td.IdDiaNavigation)
                                                   .Include(td => td.IdDiaNavigation)
                                                   .ToListAsync();
 
@@ -98,7 +98,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 // Se incluye la navegación a DiasDisponible
                 var entity = await _context.TareaDias
-                                           .Include(td => td.IdTareaRecurrNavigation)
+                                           .Include(td => td.IdDiaNavigation)
                                            .Include(td => td.IdDiaNavigation)
                                            .FirstOrDefaultAsync(td => td.TareaDiaId == id);
 

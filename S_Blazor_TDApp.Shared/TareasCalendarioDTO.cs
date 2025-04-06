@@ -11,7 +11,7 @@ namespace S_Blazor_TDApp.Shared
         public string NombreTarea { get; set; } = null!;
 
         [Required(ErrorMessage = "La descripción es obligatoria.")]
-        [StringLength(500, ErrorMessage = "La descripción de la tarea no puede exceder los 500 caracteres.")]
+        [StringLength(250, ErrorMessage = "La descripción de la tarea no puede exceder los 250 caracteres.")]
         public string? DescripcionTarea { get; set; }
 
         public bool Habilitado { get; set; }

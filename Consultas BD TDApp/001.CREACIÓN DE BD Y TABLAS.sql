@@ -72,12 +72,12 @@ CREATE TABLE Tareas_Calendario (
     NombreTarea NVARCHAR(100) NOT NULL,
     DescripcionTarea NVARCHAR(250) NULL,
     Habilitado BIT NOT NULL DEFAULT 1,
-    Fecha DATE NOT NULL,
-	Hora TIME NOT NULL
+    Fecha DATETIME NOT NULL,
+	Hora DATETIME NOT NULL
 );
 GO
 
--- Borrar tablas de calendarios las dos y volverla a crear --
+-- En la BD de la laptop, crear nuevamente las tablas Tareas_Calendario y Tareas_Calendario_Completado por los cambios realizados en el proyecto --
 
 -- Tabla para registrar el completado de las tareas de calendario, la tarea solo estara disponible el dia y hora en la que se asigno mediante el usuario --
 CREATE TABLE Tareas_Calendario_Completado (

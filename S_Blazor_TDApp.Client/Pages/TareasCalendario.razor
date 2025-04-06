@@ -4,7 +4,6 @@
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 
-@* Using para la autorización de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
 @attribute [Authorize(Roles = "Administrador, Supervisor, Empleado")]
 
@@ -69,7 +68,7 @@
                                     <th>Nombre</th>
                                     <th>Descripción</th>
                                     <th>Estado</th>
-                                    <th>Fecha - Hora</th>
+                                    <th>Fecha y Hora</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -106,8 +105,9 @@
                                                 @(item.Habilitado ? "Habilitada" : "Deshabilitada")
                                             </span>
                                         </td>
-                                        <td align="center">
-                                            @item.Fecha.ToString("dd/MM/yyyy hh:mm:ss tt")
+                                        <td>
+                                            @item.Fecha.ToString("dd/MM/yyyy") -
+                                            @item.Hora.ToString("HH:mm:ss tt")
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">

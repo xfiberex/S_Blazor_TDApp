@@ -1,5 +1,5 @@
--- Siguiente implementación --
+-- Siguiente implementación antes de publicar en LinkedIn --
    
-	1. Hacer funcional las tareas de calendario, es decir, solo tendrán un fecha y hora fija en la cual estarán disponibles, y se validaran con un botón el cual sumara un mes a la fecha y hora fija.
+	Opcional: Mostrar las tareas de calendario al validar en el historial de procesos de forma similar 	a las tareas recurrentes.
 
-ESTA EN PROCESO, SE HARA CON FECHA Y HORA, DOS PROPIEDADES Y DESPUES SE CONVERTIRAR EN EL AUTOMAPPER
+	Opcional: Hacerle una sesión a parte para tareas recurrentes y de calendario, es decir, que el botón 	de Procesos en el Sidebar que esta en NavMenu tenga eso menús como submenús.

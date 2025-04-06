@@ -199,36 +199,31 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
-                // Obtener la fecha y hora asignada a la tarea.
-                //DateTime fechaHoraAsignada = tarea.Hora;
-
-                // Validar si la tarea está habilitada (ya se cumplió la fecha y hora asignadas).
-                //if (fechaHoraAsignada > DateTime.Now)
-                //{
-                //    responseApi.EsCorrecto = false;
-                //    responseApi.Mensaje = "La tarea aún no está habilitada para revisión.";
-                //    return BadRequest(responseApi);
-                //}
-
                 // Registrar el completado en la tabla Tareas_Calendario_Completado.
                 var completado = new TareasCalendarioCompletado
                 {
                     TareaId = tarea.TareaId,
                     UsuarioId = calendarioDTO.UsuarioId,
-                    EstadoCompletado = true, // Ajustar según la lógica de negocio.
+                    EstadoCompletado = true, // Se marca como completado (según la lógica de negocio)
                     DescripcionTareaCompletado = calendarioDTO.DescripcionTareaCompletado,
-                    Fecha_Hora = DateTime.Now
+                    Fecha = DateTime.Now
                 };
                 _context.TareasCalendarioCompletados.Add(completado);
 
-                // Actualizar la tarea: se deshabilita y se actualizan datos si se proporcionaron nuevos valores.
-                tarea.Habilitado = false; // Ahora la tarea pasa a estado "No programado"
-
-                // Si el DTO incluye nuevos datos para la tarea (nueva descripción y nueva fecha y hora)
+                // Si se suministran nuevos datos (nueva descripción, fecha y hora) se actualiza la tarea.
                 if (calendarioDTO.RefTareaCalendario != null)
                 {
+                    // Validar que la nueva fecha y hora sean diferentes a las actuales
+                    if (tarea.Fecha.Date == calendarioDTO.RefTareaCalendario.Fecha.Date &&
+                        tarea.Hora.TimeOfDay == calendarioDTO.RefTareaCalendario.Hora.TimeOfDay)
+                    {
+                        responseApi.EsCorrecto = false;
+                        responseApi.Mensaje = "La nueva fecha y hora no pueden ser iguales a las actuales.";
+                        return BadRequest(responseApi);
+                    }
                     tarea.DescripcionTarea = calendarioDTO.RefTareaCalendario.DescripcionTarea;
-                    //tarea.Fecha_Hora = calendarioDTO.RefTareaCalendario.Fecha_Hora;
+                    tarea.Fecha = calendarioDTO.RefTareaCalendario.Fecha;
+                    tarea.Hora = calendarioDTO.RefTareaCalendario.Hora;
                 }
 
                 await _context.SaveChangesAsync();
@@ -243,5 +238,6 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             return Ok(responseApi);
         }
+
     }
 }

@@ -16,7 +16,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? [];
+            return resultado.Valor ?? new List<TareasCalendarioDTO>(); // Corrección para retornar una lista vacía en caso de nulo
         }
 
         public async Task<TareasCalendarioDTO> Buscar(int id)
@@ -30,10 +30,10 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             return resultado.Valor!;
         }
 
-        public async Task<int> Guardar(TareasCalendarioDTO tareasCalendario)
+        public async Task<int> Guardar(TareasCalendarioDTO tareaCalendario)
         {
             // Se utiliza PostAsJsonAsync y se comprueba el código de estado HTTP.
-            var httpResponse = await _http.PostAsJsonAsync("api/TareasCalendario/Guardar", tareasCalendario);
+            var httpResponse = await _http.PostAsJsonAsync("api/TareasCalendario/Guardar", tareaCalendario);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -49,9 +49,9 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             return response.Valor!;
         }
 
-        public async Task<int> Editar(TareasCalendarioDTO tareasCalendario)
+        public async Task<int> Editar(TareasCalendarioDTO tareaCalendario)
         {
-            var httpResponse = await _http.PutAsJsonAsync($"api/TareasCalendario/Editar/{tareasCalendario.TareaId}", tareasCalendario);
+            var httpResponse = await _http.PutAsJsonAsync($"api/TareasCalendario/Editar/{tareaCalendario.TareaId}", tareaCalendario);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();

@@ -6,7 +6,6 @@
 @using S_Blazor_TDApp.Client.Services.Interfaces
 @using System.Globalization
 
-@* Using para la autorización de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
 @attribute [Authorize(Roles = "Administrador, Supervisor, Empleado")]
 
@@ -57,7 +56,7 @@
                         <div class="mb-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-calendar me-2"></i>Fecha</span>
-                                <InputDate id="fecha" class="form-control" @bind-Value="tareaCalendario.Fecha" />
+                                <InputDate id="fecha" class="form-control" @bind-Value="tareaCalendario.Fecha" @onchange="OnDateChanged" />
                             </div>
                         </div>
 
@@ -180,6 +179,17 @@
         }
     }
 
+    // Metodo para manejar el cambio de fecha
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out DateTime selectedDate))
+        {
+            // Se asigna únicamente la fecha (hora = 00:00:00)
+            tareaCalendario.Fecha = selectedDate.Date;
+        }
+    }
+
     private string horaInput
     {
         get => tareaCalendario.Hora.ToString("HH:mm:ss");
@@ -192,6 +202,7 @@
         {
             if (DateTime.TryParseExact(value, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
             {
+                // Se conserva la fecha original de 'Hora' y se asigna solo el TimeOfDay
                 tareaCalendario.Hora = tareaCalendario.Hora.Date.Add(parsedTime.TimeOfDay);
             }
             else
