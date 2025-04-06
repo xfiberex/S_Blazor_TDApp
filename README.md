@@ -1,28 +1,46 @@
-## 🧩 Task Management System - Gestor de Tareas Estáticas, Dinámicas y Recurrentes
+# 🧩 Task Management System  
+**Gestor de Tareas Estáticas, Dinámicas y Recurrentes**
 
-## Descripción
+**S_Blazor_TDApp** es una solución moderna para la gestión de tareas que combina el poder de **Blazor WebAssembly** y **.NET 9**, permitiendo construir aplicaciones web interactivas, escalables y fáciles de mantener. Está diseñada para manejar tareas de distintos tipos: estáticas, dinámicas o recurrentes, con una arquitectura robusta, flexible y extensible.
 
-S_Blazor_TDApp es una solución moderna para la gestión de tareas que combina el poder de Blazor WebAssembly y .NET 9, permitiendo construir aplicaciones web interactivas, escalables y fáciles de mantener. Ideal para manejar tareas estáticas, dinámicas o recurrentes, esta solución es perfecta para desarrolladores que buscan una arquitectura robusta y extensible.
+---
 
-## Tecnologías y Funcionalidades Destacadas
+## 🚀 Tecnologías y Funcionalidades
 
-🔷 Blazor WebAssembly
-Frontend ejecutado directamente en el navegador, brindando una experiencia dinámica sin necesidad de plugins.
+- **🔷 Blazor WebAssembly**  
+  Frontend ejecutado directamente en el navegador, brindando una experiencia dinámica sin necesidad de plugins.
 
-🛠 ASP.NET Core (Backend .NET 9)
-API RESTful para gestionar la lógica de negocio y la comunicación con la base de datos.
+- **🛠 ASP.NET Core (.NET 9)**  
+  Backend robusto con API RESTful, encargado de la lógica de negocio y la comunicación cliente-servidor.
 
-🗃 Entity Framework Core
-Acceso y gestión de datos en SQL Server a través del contexto DbTdappContext, con soporte completo para operaciones CRUD.
+- **🗃 Entity Framework Core**  
+  Gestión de datos en SQL Server mediante `DbTdappContext`, facilitando las operaciones CRUD.
 
-⏱ Servicios en Segundo Plano
-El servicio TareaExpiracionService permite manejar tareas programadas o de expiración de forma automática y continua.
+- **⏱ Servicios en Segundo Plano**  
+  El servicio `TareaExpiracionService` procesa tareas programadas o de expiración de forma continua.
 
-🧭 AutoMapper
-Transformación eficiente entre entidades y modelos de vista usando perfiles de mapeo configurables.
+- **🧭 AutoMapper**  
+  Mapeo eficiente entre entidades y modelos de vista usando perfiles configurables.
 
-📘 Documentación Swagger
-Interfaz interactiva para explorar y probar los endpoints de la API en entornos de desarrollo.
+- **📘 Swagger UI**  
+  Documentación interactiva de la API disponible en entorno de desarrollo.
 
-🌐 Configuración CORS
-Política abierta de CORS que permite solicitudes desde cualquier origen, facilitando la integración multiplataforma.
+- **🌐 Configuración CORS**  
+  Política abierta que permite solicitudes desde cualquier origen, ideal para integración multiplataforma.
+
+---
+
+## ⚙️ Requisitos
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- C# 13.0
+- Visual Studio 2022 o superior
+- SQL Server
+
+---
+
+## 📦 Instalación y Ejecución
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/tu-usuario/S_Blazor_TDApp.git
