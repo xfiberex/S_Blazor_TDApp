@@ -3,6 +3,9 @@
 
 **Task Management System (S_Blazor_TDApp)** es una solución moderna para la gestión de tareas que combina el poder de **Blazor WebAssembly** y **.NET 9**, permitiendo construir aplicaciones web interactivas, escalables y fáciles de mantener. Está diseñada para manejar tareas de distintos tipos: estáticas, dinámicas o recurrentes, con una arquitectura robusta, flexible y extensible.
 
+![image](https://github.com/user-attachments/assets/aefb7683-7c7b-4e8d-b799-4f6e35dcd1bd)
+
+
 ---
 
 ## 🛠️ Características y Funcionalidades
