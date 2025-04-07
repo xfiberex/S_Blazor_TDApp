@@ -41,28 +41,38 @@
   Implementación de paginación para mejorar la navegación entre grandes volúmenes de registros.
 
 ---
-## 🚀 Tecnologías
 
-- **🔷 Blazor WebAssembly**  
-  Frontend ejecutado directamente en el navegador, brindando una experiencia dinámica sin necesidad de plugins.
+## 🚀 Tecnologías Utilizadas
 
-- **🛠 ASP.NET Core (.NET 9)**  
-  Backend robusto con API RESTful, encargado de la lógica de negocio y la comunicación cliente-servidor.
+- 🔷 **Blazor WebAssembly**  
+  Framework para el frontend que se ejecuta directamente en el navegador, ofreciendo una experiencia SPA (Single Page Application) sin necesidad de plugins.
 
-- **🗃 Entity Framework Core**  
-  Gestión de datos en SQL Server mediante `DbTdappContext`, facilitando las operaciones CRUD.
+- 🛠 **ASP.NET Core (.NET 9)**  
+  Plataforma moderna y multiplataforma para el desarrollo del backend y servicios API RESTful, encargada de la lógica de negocio y gestión de peticiones.
 
-- **⏱ Servicios en Segundo Plano**  
-  El servicio `TareaExpiracionService` procesa tareas programadas o de expiración de forma continua.
+- 🗃 **Entity Framework Core**  
+  ORM para interactuar con **SQL Server** mediante el contexto `DbTdappContext`, facilitando operaciones CRUD de manera eficiente.
 
-- **🧭 AutoMapper**  
-  Mapeo eficiente entre entidades y modelos de vista usando perfiles configurables.
+- ⏱ **Servicios en Segundo Plano**  
+  El servicio `TareaExpiracionService` permite ejecutar procesos periódicos o tareas programadas sin intervención del usuario.
 
-- **📘 Swagger UI**  
-  Documentación interactiva de la API disponible en entorno de desarrollo.
+- 🧭 **AutoMapper**  
+  Herramienta para mapear automáticamente entre entidades del dominio y modelos de vista, mejorando la separación de responsabilidades.
 
-- **🌐 Configuración CORS**  
-  Política abierta que permite solicitudes desde cualquier origen, ideal para integración multiplataforma.
+- 📘 **Swagger UI**  
+  Genera documentación interactiva para la API, útil en el entorno de desarrollo para pruebas rápidas y visualización de endpoints.
+
+- 🌟 **SweetAlert2**  
+  Librería de alertas modernas y personalizadas, utilizada para mostrar mensajes de validación y errores de forma atractiva.
+
+- 💾 **Blazored.SessionStorage**  
+  Permite almacenar y recuperar datos en el **almacenamiento de sesión** como objetos JSON, útil para conservar estados temporales del usuario.
+
+- 🔐 **Microsoft.AspNetCore.Components.Authorization**  
+  Manejo del estado de autenticación y autorización del usuario en aplicaciones Blazor, asegurando acceso controlado por rol.
+
+- 🌐 **CORS (Cross-Origin Resource Sharing)**  
+  Configuración abierta que permite solicitudes desde cualquier origen, facilitando la integración entre diferentes plataformas y entornos.
 
 ---
 
@@ -87,6 +97,7 @@
 ### 3. Ejecutar la solución
 - Ejecuta primero el Server (S_Blazor_TDApp.Server), el cual tendra la UI de Swagger para probar las APIs.
 - Despues ejecuta el Cliente (S_Blazor_TDApp.Client), iniciara la interfaz del proyecto hacia el login.
+- Opcional: En visual studio se puede configurar para iniciar varios proyecto de inicio. Siempre debe iniciar el server primero y despues el cliente.
  
 ## Licencia
 - Este proyecto se distribuye bajo la licencia MIT. Consulta el archivo LICENSE para más detalles.
