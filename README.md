@@ -106,4 +106,4 @@
 - Opcional: En visual studio se puede configurar para iniciar varios proyecto de inicio. Siempre debe iniciar el server primero y despues el cliente.
  
 ## Licencia
-- Este proyecto se distribuye bajo la licencia MIT. Consulta el archivo LICENSE para más detalles.
+- Este proyecto está licenciado bajo los términos de la [GNU General Public License v3.0 (GPL-3.0)](https://www.gnu.org/licenses/gpl-3.0.html).
