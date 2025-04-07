@@ -41,7 +41,7 @@
   Implementación de paginación para mejorar la navegación entre grandes volúmenes de registros.
 
 ---
-## 🚀 Tecnologías y Funcionalidades
+## 🚀 Tecnologías
 
 - **🔷 Blazor WebAssembly**  
   Frontend ejecutado directamente en el navegador, brindando una experiencia dinámica sin necesidad de plugins.
