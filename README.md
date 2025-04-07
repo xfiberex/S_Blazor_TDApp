@@ -7,6 +7,8 @@
 
 ![image](https://github.com/user-attachments/assets/e5abd1ab-b8a5-46fb-b460-eb338b79fea1)
 
+![image](https://github.com/user-attachments/assets/7c22d9e2-9408-4089-8b51-1cbc698aca8b)
+
 ---
 
 ## 🛠️ Características y Funcionalidades
