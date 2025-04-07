@@ -1,5 +1,6 @@
 ﻿@page "/usuarios"
 
+@using Microsoft.AspNetCore.Components.Authorization
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
@@ -11,6 +12,7 @@
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider authStateProvider
 
 <div class="container-fluid mt-4">
     @if (isLoading)
@@ -67,7 +69,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Codigo</th>
+                                    <th>Código</th>
                                     <th>Usuario</th>
                                     <th>Nombre</th>
                                     <th>Correo</th>
@@ -142,7 +144,7 @@
                     {
                         <div>
                             <label>
-                                <b>@filteredUsers.Count</b> registros encontrados. Si hay mas de 10, se filtrará y paginará según la cantidad seleccionada.
+                                <b>@filteredUsers.Count</b> registros encontrados. Si hay más de 10, se filtrará y paginará según la cantidad seleccionada.
                             </label>
                         </div>
                     }
@@ -169,9 +171,27 @@
     // Timer para el debounce en la búsqueda
     private System.Threading.Timer? _searchTimer;
 
+    // Variable para almacenar el ID del usuario autenticado
+    private int currentUserId;
+
     protected override async Task OnInitializedAsync()
     {
+        await ObtenerUsuarioAutenticado();
         await LoadUsuarios();
+    }
+
+    private async Task ObtenerUsuarioAutenticado()
+    {
+        var authState = await authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(idClaim))
+            {
+                currentUserId = int.Parse(idClaim);
+            }
+        }
     }
 
     private async Task LoadUsuarios()
@@ -220,6 +240,7 @@
                 {
                     listaUsuarios.RemoveAll(u => u.UsuarioId == id);
                     FilterUsers();
+
                     await SwalService.FireAsync(new SweetAlertOptions
                         {
                             Title = "Eliminado",

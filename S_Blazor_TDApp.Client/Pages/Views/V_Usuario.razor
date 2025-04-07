@@ -1,12 +1,11 @@
 ﻿@page "/usuario"
 @page "/usuario/{IdUsuarioEditar:int}"
 
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
-
-@* Using para la autorización de usuarios *@
-@using Microsoft.AspNetCore.Authorization;
 @using System.ComponentModel.DataAnnotations
 @attribute [Authorize(Roles = "Administrador, Supervisor")]
 
@@ -14,6 +13,7 @@
 @inject IRolService RolService
 @inject NavigationManager NavigationManager
 @inject SweetAlertService SwalService
+@inject AuthenticationStateProvider authStateProvider
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -206,35 +206,50 @@
     private bool mostrarModalCambioClave = false;
     private CambioClaveDTO cambioClaveModel = new CambioClaveDTO();
 
+    // Variables para almacenar el ID del usuario autenticado y los valores originales de Email y Rol
+    private int currentUserId;
+    private string originalEmail = string.Empty;
+    private int originalRolId;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            var authState = await authStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(idClaim))
+                {
+                    currentUserId = int.Parse(idClaim);
+                }
+            }
+
             listaRoles = await RolService.Lista();
+
             if (IdUsuarioEditar != 0)
             {
-                // Modo edición: se carga el usuario existente
                 usuario = await UsuarioService.Buscar(IdUsuarioEditar);
                 btnTexto = "Actualizar";
                 titulo = "Editar Usuario";
                 idUsuarioDisplay = usuario.UsuarioId.ToString();
                 codigoUsuarioDisplay = usuario.Codigo;
+
+                originalEmail = usuario.Email!;
+                originalRolId = usuario.RolId;
             }
             else
             {
-                // Modo nuevo usuario
                 btnTexto = "Guardar";
                 titulo = "Nuevo Usuario";
 
-                // Calcula el próximo ID basado en la lista de usuarios
                 var usuarios = await UsuarioService.Lista();
                 int nextId = usuarios.Any() ? usuarios.Max(u => u.UsuarioId) + 1 : 1;
                 idUsuarioDisplay = nextId.ToString();
 
-                // Genera un código aleatorio de 5 dígitos
                 await GenerarCodigoUsuario();
 
-                // Establece el estado predeterminado a 'Habilitado'
                 usuario.Activo = true;
             }
             editContext = new EditContext(usuario);
@@ -257,7 +272,6 @@
         var random = new Random();
         do
         {
-            // Genera un número aleatorio de 5 dígitos
             codigo = random.Next(10000, 100000).ToString();
             existe = await UsuarioService.ExisteCodigo(codigo);
         }
@@ -296,10 +310,8 @@
         }
     }
 
-    // Métodos para el modal de cambio de contraseña
     private void AbrirModalCambioClave()
     {
-        // Se crea una nueva instancia del modelo correcto (CambioClaveDTO)
         cambioClaveModel = new CambioClaveDTO();
         mostrarModalCambioClave = true;
     }
@@ -324,7 +336,6 @@
 
         try
         {
-            // Se llama al método del servicio para cambiar la clave del usuario
             await UsuarioService.CambiarClave(usuario.UsuarioId, new CambioClaveDTO
                 {
                     UsuarioId = usuario.UsuarioId,

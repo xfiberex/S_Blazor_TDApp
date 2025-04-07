@@ -3,9 +3,7 @@
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
-
-@* Using para la autorización de usuarios *@
-@using Microsoft.AspNetCore.Authorization;
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 @using System.Globalization
@@ -20,7 +18,6 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider authStateProvider
-
 
 <!-- Lista de tareas recurrentes reportables -->
 <div id="tareas" class="container-fluid mt-4">
@@ -63,11 +60,6 @@
                                 </button>
                             }
                         </div>
-                    </div>
-                    <div class="col-auto">
-                        <a class="btn btn-success shadow-sm" href="#procesos">
-                            <i class="bi bi-arrow-bar-down me-2"></i>Procesos
-                        </a>
                     </div>
                 </div>
             </div>
@@ -196,6 +188,20 @@
                             <i class="bi bi-calendar-check me-2"></i>Validar tareas de calendario
                         </h5>
                     </div>
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" placeholder="Buscar..."
+                                   @oninput="OnSearchTermTaskCalendarChanged"
+                                   value="@searchTermCalendar" />
+                            @if (!string.IsNullOrEmpty(searchTermCalendar))
+                            {
+                                <button class="btn btn-outline-secondary" @onclick="ClearSearchCalendar">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="card-body">
@@ -211,25 +217,38 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in listaCalendario)
+                            @foreach (var itemCalendar in filteredTareaCalendario)
                             {
                                 <tr>
-                                    <td>@item.NombreTarea</td>
+                                    <td>@itemCalendar.NombreTarea</td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(item.DescripcionTarea) && item.DescripcionTarea.Length > 35)
+                                        @if (itemCalendar.DescripcionTarea!.Length > 35)
                                         {
-                                            <span>@item.DescripcionTarea.Substring(0, 35)...</span>
+                                            @if (itemCalendar.ShowFullDescription)
+                                            {
+                                                <textarea class="form-control slide-down" rows="3" @bind="itemCalendar.DescripcionTarea" readonly></textarea>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescriptionCalendar(itemCalendar)">
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span>@itemCalendar.DescripcionTarea.Substring(0, 35)...</span>
+                                                <button class="btn btn-link btn-sm p-0 ms-2" @onclick="() => ToggleDescriptionCalendar(itemCalendar)">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            }
                                         }
                                         else
                                         {
-                                            <span>@item.DescripcionTarea</span>
+                                            <span>@itemCalendar.DescripcionTarea</span>
                                         }
                                     </td>
                                     <td>
-                                        @item.Fecha.ToString("dd/MM/yyyy") - @item.Hora.ToString("HH:mm:ss tt")
+                                        @itemCalendar.Fecha.ToString("dd/MM/yyyy") - @itemCalendar.Hora.ToString("HH:mm:ss tt")
                                     </td>
                                     <td>
-                                        @if (IsTaskAvailable(item))
+                                        @if (IsTaskAvailable(itemCalendar))
                                         {
                                             <span class="badge bg-warning">Revisar</span>
                                         }
@@ -240,8 +259,8 @@
                                     </td>
                                     <td>
                                         <button class="btn btn-outline-primary btn-sm"
-                                                @onclick="() => OpenValidarTareaCalendarioModal(item)"
-                                                disabled="@( !IsTaskAvailable(item) )">
+                                                @onclick="() => OpenValidarTareaCalendarioModal(itemCalendar)"
+                                                disabled="@( !IsTaskAvailable(itemCalendar) )">
                                             Validar
                                         </button>
                                     </td>
@@ -250,6 +269,9 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div class="card-footer text-muted">
+                Total de tareas de calendario: @filteredTareaCalendario.Count
             </div>
         </div>
     }
@@ -282,6 +304,7 @@
                             <i class="bi bi-clock-history me-2"></i>Historial de tareas procesadas
                         </h5>
                     </div>
+
                     <!-- Filtrado por fecha -->
                     <div class="col-auto">
                         <div class="input-group">
@@ -289,12 +312,13 @@
                             <input type="date" class="form-control" @bind="startDate" @bind:after="FilterTasksProcess" />
                         </div>
                     </div>
+
                     <!-- Filtrado por texto -->
                     <div class="col-auto">
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control" placeholder="Buscar..."
-                                   @oninput="OnSearchTermProcessChanged"
+                                   @oninput="OnSearchTermTaskProcessChanged"
                                    value="@searchTermProcess" />
                             @if (!string.IsNullOrEmpty(searchTermProcess))
                             {
@@ -303,11 +327,6 @@
                                 </button>
                             }
                         </div>
-                    </div>
-                    <div class="col-auto">
-                        <a class="btn btn-success shadow-sm" href="#tareas">
-                            <i class="bi bi-arrow-bar-up me-2"></i>Tareas
-                        </a>
                     </div>
                 </div>
             </div>
@@ -422,7 +441,7 @@
                     <div class="mb-3">
                         <div class="input-group">
                             <span class="input-group-text">Nueva fecha</span>
-                            <InputDate @bind-Value="tareaCalendarioCompleto.RefTareaCalendario!.Fecha" class="form-control" onchange="OnDateChanged" />
+                            <InputDate @bind-Value="tareaCalendarioCompleto.RefTareaCalendario!.Fecha" class="form-control" @onchange="OnDateChanged" />
                         </div>
                     </div>
                     <div class="mb-3">
@@ -468,15 +487,18 @@
 
     private string searchTermTask = "";
     private string searchTermProcess = "";
+    private string searchTermCalendar = "";
     private DateTime? startDate;
 
     private TareasRecurrentesDTO? expandedItem = null;
+    private TareasCalendarioDTO? expandedItemCalendar = null;
     private TareasRecurrentesDTO? selectedTask = null;
     private TareasCalendarioDTO? selectedTareaCalendario = null;
 
     // Timers para debounce y refresco automático
     private System.Threading.Timer? _searchTimerTasks;
     private System.Threading.Timer? _searchTimerProcess;
+    private System.Threading.Timer? _searchTimerCalendar;
     private System.Threading.Timer? _refreshTimer;
 
     // Diccionario para contar registros por tarea (por usuario actual)
@@ -565,11 +587,13 @@
             listaTareasRecurrentes = (await TareaRecurrenteService.Lista())
                                         .Where(t => t.Estado)
                                         .ToList();
+
             filteredTasks = listaTareasRecurrentes;
 
             listaRegistroProcesos = (await RegistroProcesoService.ListaProcesos())
                                         .OrderByDescending(p => p.FechaRegistro)
                                         .ToList();
+
             filteredTasksProcess = listaRegistroProcesos;
 
             BuildUserProcessCount();
@@ -626,6 +650,8 @@
             listaCalendario = (await TareaCalendarioService.Lista())
                                         .Where(t => t.Habilitado)
                                         .ToList();
+
+            filteredTareaCalendario = listaCalendario;
         }
         catch (Exception ex)
         {
@@ -680,8 +706,7 @@
             );
     }
 
-    private int GetUserProcessCount(int tareaRecurrId) =>
-        userProcessCount.ContainsKey(tareaRecurrId) ? userProcessCount[tareaRecurrId] : 0;
+    private int GetUserProcessCount(int tareaRecurrId) => userProcessCount.ContainsKey(tareaRecurrId) ? userProcessCount[tareaRecurrId] : 0;
 
     private async Task OpenModal(TareasRecurrentesDTO task)
     {
@@ -723,6 +748,7 @@
     {
         _searchTimerTasks?.Dispose();
         _searchTimerProcess?.Dispose();
+        _searchTimerCalendar?.Dispose();
         _refreshTimer?.Dispose();
     }
 
@@ -750,8 +776,8 @@
                 RefTareaCalendario = new TareasCalendarioDTO
                 {
                     TareaId = task.TareaId,
-                    NombreTarea = task.NombreTarea,               
-                    DescripcionTarea = task.DescripcionTarea,   
+                    NombreTarea = task.NombreTarea,
+                    DescripcionTarea = task.DescripcionTarea,
                     Fecha = task.Fecha,
                     Hora = task.Hora,
                     Habilitado = task.Habilitado
@@ -867,6 +893,16 @@
         expandedItem = item.ShowFullDescription ? item : null;
     }
 
+    private void ToggleDescriptionCalendar(TareasCalendarioDTO itemCalendar)
+    {
+        if (expandedItemCalendar != null && expandedItemCalendar != itemCalendar)
+        {
+            expandedItemCalendar.ShowFullDescription = false;
+        }
+        itemCalendar.ShowFullDescription = !itemCalendar.ShowFullDescription;
+        expandedItemCalendar = itemCalendar.ShowFullDescription ? itemCalendar : null;
+    }
+
     private void OnSearchTermTaskChanged(ChangeEventArgs e)
     {
         searchTermTask = e.Value?.ToString() ?? string.Empty;
@@ -881,7 +917,7 @@
         }, null, 500, System.Threading.Timeout.Infinite);
     }
 
-    private void OnSearchTermProcessChanged(ChangeEventArgs e)
+    private void OnSearchTermTaskProcessChanged(ChangeEventArgs e)
     {
         searchTermProcess = e.Value?.ToString() ?? string.Empty;
         _searchTimerProcess?.Dispose();
@@ -890,6 +926,20 @@
             InvokeAsync(() =>
             {
                 FilterTasksProcess();
+                StateHasChanged();
+            });
+        }, null, 500, System.Threading.Timeout.Infinite);
+    }
+
+    private void OnSearchTermTaskCalendarChanged(ChangeEventArgs e)
+    {
+        searchTermCalendar = e.Value?.ToString() ?? string.Empty;
+        _searchTimerCalendar?.Dispose();
+        _searchTimerCalendar = new System.Threading.Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                FilterTasksCalendar();
                 StateHasChanged();
             });
         }, null, 500, System.Threading.Timeout.Infinite);
@@ -913,6 +963,15 @@
         ).ToList();
     }
 
+    private void FilterTasksCalendar()
+    {
+        filteredTareaCalendario = listaCalendario.Where(t =>
+            string.IsNullOrWhiteSpace(searchTermCalendar) ||
+            t.NombreTarea.Contains(searchTermCalendar, StringComparison.OrdinalIgnoreCase) ||
+            t.DescripcionTarea!.Contains(searchTermCalendar, StringComparison.OrdinalIgnoreCase)
+        ).ToList();
+    }
+
     private void ClearSearch()
     {
         searchTermTask = string.Empty;
@@ -924,6 +983,12 @@
         searchTermProcess = string.Empty;
         startDate = null;
         FilterTasksProcess();
+    }
+
+    private void ClearSearchCalendar()
+    {
+        searchTermCalendar = string.Empty;
+        FilterTasksCalendar();
     }
 
     private string ConvertirTiempoEjecucion(int minutos)
@@ -944,8 +1009,7 @@
         }
     }
 
-    private string ConvertirCantidadEjecuciones(int cantidad) =>
-        cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
+    private string ConvertirCantidadEjecuciones(int cantidad) => cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
 
     #endregion
 }

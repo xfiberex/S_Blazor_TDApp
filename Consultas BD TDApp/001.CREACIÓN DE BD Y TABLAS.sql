@@ -4,10 +4,6 @@ GO
 USE DB_TDApp;
 GO
 
--- Para eliminación de datos y restablecimiento de tablas --
---DELETE FROM Usuarios;
---DBCC CHECKIDENT ('Usuarios', RESEED, 0);
-
 -- Roles --
 CREATE TABLE Rol (
     RolId INT IDENTITY(1,1) PRIMARY KEY,
@@ -20,11 +16,11 @@ CREATE TABLE Rol (
 GO
 
 -- Inserciones por defecto para los roles --
---INSERT INTO Rol(NombreRol, Descripcion) VALUES 
---('Administrador', 'Acceso total'),
---('Supervisor', 'Acceso parcial'),
---('Empleado', 'Acceso especifico');
---GO
+INSERT INTO Rol(NombreRol, Descripcion) VALUES 
+('Administrador', 'Acceso total'),
+('Supervisor', 'Acceso parcial'),
+('Empleado', 'Acceso especifico');
+GO
 
 -- Usuarios --
 CREATE TABLE Usuarios (
@@ -46,25 +42,13 @@ GO
 -- INSERCIÓN POR DEFECTO PARA TENER AL ADMINISTRADOR COMO PRIMER USUARIO, NO CAMBIAR NADA, CONTRASEÑA: pass123 --
 -- LOS DATOS SOLO PUEDEN CAMBIARSE EN LA PAGINA DESPUES DE INICIAR SESIÓN ---
 
---INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
---VALUES ('00001', 'Admin', 'Admin', '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NYqCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGslz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==', 'admin@example.com', 1, 1);
+-- PUEDES EJECUTAR EL PROGRAMA DE CONSOLA QUE ESTA EN EL PROYECTO EN VS (S_Blazor_TDApp.Password), PARA HASHEAR OTRO CONTRASEÑA DESDE FUERA --
 
--- INSERCIONES DE USUARIOS PARA PRUEBAS --
---INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
---VALUES
---  ('00001', 'juanp',   'Juan Perez',         'pass123', 'juan.perez@example.com',        1, 1),
---  ('49382', 'juanp',   'Juan Perez',         'pass123', 'juan.perez@example.com',        1, 1),
---  ('27541', 'mariaL',  'Maria Lopez',        'pass123', 'maria.lopez@example.com',       2, 0),
---  ('93618', 'carlosG', 'Carlos Garcia',      'pass123', 'carlos.garcia@example.com',     3, 0),
---  ('15729', 'anaM',    'Ana Martinez',       'pass123', 'ana.martinez@example.com',      1, 1),
---  ('82450', 'luisR',   'Luis Rodriguez',     'pass123', 'luis.rodriguez@example.com',    2, 1),
---  ('31976', 'sofiaC',  'Sofia Castillo',     'pass123', 'sofia.castillo@example.com',    3, 0),
---  ('56023', 'pabloD',  'Pablo Diaz',         'pass123', 'pablo.diaz@example.com',        1, 1),
---  ('10854', 'carlaF',  'Carla Fernandez',    'pass123', 'carla.fernandez@example.com',   2, 1),
---  ('76291', 'ricardoM','Ricardo Morales',    'pass123', 'ricardo.morales@example.com',   3, 0),
---  ('64537', 'lauraS',  'Laura Sanchez',      'pass123', 'laura.sanchez@example.com',     1, 1);
---GO
-
+INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
+VALUES ('00001', 'Admin', 'Admin', '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NY
+									qCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGs
+									lz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==', 'admin@example.com', 1, 1);
+GO
 
 -- Tabla para tareas de calendario
 CREATE TABLE Tareas_Calendario (
@@ -76,8 +60,6 @@ CREATE TABLE Tareas_Calendario (
 	Hora DATETIME NOT NULL
 );
 GO
-
--- En la BD de la laptop, crear nuevamente las tablas Tareas_Calendario y Tareas_Calendario_Completado por los cambios realizados en el proyecto --
 
 -- Tabla para registrar el completado de las tareas de calendario, la tarea solo estara disponible el dia y hora en la que se asigno mediante el usuario --
 CREATE TABLE Tareas_Calendario_Completado (
@@ -96,20 +78,6 @@ CREATE TABLE Tareas_Calendario_Completado (
 );
 GO
 
--- Insercion de prueba para aumentar datos de Tareas_Calendario --
---INSERT INTO Tareas_Calendario (NombreTarea, DescripcionTarea, Habilitado, Fecha, Hora) VALUES
---('Revisión de correos', 'Revisar y responder correos pendientes', 1, '2025-02-21 00:00:00', '2025-02-21 09:00:00'),
---('Actualización de reportes', 'Actualizar reportes de ventas mensuales', 1, '2025-02-21 00:00:00', '2025-02-21 10:00:00'),
---('Backup de base de datos', 'Realizar backup completo de la base de datos', 1, '2025-02-21 00:00:00', '2025-02-21 02:00:00'),
---('Limpieza de sistema', 'Eliminar archivos temporales y limpiar el sistema', 1, '2025-02-21 00:00:00', '2025-02-21 01:00:00'),
---('Sincronización de servidores', 'Sincronizar datos entre servidores principales y secundarios', 1, '2025-02-21 00:00:00', '2025-02-21 12:00:00'),
---('Monitoreo de red', 'Verificar el estado de la red y conexiones', 1, '2025-02-21 00:00:00', '2025-02-21 08:00:00'),
---('Actualización de software', 'Actualizar aplicaciones y sistemas operativos', 1, '2025-02-21 00:00:00', '2025-02-21 14:00:00'),
---('Reporte de incidencias', 'Elaborar reporte de incidencias y resolver problemas', 1, '2025-02-21 00:00:00', '2025-02-21 11:00:00'),
---('Reunión de equipo', 'Coordinar y asistir a reunión de equipo', 1, '2025-02-21 00:00:00', '2025-02-21 16:00:00'),
---('Mantenimiento de equipos', 'Realizar mantenimiento preventivo a equipos', 1, '2025-02-21 00:00:00', '2025-02-21 18:00:00');
---GO
-
 -- Tabla para tareas recurrentes --
 CREATE TABLE Tareas_Recurrentes (
 	TareaRecurrId INT IDENTITY(1,1) PRIMARY KEY,
@@ -126,27 +94,6 @@ CREATE TABLE Tareas_Recurrentes (
 );
 GO
 
--- Insercion de prueba para aumentar datos de Tareas_Recurrentes --
---INSERT INTO Tareas_Recurrentes
---    (NombreTareaRecurr, DescripcionTareaRecurr, Recurrente, HoraDesde, HorasHasta, TiempoEjecucion, CantidadEjecuciones, Estado, FechaUltimaRenovacion, EstadoExpiracion)
---VALUES
---('Backup de Servidores', 'Realizar respaldo diario de servidores críticos.', 1, '2025-04-03 01:00:00', '2025-04-03 02:00:00', 60, 1, 1, GETDATE(), 1),
---('Actualización de Antivirus', 'Actualizar definiciones de antivirus en todas las máquinas.', 0, '2025-04-03 03:00:00', '2025-04-03 04:30:00', 90, 3, 1, GETDATE(), 1),
---('Monitoreo de Red', 'Revisar el rendimiento de la red y detectar posibles fallas.', 1, '2025-04-03 05:00:00', '2025-04-03 06:00:00', 60, 1, 1, GETDATE(), 1),
---('Actualización de Software', 'Actualizar el software de gestión TI en todas las estaciones de trabajo.', 0, '2025-04-03 07:00:00', '2025-04-03 09:00:00', 120, 2, 1, GETDATE(), 1),
---('Revisión de Logs', 'Revisar y analizar logs de sistemas críticos.', 1, '2025-04-03 09:30:00', '2025-04-03 10:00:00', 30, 1, 1, GETDATE(), 1),
---('Verificación de Backup', 'Comprobar que los backups se hayan completado correctamente.', 0, '2025-04-03 10:30:00', '2025-04-03 11:00:00', 30, 1, 1, GETDATE(), 1),
---('Limpieza de Disco', 'Eliminar archivos temporales y limpiar disco en servidores.', 1, '2025-04-03 11:15:00', '2025-04-03 11:45:00', 30, 1, 1, GETDATE(), 1),
---('Inspección de Hardware', 'Revisar el estado físico de los equipos de red.', 0, '2025-04-03 12:00:00', '2025-04-03 12:30:00', 30, 1, 1, GETDATE(), 1),
---('Actualización de Parches', 'Instalar parches de seguridad en sistemas operativos.', 1, '2025-04-03 13:00:00', '2025-04-03 14:00:00', 60, 1, 1, GETDATE(), 1),
---('Capacitación TI', 'Realizar capacitación interna sobre nuevas tecnologías.', 0, '2025-04-03 14:30:00', '2025-04-03 16:00:00', 90, 1, 1, GETDATE(), 1),
---('Verificación de Seguridad', 'Revisar configuraciones de seguridad en sistemas.', 1, '2025-04-03 16:30:00', '2025-04-03 17:00:00', 30, 1, 1, GETDATE(), 1),
---('Informe de Actividades', 'Generar informe semanal de actividades TI.', 0, '2025-04-03 17:15:00', '2025-04-03 18:15:00', 60, 1, 1, GETDATE(), 1),
---('Chequeo de Sistemas', 'Realizar chequeo general de sistemas críticos.', 1, '2025-04-03 18:30:00', '2025-04-03 19:00:00', 30, 1, 1, GETDATE(), 1),
---('Mantenimiento de Redes', 'Ejecutar mantenimiento preventivo en la infraestructura de red.', 0, '2025-04-03 19:15:00', '2025-04-03 20:15:00', 60, 1, 1, GETDATE(), 1),
---('Actualización de Inventario', 'Actualizar inventario de equipos TI.', 1, '2025-04-03 20:30:00', '2025-04-03 21:00:00', 30, 1, 1, GETDATE(), 1);
-GO
-
 -- Tabla para los dias --
 CREATE TABLE Dias_Disponibles (
 	DiaId INT IDENTITY(1,1) PRIMARY KEY,
@@ -155,15 +102,15 @@ CREATE TABLE Dias_Disponibles (
 GO
 
 -- INSERCIÓN DE DIAS POR DEFECTO OBLIGATORIO, PARA PODER CONFIGURAR LAS TAREAS RECURRENTES --
---INSERT INTO Dias_Disponibles (NombreDia) VALUES
---('Lunes'),
---('Martes'),
---('Miércoles'),
---('Jueves'),
---('Viernes'),
---('Sábado'),
---('Domingo');
---GO
+INSERT INTO Dias_Disponibles (NombreDia) VALUES
+('Lunes'),
+('Martes'),
+('Miércoles'),
+('Jueves'),
+('Viernes'),
+('Sábado'),
+('Domingo');
+GO
 
 -- Tabla para configurar los días en que estará disponible una tarea recurrente
 CREATE TABLE Tarea_Dias (
@@ -190,4 +137,3 @@ CREATE TABLE Registro_Procesos (
 	CONSTRAINT FK_Registro_Procesos_TareasRecurrentes FOREIGN KEY (TareaRecurrId) REFERENCES Tareas_Recurrentes(TareaRecurrId),
 	CONSTRAINT FK_Registro_Procesos_Usuarios FOREIGN KEY (UsuarioId) REFERENCES Usuarios(UsuarioId)
 );
-GO

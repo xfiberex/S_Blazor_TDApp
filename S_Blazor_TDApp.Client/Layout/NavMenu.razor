@@ -76,7 +76,10 @@
                 </Authorized>
             </AuthorizeView>
 
-            <AuthorizeView Roles="Administrador">
+            @* No es necesario a menos que se implemente una logica para que el usuario (Administrador) pueda cambiar -
+               los permisos de los roles dinamicamente desde el frontend *@
+
+            @* <AuthorizeView Roles="Administrador">
                 <Authorized>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="rolesPermisos">
@@ -87,7 +90,7 @@
                         </NavLink>
                     </div>
                 </Authorized>
-            </AuthorizeView>
+            </AuthorizeView> *@
 
             <!-- Botón para colapsar/expandir el sidebar - solo visible en desktop -->
             <div class="nav-item px-3 mt-auto desktop-only">
