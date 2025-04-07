@@ -4,19 +4,42 @@
 **Task Management System (S_Blazor_TDApp)** es una solución moderna para la gestión de tareas que combina el poder de **Blazor WebAssembly** y **.NET 9**, permitiendo construir aplicaciones web interactivas, escalables y fáciles de mantener. Está diseñada para manejar tareas de distintos tipos: estáticas, dinámicas o recurrentes, con una arquitectura robusta, flexible y extensible.
 
 ---
-## Caracteristicas y funcionalidades
 
-- **Inicio de sesión con roles de administrador, supervisor y empleado**  
-- **Reportes de procesos y gestión de tareas recuerrentes y de calendadario**
-- **Configuración de disponibilidad de tareas**
-- **Gestión de usuarios y asignación de roles por defecto**
-- **Validaciones de campos, en los que el usuario ingresa información**
-- **Asignación de dias para tareas recurrentes**
-- **Si la tarea se deshabilita no se mostrara en el menu de procesos y disponibilidad**
-- **Si el usuario esta inactivo no podra iniciar sesión**
-- **Si el usuario no esta autorizado, no podra ver las paginas o menús de acuerdo a su rol**
-- **Filtrado o busqueda de tareas con fecha**
-- **Paginación de datos registrados**
+## 🛠️ Características y Funcionalidades
+
+- 🔐 **Inicio de sesión con control de roles**  
+  Soporte para roles de **Administrador**, **Supervisor** y **Empleado**, con autorización personalizada por vista o menú.
+
+- 📊 **Reportes de procesos y gestión de tareas**  
+  Visualización y seguimiento de tareas **recurrentes** y **calendario de actividades**.
+
+- ⚙️ **Configuración de disponibilidad de tareas**  
+  Permite definir la disponibilidad específica para cada tarea dentro del sistema.
+
+- 👥 **Gestión de usuarios y roles**  
+  Administración de usuarios, con **asignación automática de roles por defecto**.
+
+- 🧾 **Validaciones en formularios**  
+  Validaciones completas en los campos donde el usuario ingresa información para mantener integridad de datos.
+
+- 🔁 **Asignación de días a tareas recurrentes**  
+  Posibilidad de definir en qué días específicos deben ejecutarse las tareas repetitivas.
+
+- 🚫 **Control de tareas deshabilitadas**  
+  Las tareas deshabilitadas no se mostrarán en los menús de procesos ni en disponibilidad.
+
+- 🛑 **Control de acceso de usuarios inactivos**  
+  Usuarios marcados como inactivos no podrán iniciar sesión en el sistema.
+
+- 🔒 **Autorización por rol**  
+  Si un usuario no está autorizado, **no podrá acceder a ciertas páginas o menús** según su rol asignado.
+
+- 🔍 **Búsqueda y filtrado por fecha**  
+  Permite buscar y filtrar tareas registradas mediante fechas específicas.
+
+- 📄 **Paginación de datos**  
+  Implementación de paginación para mejorar la navegación entre grandes volúmenes de registros.
+
 ---
 ## 🚀 Tecnologías y Funcionalidades
 
