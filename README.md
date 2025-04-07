@@ -3,7 +3,8 @@
 
 **Task Management System (S_Blazor_TDApp)** es una solución moderna para la gestión de tareas que combina el poder de **Blazor WebAssembly** y **.NET 9**, permitiendo construir aplicaciones web interactivas, escalables y fáciles de mantener. Está diseñada para manejar tareas de distintos tipos: estáticas, dinámicas o recurrentes, con una arquitectura robusta, flexible y extensible.
 
-![image](https://github.com/user-attachments/assets/aefb7683-7c7b-4e8d-b799-4f6e35dcd1bd)
+![image](https://github.com/user-attachments/assets/08c0bae8-4ee9-49df-b21d-922e33f8667c)
+
 
 
 ---
@@ -20,7 +21,7 @@
   Permite definir la disponibilidad específica para cada tarea dentro del sistema.
 
 - 👥 **Gestión de usuarios y roles**  
-  Administración de usuarios, con **asignación automática de roles por defecto**.
+  Administración de usuarios, con **asignación automática de roles por defecto y generación de codigo**.
 
 - 🧾 **Validaciones en formularios**  
   Validaciones completas en los campos donde el usuario ingresa información para mantener integridad de datos.
@@ -32,7 +33,7 @@
   Las tareas deshabilitadas no se mostrarán en los menús de procesos ni en disponibilidad.
 
 - 🛑 **Control de acceso de usuarios inactivos**  
-  Usuarios marcados como inactivos no podrán iniciar sesión en el sistema.
+  Usuarios marcados como inactivos o deshabilitados no podrán iniciar sesión en el sistema.
 
 - 🔒 **Autorización por rol**  
   Si un usuario no está autorizado, **no podrá acceder a ciertas páginas o menús** según su rol asignado.
