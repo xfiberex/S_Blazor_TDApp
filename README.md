@@ -104,6 +104,7 @@
 - Ejecuta primero el Server (S_Blazor_TDApp.Server), el cual tendra la UI de Swagger para probar las APIs.
 - Despues ejecuta el Cliente (S_Blazor_TDApp.Client), iniciara la interfaz del proyecto hacia el login.
 - Opcional: En visual studio se puede configurar para iniciar varios proyecto de inicio. Siempre debe iniciar el server primero y despues el cliente.
- 
+
+---
 ## Licencia
 - Este proyecto está licenciado bajo los términos de la [Licencia MIT](LICENSE). Puedes usar, modificar y distribuir el código con libertad, siempre que mantengas el aviso de copyright original.
