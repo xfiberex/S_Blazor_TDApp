@@ -18,6 +18,9 @@ builder.Services.AddHostedService<TareaExpiracionService>();
 // Contexto de base de datos
 builder.Services.AddDbContext<DbTdappContext>(options =>
 {
+    /* Para utilizar dos equipos SQL Server, puedes descomentar la línea correspondiente,
+       de acuerdo a tu configuración en el archivo appsettings.json */
+
     options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
     //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
 });
