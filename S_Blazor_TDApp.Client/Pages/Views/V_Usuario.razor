@@ -25,6 +25,7 @@
                 <div class="card-body">
                     <EditForm Model="usuario" OnValidSubmit="OnValidSubmit" Context="editContext">
                         <DataAnnotationsValidator />
+                        
                         @if (editContext.GetValidationMessages().Any())
                         {
                             <div class="alert alert-danger mb-4">
@@ -165,8 +166,17 @@
                     <button type="button" class="btn-close" @onclick="CerrarModalCambioClave"></button>
                 </div>
                 <div class="modal-body">
-                    <EditForm Model="cambioClaveModel" OnValidSubmit="GuardarCambioClave">
+                    <EditForm Model="cambioClaveModel" OnValidSubmit="GuardarCambioClave" Context="editContextClave">
                         <DataAnnotationsValidator />
+
+                        @if (editContextClave.GetValidationMessages().Any())
+                        {
+                            <div class="alert alert-danger mb-4">
+                                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                                <ValidationSummary />
+                            </div>
+                        }
+
                         <div class="mb-3">
                             <label for="nuevaClave" class="form-label">Nueva Contraseña</label>
                             <InputText id="nuevaClave" type="password" class="form-control"
@@ -191,6 +201,7 @@
     public int IdUsuarioEditar { get; set; } = 0;
 
     private EditContext editContext = null!;
+    private EditContext editContextClave = null!;
     private string titulo = string.Empty;
     private string btnTexto = string.Empty;
     public bool isSaving = false;
@@ -333,6 +344,7 @@
                 });
             return;
         }
+        editContextClave = new EditContext(usuario);
 
         try
         {

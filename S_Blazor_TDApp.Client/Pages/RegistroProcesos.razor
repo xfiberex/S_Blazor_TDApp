@@ -211,7 +211,7 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
-                                <th>Fecha y Hora</th>
+                                <th>Fecha</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -245,7 +245,7 @@
                                         }
                                     </td>
                                     <td>
-                                        @itemCalendar.Fecha.ToString("dd/MM/yyyy") - @itemCalendar.Hora.ToString("HH:mm:ss tt")
+                                        @itemCalendar.Fecha.ToString("dd/MM/yyyy")
                                     </td>
                                     <td>
                                         @if (IsTaskAvailable(itemCalendar))
@@ -371,7 +371,7 @@
 <div class="modal fade" id="registroProcesoModal" tabindex="-1" aria-labelledby="registroProcesoModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <EditForm Model="registroProceso" OnValidSubmit="RegistrarProceso">
+            <EditForm Model="registroProceso" OnValidSubmit="RegistrarProceso" Context="editContext">
                 <DataAnnotationsValidator />
                 <div class="modal-header">
                     <h5 class="modal-title" id="registroProcesoModalLabel">Registrar Proceso</h5>
@@ -401,6 +401,15 @@
                         </ul>
                     }
                 </div>
+
+                @if (editContext.GetValidationMessages().Any())
+                {
+                    <div class="alert alert-danger m-3">
+                        <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                        <ValidationSummary />
+                    </div>
+                }
+
                 <div class="modal-body">
                     <div class="mb-3">
                         <InputTextArea id="comentario" class="form-control" placeholder="Escriba el informe..."
@@ -420,7 +429,7 @@
 <div class="modal fade" id="validarTareaCalendarioModal" tabindex="-1" aria-labelledby="validarTareaCalendarioModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <EditForm Model="tareaCalendarioCompleto" OnValidSubmit="ValidarTareaCalendario">
+            <EditForm Model="tareaCalendarioCompleto" OnValidSubmit="ValidarTareaCalendario" Context="editContextCalendario">
                 <DataAnnotationsValidator />
                 <div class="modal-header">
                     <h5 class="modal-title" id="validarTareaCalendarioModalLabel">Validar Tarea de Calendario</h5>
@@ -437,6 +446,15 @@
                         </ul>
                     }
                 </div>
+
+                @if (editContextCalendario.GetValidationMessages().Any())
+                {
+                    <div class="alert alert-danger m-3">
+                        <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill me-2"></i>Datos necesarios</h5>
+                        <ValidationSummary />
+                    </div>
+                }
+
                 <div class="modal-body">
                     <div class="mb-3">
                         <div class="input-group">
@@ -504,6 +522,8 @@
     // Diccionario para contar registros por tarea (por usuario actual)
     private Dictionary<int, int> userProcessCount = new();
     private int currentUserId;
+    private EditContext editContext = null!; 
+    private EditContext editContextCalendario = null!;
 
     // Diccionario para almacenar los días asignados a cada tarea, pero en formato TareaDiasDTO
     private Dictionary<int, List<TareaDiasDTO>> taskDiasMap = new();
@@ -723,6 +743,9 @@
 
     private async Task RegistrarProceso()
     {
+        // Muestra los mensajes de validación, en caso de que falten los datos al guardar el proceso
+        editContext = new EditContext(registroProceso);
+        
         try
         {
             // Actualizar la fecha de registro
@@ -789,6 +812,8 @@
     // Método que se ejecuta al validar la tarea de calendario
     private async Task ValidarTareaCalendario()
     {
+        editContextCalendario = new EditContext(tareaCalendarioCompleto);
+
         // Verificar que la nueva fecha/hora sean diferentes a las actuales
         if (selectedTareaCalendario != null)
         {
@@ -957,8 +982,12 @@
     private void FilterTasksProcess()
     {
         filteredTasksProcess = listaRegistroProcesos.Where(t =>
-            (string.IsNullOrWhiteSpace(searchTermProcess) ||
-             t.DescripcionRegistro.Contains(searchTermProcess, StringComparison.OrdinalIgnoreCase)) &&
+            (
+                string.IsNullOrWhiteSpace(searchTermProcess) ||
+                (t.RefTareaRecurr?.NombreTareaRecurr?.Contains(searchTermProcess, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (t.DescripcionRegistro?.Contains(searchTermProcess, StringComparison.OrdinalIgnoreCase) ?? false)
+            )
+            &&
             (!startDate.HasValue || t.FechaRegistro.Date == startDate.Value.Date)
         ).ToList();
     }

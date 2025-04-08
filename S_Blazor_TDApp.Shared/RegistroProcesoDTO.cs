@@ -17,7 +17,7 @@ namespace S_Blazor_TDApp.Shared
         public DateTime FechaRegistro { get; set; }
 
         [Required(ErrorMessage = "El comentario es obligatorio.")]
-        [StringLength(100, MinimumLength = 3, ErrorMessage = "El comentario debe tener entre 3 y 100 caracteres.")]
+        [StringLength(100, ErrorMessage = "La descripción de la tarea no puede exceder los 100 caracteres.")]
         public string DescripcionRegistro { get; set; } = null!;
     }
 }
