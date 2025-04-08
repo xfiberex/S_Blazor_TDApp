@@ -280,10 +280,13 @@
         filteredUsers = string.IsNullOrWhiteSpace(searchTerm)
             ? listaUsuarios
             : listaUsuarios.Where(u =>
-                u.NombreUsuario.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                (u.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                (u.Rol?.NombreRol?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-              ).ToList();
+                 (u.Codigo.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                  u.NombreUsuario.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                  u.NombreCompleto.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                 (u.Email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                 (u.Rol?.NombreRol?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
+            ).ToList();
+
         currentPage = 1;
         UpdatePagedUsers();
     }
