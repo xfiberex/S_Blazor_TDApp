@@ -57,7 +57,7 @@
 ## 🚀 Tecnologías Utilizadas
 
 - 🔷 **Blazor WebAssembly**  
-  Framework para el frontend que se ejecuta directamente en el navegador, ofreciendo una experiencia SPA (Single Page Application) sin necesidad de plugins.
+  Framework para el frontend que se ejecuta directamente en el navegador, ofreciendo una experiencia SPA (Single Page Application) sin necesidad de plugins. Puedes utilizar C# para el Backend y Frontend.
 
 - 🛠 **ASP.NET Core (.NET 9)**  
   Plataforma moderna y multiplataforma para el desarrollo del backend y servicios API RESTful, encargada de la lógica de negocio y gestión de peticiones.
