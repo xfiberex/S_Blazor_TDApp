@@ -175,11 +175,38 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
+                // Validación: Verifica si ya existe un usuario con el mismo nombre de usuario
+                bool existeNombre = await _context.Usuarios
+                    .AnyAsync(u => u.NombreUsuario == usuarioDTO.NombreUsuario);
+                if (existeNombre)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El nombre de usuario ya existe.";
+                    return BadRequest(responseApi);
+                }
+
+                // Validación: Verifica si ya existe un usuario con el mismo correo electrónico
+                bool existeEmail = await _context.Usuarios
+                    .AnyAsync(u => u.Email == usuarioDTO.Email);
+                if (existeEmail)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El correo electrónico ya existe.";
+                    return BadRequest(responseApi);
+                }
+
                 // Mapea el DTO a la entidad utilizando AutoMapper
                 var usuarioEntity = _mapper.Map<Usuario>(usuarioDTO);
 
                 // Hashea la contraseña antes de guardar
-                usuarioEntity.Clave = PasswordHelper.HashPassword(usuarioEntity.Clave);
+                if (!string.IsNullOrEmpty(usuarioEntity.Clave))
+                {
+                    usuarioEntity.Clave = PasswordHelper.HashPassword(usuarioEntity.Clave);
+                }
+                else
+                {
+                    throw new Exception("La contraseña es obligatoria.");
+                }
 
                 // Asigna la fecha de creación y deja nula la de actualización al guardar
                 usuarioEntity.FechaCreacion = DateTime.Now;
@@ -223,6 +250,26 @@ namespace S_Blazor_TDApp.Server.Controllers
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "El usuario no existe.";
                     return NotFound(responseApi);
+                }
+
+                // Validación: verificar si el nombre de usuario ya existe en otro registro
+                bool existeNombre = await _context.Usuarios
+                    .AnyAsync(u => u.NombreUsuario == usuarioDTO.NombreUsuario && u.UsuarioId != id);
+                if (existeNombre)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El nombre de usuario ya existe.";
+                    return BadRequest(responseApi);
+                }
+
+                // Validación: verificar si el correo electrónico ya existe en otro registro
+                bool existeEmail = await _context.Usuarios
+                    .AnyAsync(u => u.Email == usuarioDTO.Email && u.UsuarioId != id);
+                if (existeEmail)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El correo electrónico ya existe.";
+                    return BadRequest(responseApi);
                 }
 
                 // Mapea los valores del DTO a la entidad existente
