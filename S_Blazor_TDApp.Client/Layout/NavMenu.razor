@@ -25,6 +25,8 @@
             @* Se utiliza AuthorizeView Roles, para que puedan ver los menús los usuarios con esos roles *@
             <AuthorizeView Roles="Administrador, Supervisor, Empleado">
                 <Authorized>
+                    <span class="nav-section-label">GESTIÓN</span>
+
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="registroProcesos" Match="NavLinkMatch.All">
                             <i aria-hidden="true" class="bi bi-house-gear-fill"></i>
@@ -57,6 +59,8 @@
             
             <AuthorizeView Roles="Administrador, Supervisor">
                 <Authorized>
+                    <span class="nav-section-label">ADMINISTRACIÓN</span>
+
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="usuarios">
                             <i aria-hidden="true" class="bi bi-people-fill"></i>

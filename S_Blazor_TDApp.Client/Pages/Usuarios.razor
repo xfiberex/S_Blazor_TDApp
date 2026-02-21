@@ -14,14 +14,32 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider authStateProvider
 
+<!-- Page Title -->
+<div class="page-title">
+    <div class="page-title-icon">
+        <i class="bi bi-people-fill"></i>
+    </div>
+    <div>
+        <h3>Administración de Usuarios</h3>
+        <span class="page-subtitle">Gestionar cuentas de usuario y permisos</span>
+    </div>
+</div>
+
 <div class="container-fluid mt-4">
     @if (isLoading)
     {
-        <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
-            <div class="spinner-border text-primary me-2" role="status">
-                <span class="visually-hidden"></span>
+        <div class="card">
+            <div class="card-body table-skeleton">
+                @for (int i = 0; i < 5; i++)
+                {
+                    <div class="skeleton-row">
+                        <div class="skeleton skeleton-cell" style="flex: 0.5;"></div>
+                        <div class="skeleton skeleton-cell" style="flex: 2;"></div>
+                        <div class="skeleton skeleton-cell" style="flex: 1.5;"></div>
+                        <div class="skeleton skeleton-badge"></div>
+                    </div>
+                }
             </div>
-            <label>Cargando usuarios registrados...</label>
         </div>
     }
     else

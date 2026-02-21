@@ -1,22 +1,26 @@
 .navbar-toggler {
     background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
 }
 
 .top-row {
     min-height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
+    backdrop-filter: blur(10px);
 }
 
 .navbar-brand {
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
     transition: all 0.3s ease;
     color: white;
     text-decoration: none;
+    letter-spacing: -0.3px;
 }
 
 .navbar-brand img {
@@ -26,7 +30,13 @@
 .brand-text {
     white-space: nowrap;
     overflow: hidden;
-    transition: opacity 0.3s ease, width 0.3s ease;
+    transition:
+        opacity 0.3s ease,
+        width 0.3s ease;
+    background: linear-gradient(135deg, #fff 30%, rgba(165, 180, 252, 0.9));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .nav-collapsed .brand-text {
@@ -48,41 +58,56 @@
 }
 
 .nav-item {
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
+    font-size: 0.875rem;
+    padding-bottom: 0.25rem;
 }
 
 .nav-item:first-of-type {
-    padding-top: 1rem;
+    padding-top: 0.5rem;
 }
 
 .nav-item:last-of-type {
     padding-bottom: 1rem;
 }
 
-.nav-item ::deep a, .nav-item ::deep .toggle-link {
-    color: #d7d7d7;
-    border-radius: 4px;
-    height: 3rem;
+.nav-item ::deep a,
+.nav-item ::deep .toggle-link {
+    color: rgba(203, 213, 225, 0.85);
+    border-radius: 8px;
+    height: 2.75rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0 1rem;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     cursor: pointer;
+    position: relative;
+    font-weight: 500;
 }
 
 .nav-item ::deep a.active {
-    background-color: rgba(255,255,255,0.37);
+    background-color: rgba(255, 255, 255, 0.12);
     color: white;
+    font-weight: 600;
+    border-left: 3px solid #818cf8;
+    padding-left: calc(1rem - 3px);
 }
 
-.nav-item ::deep a:hover, .nav-item ::deep .toggle-link:hover {
-    background-color: rgba(255,255,255,0.1);
+.nav-item ::deep a.active i {
+    color: #a5b4fc;
+}
+
+.nav-item ::deep a:hover,
+.nav-item ::deep .toggle-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
     color: white;
-    transform: translateX(2px);
+    transform: translateX(3px);
+}
+
+.nav-item ::deep a:hover i {
+    color: #c4b5fd;
 }
 
 .nav-item ::deep .nav-label {
@@ -90,7 +115,9 @@
     max-width: 200px;
     overflow: hidden;
     white-space: nowrap;
-    transition: opacity 0.2s ease, max-width 0.3s ease;
+    transition:
+        opacity 0.2s ease,
+        max-width 0.3s ease;
 }
 
 .nav-collapsed .nav-item ::deep .nav-label {
@@ -104,13 +131,13 @@
 }
 
 .nav-collapsed .nav-item ::deep .toggle-link:hover {
-    background-color: rgba(255,255,255,0.15);
+    background-color: rgba(255, 255, 255, 0.12);
     transform: translateX(3px);
 }
 
 .toggle-link {
-    border-top: 1px solid rgba(255,255,255,0.1);
-    margin-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    margin-top: 0.5rem;
 }
 
 @media (max-width: 767.98px) {
