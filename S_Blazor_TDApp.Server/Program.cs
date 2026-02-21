@@ -10,7 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Registrar AutoMapper
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddAutoMapper(config => config.AddProfile<MappingProfile>());
 
 // Registrar el servicio en segundo plano
 builder.Services.AddHostedService<TareaExpiracionService>();
