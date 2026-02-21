@@ -1,0 +1,1585 @@
+{
+  "settings": {
+    "components": {
+      "code": true,
+      "binaries": false
+    },
+    "targetId": "net10.0",
+    "targetDisplayName": ".NETCoreApp,Version=v10.0"
+  },
+  "analysisStartTime": "2026-02-21T19:19:15.7956995Z",
+  "analysisEndTime": "2026-02-21T19:19:18.9336648Z",
+  "privacyModeHelpUrl": "https://go.microsoft.com/fwlink/?linkid=2270980",
+  "stats": {
+    "summary": {
+      "projects": 4,
+      "issues": 6,
+      "incidents": 52,
+      "effort": 52
+    },
+    "charts": {
+      "severity": {
+        "Mandatory": 5,
+        "Optional": 1,
+        "Potential": 46,
+        "Information": 0
+      },
+      "category": {
+        "Project": 4,
+        "NuGet": 7,
+        "Api": 41
+      }
+    }
+  },
+  "projects": [
+    {
+      "path": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+      "startingProject": true,
+      "issues": 5,
+      "storyPoints": 45,
+      "properties": {
+        "appName": "S_Blazor_TDApp.Client",
+        "projectKind": "AspNetCore",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 40,
+        "numberOfCodeFiles": 15,
+        "linesTotal": 23740,
+        "linesOfCode": 806,
+        "totalApiScanned": 10802,
+        "minLinesOfCodeToChange": 40,
+        "maxLinesOfCodeToChange": 40
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "b1038ab2-b19c-4e35-87ad-62afb7d0d13b",
+          "ruleId": "NuGet.0002",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.Authorization, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.Authorization, and replace with new package Microsoft.AspNetCore.Components.Authorization 10.0.3",
+              "protected": "Microsoft.AspNetCore.Components.Authorization, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.Authorization, and replace with new package Microsoft.AspNetCore.Components.Authorization 10.0.3"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.Authorization, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.Authorization, and replace with new package Microsoft.AspNetCore.Components.Authorization 10.0.3",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.Authorization, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.Authorization, and replace with new package Microsoft.AspNetCore.Components.Authorization 10.0.3",
+            "label": "Microsoft.AspNetCore.Components.Authorization 9.0.3",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.Authorization",
+              "PackageVersion": "9.0.3",
+              "PackageNewVersion": "10.0.3",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "d2caf094-1f0d-4dd6-b0dd-78fe55f754ec",
+          "ruleId": "NuGet.0002",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.3",
+              "protected": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.3"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.3",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.WebAssembly, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly, and replace with new package Microsoft.AspNetCore.Components.WebAssembly 10.0.3",
+            "label": "Microsoft.AspNetCore.Components.WebAssembly 9.0.3",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.WebAssembly",
+              "PackageVersion": "9.0.3",
+              "PackageNewVersion": "10.0.3",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "6cc8b441-0cc9-48ce-a30a-cd1e9ad97551",
+          "ruleId": "NuGet.0002",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.3",
+              "protected": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.3"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+            "snippet": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.3",
+            "protectedSnippet": "Microsoft.AspNetCore.Components.WebAssembly.DevServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.Components.WebAssembly.DevServer, and replace with new package Microsoft.AspNetCore.Components.WebAssembly.DevServer 10.0.3",
+            "label": "Microsoft.AspNetCore.Components.WebAssembly.DevServer 9.0.3",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.Components.WebAssembly.DevServer",
+              "PackageVersion": "9.0.3",
+              "PackageNewVersion": "10.0.3",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "185eda9a-0dd0-4bb7-8138-766dce20a103",
+          "ruleId": "NuGet.0005",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Blazored.SessionStorage, 2.4.0\n\nRecomendaci\u00F3n:\n\nDebe reemplazarse.\nRemove Blazored.SessionStorage, and replace with new package Blazored.SessionStorage, 2.4.0",
+              "protected": "Blazored.SessionStorage, 2.4.0\n\nRecomendaci\u00F3n:\n\nDebe reemplazarse.\nRemove Blazored.SessionStorage, and replace with new package Blazored.SessionStorage, 2.4.0"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+            "snippet": "Blazored.SessionStorage, 2.4.0\n\nRecomendaci\u00F3n:\n\nDebe reemplazarse.\nRemove Blazored.SessionStorage, and replace with new package Blazored.SessionStorage, 2.4.0",
+            "protectedSnippet": "Blazored.SessionStorage, 2.4.0\n\nRecomendaci\u00F3n:\n\nDebe reemplazarse.\nRemove Blazored.SessionStorage, and replace with new package Blazored.SessionStorage, 2.4.0",
+            "label": "Blazored.SessionStorage 2.4.0",
+            "properties": {
+              "PackageId": "Blazored.SessionStorage",
+              "PackageVersion": "2.4.0",
+              "PackageNewVersion": null,
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "41f8faf4-8b33-41fa-a8bd-2a1e1563f9ba",
+          "ruleId": "Project.0002",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+              "protected": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+            "snippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "protectedSnippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        },
+        {
+          "incidentId": "752bbc6c-ebdf-4fff-8211-10a2cc2f062d",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "_refreshTimer = new System.Threading.Timer(async _ =\u003E\r\n        {\r\n            await InvokeAsync(async () =\u003E\r\n            {\r\n                await RefreshData();\r\n                StateHasChanged();\r\n            });\r\n        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));",
+              "protected": "M:System.TimeSpan.FromSeconds(System.Int64)"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\obj\\Debug\\net9.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/RegistroProcesos_razor.g.cs",
+            "snippet": "_refreshTimer = new System.Threading.Timer(async _ =\u003E\r\n        {\r\n            await InvokeAsync(async () =\u003E\r\n            {\r\n                await RefreshData();\r\n                StateHasChanged();\r\n            });\r\n        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));",
+            "protectedSnippet": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "label": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 2014,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "c88a18c1-4dc5-4085-9c0c-3e29612fd069",
+          "ruleId": "Api.0002",
+          "description": "Breaking change: New TimeSpan.From*() overloads that take integers ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "_refreshTimer = new System.Threading.Timer(async _ =\u003E\r\n        {\r\n            await InvokeAsync(async () =\u003E\r\n            {\r\n                await RefreshData();\r\n                StateHasChanged();\r\n            });\r\n        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));",
+              "protected": "M:System.TimeSpan.FromSeconds(System.Int64)"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\obj\\Debug\\net9.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/RegistroProcesos_razor.g.cs",
+            "snippet": "_refreshTimer = new System.Threading.Timer(async _ =\u003E\r\n        {\r\n            await InvokeAsync(async () =\u003E\r\n            {\r\n                await RefreshData();\r\n                StateHasChanged();\r\n            });\r\n        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));",
+            "protectedSnippet": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "label": "M:System.TimeSpan.FromSeconds(System.Int64)",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/core-libraries/9.0/timespan-from-overloads.md",
+                "isCustom": false
+              }
+            ],
+            "line": 2014,
+            "column": 8
+          }
+        },
+        {
+          "incidentId": "5f61718a-e2d4-45cc-b546-dac6af6fd9eb",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorResult = await loginResponse.Content.ReadFromJsonAsync\u003CErrorResponse\u003E();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\obj\\Debug\\net9.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/InicioSesion_razor.g.cs",
+            "snippet": "var errorResult = await loginResponse.Content.ReadFromJsonAsync\u003CErrorResponse\u003E();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 493,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "b73c8754-1820-4823-9c69-dc80aaee404e",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var sesionUsuario = await loginResponse.Content.ReadFromJsonAsync\u003CInicioSesionDTO\u003E();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\obj\\Debug\\net9.0\\Microsoft.CodeAnalysis.Razor.Compiler\\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\\Pages/InicioSesion_razor.g.cs",
+            "snippet": "var sesionUsuario = await loginResponse.Content.ReadFromJsonAsync\u003CInicioSesionDTO\u003E();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 486,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "5570f070-2130-4eec-9a52-f847ac1a0b6f",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaDiasService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 72,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "68bf2729-479f-48e7-b6ba-2b13ef145d84",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaDiasService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 68,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "67fe35e1-1508-4e2f-a9ba-627b3a11d1bb",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaDiasService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 54,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "68b6a471-b984-4e72-8aa6-dfcd31b60fba",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaDiasService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 50,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "ccf04b44-d2d9-40a8-bfdd-13a2089595bd",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaCalendarioService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 78,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "b8ea0391-ae2f-4979-af1b-75f3b4637348",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaCalendarioService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 74,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "784a610c-78ac-4f2e-9abe-8524f1a701d6",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaCalendarioService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 60,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "d613f2d3-b28b-4a23-902e-573df353a98e",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaCalendarioService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 56,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "39059903-5173-4322-a330-dcbf7e5765fc",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaCalendarioService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 42,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "797bff66-d758-4e60-ac79-8f644557ba6d",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaCalendarioService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 38,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "b9c8c4d8-0635-4cbb-bc79-d04968d53f28",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\UsuarioService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 115,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "9d00fb85-d6e4-4d44-8127-0cfbeca37d72",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\UsuarioService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 100,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "479eec5f-b825-4bdf-8891-817878af5201",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\UsuarioService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 96,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "6a8ebc60-6d1b-4da1-bf7e-3f6f79b242fc",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\UsuarioService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 82,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "530de406-2760-4ef4-9da0-7e08cdea2365",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\UsuarioService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 78,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "3f146579-0ca9-450d-a6f7-6cd2a360071a",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\UsuarioService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 64,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "997125a5-2b99-4272-abae-5e391a03b59b",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\UsuarioService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 60,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "765bcc39-7d57-4a23-b373-e7e762d1ed83",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RolService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 88,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "38da802e-8700-4c56-9075-7efa53d3e9ed",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RolService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 84,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "a21fb7bd-9bee-4a07-ac56-4d5eaa7199bc",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RolService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 70,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "6c86aaef-efa7-42aa-a5b6-35de71f80e73",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RolService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 66,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "57439b7f-2334-4b42-a1c7-3847134372a4",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RolService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 52,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "236041d5-d41f-491c-948e-a0c49467a613",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RolService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 48,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "5eacfb1c-9a06-459c-9230-6fe3c2651511",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RegistroProcesosService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 81,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "605df762-e733-4670-a9d4-1a0aed92bf5a",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RegistroProcesosService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 77,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "facd8165-911a-44b2-a035-2f2a268c9544",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RegistroProcesosService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 63,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "d6ff3d69-1dc8-416a-99eb-136fae8122a8",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\RegistroProcesosService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 59,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "f88506f9-dcd7-4686-a98a-041a7dc514ab",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaRecurrenteService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 78,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "d951f1e1-3dfe-4333-ac6f-a31229fb1f19",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaRecurrenteService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 74,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "f773cd88-ce22-4b9d-84ad-f0d732252839",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaRecurrenteService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 60,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "090d8e43-14a0-4898-bfed-73b9f75eae2f",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaRecurrenteService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 56,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "2d73a6c4-048b-499c-80b3-570e7a1f78f7",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaRecurrenteService.cs",
+            "snippet": "var response = await httpResponse.Content.ReadFromJsonAsync\u003CResponseAPI\u003Cint\u003E\u003E()\r\n                ?? throw new Exception(\u0022No se recibi\u00F3 respuesta del servidor.\u0022);",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 42,
+            "column": 12
+          }
+        },
+        {
+          "incidentId": "370f32b2-cf82-4639-a9e8-d6808341e6d4",
+          "ruleId": "Api.0003",
+          "description": "Breaking change - Streaming HTTP responses enabled by default in browser HTTP clients ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+              "protected": "T:System.Net.Http.HttpContent"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Services\\Implementation\\TareaRecurrenteService.cs",
+            "snippet": "var errorContent = await httpResponse.Content.ReadAsStringAsync();",
+            "protectedSnippet": "T:System.Net.Http.HttpContent",
+            "label": "T:System.Net.Http.HttpContent",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/default-http-streaming.md",
+                "isCustom": false
+              }
+            ],
+            "line": 38,
+            "column": 16
+          }
+        },
+        {
+          "incidentId": "874dc2db-2250-4457-a42f-f7fb4c9a56e3",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(\u0022https://localhost:7219/\u0022) });",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Program.cs",
+            "snippet": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(\u0022https://localhost:7219/\u0022) });",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 15,
+            "column": 0
+          }
+        },
+        {
+          "incidentId": "b872b1f7-b859-4772-b2e7-00916633a618",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(\u0022https://localhost:7219/\u0022) });",
+              "protected": "M:System.Uri.#ctor(System.String)"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Program.cs",
+            "snippet": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(\u0022https://localhost:7219/\u0022) });",
+            "protectedSnippet": "M:System.Uri.#ctor(System.String)",
+            "label": "M:System.Uri.#ctor(System.String)",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 15,
+            "column": 0
+          }
+        },
+        {
+          "incidentId": "17bf4a57-4bc9-4777-ab09-fd7801fea79e",
+          "ruleId": "Api.0003",
+          "description": "Breaking change: URI length limits removed ",
+          "projectPath": "S_Blazor_TDApp.Client\\S_Blazor_TDApp.Client.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(\u0022https://localhost:7219/\u0022) });",
+              "protected": "T:System.Uri"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Client\\Program.cs",
+            "snippet": "builder.Services.AddScoped(sp =\u003E new HttpClient { BaseAddress = new Uri(\u0022https://localhost:7219/\u0022) });",
+            "protectedSnippet": "T:System.Uri",
+            "label": "T:System.Uri",
+            "links": [
+              {
+                "title": "Documentaci\u00F3n de la API",
+                "url": "https://github.com/dotnet/docs/blob/main/docs/core/compatibility/networking/10.0/uri-length-limits-removed.md",
+                "isCustom": false
+              }
+            ],
+            "line": 15,
+            "column": 0
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "S_Blazor_TDApp.Password\\S_Blazor_TDApp.Password.csproj",
+      "startingProject": true,
+      "issues": 1,
+      "storyPoints": 1,
+      "properties": {
+        "appName": "S_Blazor_TDApp.Password",
+        "projectKind": "DotNetCoreApp",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 1,
+        "numberOfCodeFiles": 1,
+        "linesTotal": 5,
+        "linesOfCode": 5,
+        "totalApiScanned": 5,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "eed69cea-f476-4cf1-a354-8be55b846d67",
+          "ruleId": "Project.0002",
+          "projectPath": "S_Blazor_TDApp.Password\\S_Blazor_TDApp.Password.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+              "protected": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Password\\S_Blazor_TDApp.Password.csproj",
+            "snippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "protectedSnippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+      "startingProject": true,
+      "issues": 3,
+      "storyPoints": 5,
+      "properties": {
+        "appName": "S_Blazor_TDApp.Server",
+        "projectKind": "AspNetCore",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 22,
+        "numberOfCodeFiles": 20,
+        "linesTotal": 1996,
+        "linesOfCode": 1975,
+        "totalApiScanned": 2250,
+        "minLinesOfCodeToChange": 1,
+        "maxLinesOfCodeToChange": 1
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "20b793fd-c59d-40f3-b258-6b01d3b0a20f",
+          "ruleId": "NuGet.0002",
+          "projectPath": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.AspNetCore.OpenApi, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.OpenApi, and replace with new package Microsoft.AspNetCore.OpenApi 10.0.3",
+              "protected": "Microsoft.AspNetCore.OpenApi, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.OpenApi, and replace with new package Microsoft.AspNetCore.OpenApi 10.0.3"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+            "snippet": "Microsoft.AspNetCore.OpenApi, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.OpenApi, and replace with new package Microsoft.AspNetCore.OpenApi 10.0.3",
+            "protectedSnippet": "Microsoft.AspNetCore.OpenApi, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.AspNetCore.OpenApi, and replace with new package Microsoft.AspNetCore.OpenApi 10.0.3",
+            "label": "Microsoft.AspNetCore.OpenApi 9.0.3",
+            "properties": {
+              "PackageId": "Microsoft.AspNetCore.OpenApi",
+              "PackageVersion": "9.0.3",
+              "PackageNewVersion": "10.0.3",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "23326d75-6419-4c12-b48d-73fa76543a6e",
+          "ruleId": "NuGet.0002",
+          "projectPath": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.EntityFrameworkCore.SqlServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.3",
+              "protected": "Microsoft.EntityFrameworkCore.SqlServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.3"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+            "snippet": "Microsoft.EntityFrameworkCore.SqlServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.3",
+            "protectedSnippet": "Microsoft.EntityFrameworkCore.SqlServer, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.SqlServer, and replace with new package Microsoft.EntityFrameworkCore.SqlServer 10.0.3",
+            "label": "Microsoft.EntityFrameworkCore.SqlServer 9.0.3",
+            "properties": {
+              "PackageId": "Microsoft.EntityFrameworkCore.SqlServer",
+              "PackageVersion": "9.0.3",
+              "PackageNewVersion": "10.0.3",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "8f9865fe-0f63-4eb5-9f3e-7a6b4e147455",
+          "ruleId": "NuGet.0002",
+          "projectPath": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Microsoft.EntityFrameworkCore.Tools, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.3",
+              "protected": "Microsoft.EntityFrameworkCore.Tools, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.3"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+            "snippet": "Microsoft.EntityFrameworkCore.Tools, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.3",
+            "protectedSnippet": "Microsoft.EntityFrameworkCore.Tools, 9.0.3\n\nRecomendaci\u00F3n:\n\nRemove Microsoft.EntityFrameworkCore.Tools, and replace with new package Microsoft.EntityFrameworkCore.Tools 10.0.3",
+            "label": "Microsoft.EntityFrameworkCore.Tools 9.0.3",
+            "properties": {
+              "PackageId": "Microsoft.EntityFrameworkCore.Tools",
+              "PackageVersion": "9.0.3",
+              "PackageNewVersion": "10.0.3",
+              "PackageReplacements": null
+            }
+          }
+        },
+        {
+          "incidentId": "537c7a62-28db-4b42-8483-a8bb7dedaae8",
+          "ruleId": "Project.0002",
+          "projectPath": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+              "protected": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+            "snippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "protectedSnippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        },
+        {
+          "incidentId": "341ca2f9-1a9b-4399-89ad-5e2d72ad1ff4",
+          "ruleId": "Api.0001",
+          "description": "API is unavailable in net8.0 ",
+          "projectPath": "S_Blazor_TDApp.Server\\S_Blazor_TDApp.Server.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "builder.Services.AddAutoMapper(typeof(MappingProfile));",
+              "protected": "T:Microsoft.Extensions.DependencyInjection.ServiceCollectionExtensions"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Server\\Program.cs",
+            "snippet": "builder.Services.AddAutoMapper(typeof(MappingProfile));",
+            "protectedSnippet": "T:Microsoft.Extensions.DependencyInjection.ServiceCollectionExtensions",
+            "label": "T:Microsoft.Extensions.DependencyInjection.ServiceCollectionExtensions",
+            "line": 12,
+            "column": 0
+          }
+        }
+      ],
+      "features": []
+    },
+    {
+      "path": "S_Blazor_TDApp.Shared\\S_Blazor_TDApp.Shared.csproj",
+      "startingProject": true,
+      "issues": 1,
+      "storyPoints": 1,
+      "properties": {
+        "appName": "S_Blazor_TDApp.Shared",
+        "projectKind": "ClassLibrary",
+        "frameworks": [
+          "net9.0"
+        ],
+        "languages": [
+          "C#"
+        ],
+        "tools": [
+          "MSBuild"
+        ],
+        "isSdkStyle": true,
+        "numberOfFiles": 12,
+        "numberOfCodeFiles": 12,
+        "linesTotal": 288,
+        "linesOfCode": 288,
+        "totalApiScanned": 368,
+        "minLinesOfCodeToChange": 0,
+        "maxLinesOfCodeToChange": 0
+      },
+      "ruleInstances": [
+        {
+          "incidentId": "cc2ce7c5-def5-4ea2-b86a-77049ffb0c6e",
+          "ruleId": "Project.0002",
+          "projectPath": "S_Blazor_TDApp.Shared\\S_Blazor_TDApp.Shared.csproj",
+          "state": "Active",
+          "location": {
+            "snippetModel": {
+              "unrestricted": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+              "protected": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0"
+            },
+            "kind": "File",
+            "path": "S_Blazor_TDApp.Shared\\S_Blazor_TDApp.Shared.csproj",
+            "snippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "protectedSnippet": "Marco de destino actual: net9.0\nMarco de destino recomendado: net10.0",
+            "properties": {
+              "CurrentTargetFramework": "net9.0",
+              "RecommendedTargetFramework": "net10.0"
+            }
+          }
+        }
+      ],
+      "features": []
+    }
+  ],
+  "rules": {
+    "Project.0002": {
+      "id": "Project.0002",
+      "isFeature": false,
+      "description": "El marco de destino del proyecto deben cambiarse al nuevo marco de destino que seleccion\u00F3 para esta actualizaci\u00F3n.\n\nDurante la actualizaci\u00F3n, el marco de destino se ajustar\u00E1 a la plataforma correspondiente cuando proceda. En algunos casos, el proyecto dar\u00EDa como resultado varios marcos de destino despu\u00E9s de la actualizaci\u00F3n si usara caracter\u00EDsticas que ahora tienen sus propias plataformas en marcos de .NET modernos (windows, iOS, Android, etc.).",
+      "label": "Es necesario cambiar el marco de destino del proyecto",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Informaci\u00F3n general sobre la portabilidad de .NET Framework a .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265227",
+          "isCustom": false
+        },
+        {
+          "title": "SDK de proyecto .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2265226",
+          "isCustom": false
+        }
+      ]
+    },
+    "NuGet.0002": {
+      "id": "NuGet.0002",
+      "isFeature": false,
+      "description": "Se recomienda actualizar el paquete NuGet para la plataforma de destino seleccionada.\n\nSe recomienda que los paquetes .NET est\u00E1ndar tengan versiones que coincidan con la versi\u00F3n de .NET de destino del proyecto.\n\nTambi\u00E9n se sabe que otros paquetes funcionan mejor para las plataformas de destino seleccionadas.",
+      "label": "Se recomienda actualizar el paquete NuGet",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262530",
+          "isCustom": false
+        }
+      ]
+    },
+    "NuGet.0005": {
+      "id": "NuGet.0005",
+      "isFeature": false,
+      "description": "El paquete NuGet est\u00E1 en desuso.\n\nVaya a su documentaci\u00F3n y compruebe si hay una gu\u00EDa para reemplazar la funcionalidad proporcionada por este paquete.",
+      "label": "El paquete NuGet est\u00E1 en desuso",
+      "severity": "Optional",
+      "effort": 1,
+      "links": [
+        {
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262531",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0002": {
+      "id": "Api.0002",
+      "isFeature": false,
+      "description": "API is source incompatible for selected .NET version: requires code changes to compile successfully when targeting a new version, such as removing obsolete APIs or changing method signatures.",
+      "label": "Source incompatible for selected .NET version",
+      "severity": "Potential",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Cambios importantes en .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262679",
+          "isCustom": false
+        }
+      ]
+    },
+    "Api.0003": {
+      "id": "Api.0003",
+      "isFeature": false,
+      "description": "API has a behavioral change in selected .NET version: code and binaries may behave differently at runtime without needing recompilation, but the new behavior might be undesirable and require updates.",
+      "label": "Behavioral change in selected .NET version",
+      "severity": "Potential",
+      "effort": 1
+    },
+    "Api.0001": {
+      "id": "Api.0001",
+      "isFeature": false,
+      "description": "API is binary incompatible for selected .NET version: affects existing binaries, often requiring recompilation, because the API has changed in a way that prevents older binaries from loading or executing.",
+      "label": "Binary incompatible for selected .NET version",
+      "severity": "Mandatory",
+      "effort": 1,
+      "links": [
+        {
+          "title": "Cambios importantes en .NET",
+          "url": "https://go.microsoft.com/fwlink/?linkid=2262679",
+          "isCustom": false
+        }
+      ]
+    }
+  }
+}
