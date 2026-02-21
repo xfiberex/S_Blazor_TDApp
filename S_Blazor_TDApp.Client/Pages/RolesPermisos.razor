@@ -11,6 +11,7 @@
 @inject SweetAlertService SwalService
 @inject IRolService RolService
 @inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
 
 <div class="container-fluid mt-4">
     @if (isLoading)
@@ -177,6 +178,10 @@
             filteredRoles = listaRoles;
             currentPage = 1;
             UpdatePagedRoles();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {

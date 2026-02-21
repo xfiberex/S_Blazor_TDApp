@@ -132,6 +132,10 @@
             }
             editContext = new EditContext(rolCargo);
         }
+        catch (UnauthorizedAccessException)
+        {
+            NavigationManager.NavigateTo("/");
+        }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions

@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
 using S_Blazor_TDApp.Server.Utilities;
@@ -14,41 +18,88 @@ namespace S_Blazor_TDApp.Server.Controllers
     {
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public UsuarioController(DbTdappContext context, IMapper mapper)
+        public UsuarioController(DbTdappContext context, IMapper mapper, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
+            _configuration = configuration;
         }
 
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
-            // Busca al usuario en la base de datos por correo (sin comparar la contraseña en la consulta)
-            var usuarioEntity = await _context.Usuarios
-                .Include(u => u.IdRolNavigation)
-                .FirstOrDefaultAsync(u => u.Email == login.Email);
+            var responseApi = new ResponseAPI<InicioSesionDTO>();
 
-            // Verifica que el usuario exista y que la contraseña sea válida
-            if (usuarioEntity == null || !PasswordHelper.VerifyPassword(login.Clave, usuarioEntity.Clave))
+            try
             {
-                return Unauthorized(new { Message = "Credenciales inválidas." });
+                // Busca al usuario en la base de datos por correo (sin comparar la contraseña en la consulta)
+                var usuarioEntity = await _context.Usuarios
+                    .Include(u => u.IdRolNavigation)
+                    .FirstOrDefaultAsync(u => u.Email == login.Email);
+
+                // Verifica que el usuario exista y que la contraseña sea válida
+                if (usuarioEntity == null || !PasswordHelper.VerifyPassword(login.Clave, usuarioEntity.Clave))
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "Credenciales inválidas.";
+                    return Unauthorized(responseApi);
+                }
+
+                if (!usuarioEntity.Activo)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "Usuario inactivo, contacte al administrador.";
+                    return Unauthorized(responseApi);
+                }
+
+                var rolNombre = usuarioEntity.IdRolNavigation != null ? usuarioEntity.IdRolNavigation.NombreRol : "Sin Rol";
+
+                // Generar Token JWT
+                var jwtSettings = _configuration.GetSection("Jwt");
+                var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, usuarioEntity.UsuarioId.ToString()),
+                    new Claim(ClaimTypes.Name, usuarioEntity.NombreUsuario),
+                    new Claim(ClaimTypes.Email, usuarioEntity.Email ?? string.Empty),
+                    new Claim(ClaimTypes.Role, rolNombre)
+                };
+
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(claims),
+                    Expires = DateTime.UtcNow.AddHours(2),
+                    Issuer = jwtSettings["Issuer"],
+                    Audience = jwtSettings["Audience"],
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                };
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var tokenString = tokenHandler.WriteToken(token);
+
+                var inicioSesion = new InicioSesionDTO
+                {
+                    Nombre = usuarioEntity.NombreUsuario,
+                    Correo = usuarioEntity.Email ?? string.Empty,
+                    Rol = rolNombre,
+                    Token = tokenString
+                };
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = inicioSesion;
+                return Ok(responseApi);
             }
-
-            if (!usuarioEntity.Activo)
+            catch (Exception ex)
             {
-                return Unauthorized(new { Message = "Usuario inactivo, contacte al administrador." });
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = ex.Message;
+                return BadRequest(responseApi);
             }
-
-            var inicioSesion = new InicioSesionDTO
-            {
-                Nombre = usuarioEntity.NombreUsuario,
-                Correo = usuarioEntity.Email ?? string.Empty,
-                Rol = usuarioEntity.IdRolNavigation != null ? usuarioEntity.IdRolNavigation.NombreRol : "Sin Rol"
-            };
-
-            return Ok(inicioSesion);
         }
 
         [HttpGet]
@@ -61,6 +112,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 var usuarios = await _context.Usuarios
                                              .Include(u => u.IdRolNavigation)
+                                             .AsNoTracking()
                                              .ToListAsync();
 
                 // Mapea la lista de entidades a una lista de DTOs
@@ -88,6 +140,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 var usuarioEntity = await _context.Usuarios
                                                   .Include(u => u.IdRolNavigation)
+                                                  .AsNoTracking()
                                                   .FirstOrDefaultAsync(u => u.UsuarioId == id);
                 if (usuarioEntity == null)
                 {
@@ -143,6 +196,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 var usuarioEntity = await _context.Usuarios
                     .Include(u => u.IdRolNavigation)
+                    .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Email == email);
 
                 if (usuarioEntity == null)
@@ -272,8 +326,14 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return BadRequest(responseApi);
                 }
 
+                // Guardar la clave actual antes de mapear
+                var claveActual = usuarioEntity.Clave;
+
                 // Mapea los valores del DTO a la entidad existente
                 _mapper.Map(usuarioDTO, usuarioEntity);
+
+                // Restaurar la clave actual para no sobreescribirla
+                usuarioEntity.Clave = claveActual;
 
                 // Asigna la fecha de actualización
                 usuarioEntity.FechaActualizacion = DateTime.Now;

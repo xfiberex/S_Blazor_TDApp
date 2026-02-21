@@ -194,6 +194,10 @@
             }
             editContext = new EditContext(tareaRecurrente);
         }
+        catch (UnauthorizedAccessException)
+        {
+            NavigationManager.NavigateTo("/");
+        }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions

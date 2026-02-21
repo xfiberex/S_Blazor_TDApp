@@ -10,7 +10,11 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareaDiasDTO>> Lista()
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<TareaDiasDTO>>>("api/TareaDias/Lista")
+            var httpResponse = await _http.GetAsync("api/TareaDias/Lista");
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new UnauthorizedAccessException();
+
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<TareaDiasDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -21,8 +25,11 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareaDiasDTO>> ListaPorTareaRecurrId(int tareaRecurrId)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<TareaDiasDTO>>>(
-                $"api/TareaDias/ListaPorTarea?tareaRecurrId={tareaRecurrId}")
+            var httpResponse = await _http.GetAsync($"api/TareaDias/ListaPorTarea?tareaRecurrId={tareaRecurrId}");
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new UnauthorizedAccessException();
+
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<TareaDiasDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)

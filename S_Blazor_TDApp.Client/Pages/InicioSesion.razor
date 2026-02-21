@@ -3,11 +3,13 @@
 
 @using S_Blazor_TDApp.Shared
 @using S_Blazor_TDApp.Client.Extensions
+@using S_Blazor_TDApp.Client.Services.Interfaces
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject HttpClient httpClient
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider autenticacionProvider
+@inject IUsuarioService usuarioService
 
 <div class="container min-vh-100 d-flex align-items-center justify-content-center py-4">
     <div class="row w-100 justify-content-center">
@@ -129,11 +131,10 @@
     {
         try
         {
-            var response = await httpClient.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>("api/Usuario/Buscar/1");
-
-            if (response != null && response.EsCorrecto && response.Valor != null)
+            var usuario = await usuarioService.Buscar(1);
+            if (usuario != null)
             {
-                adminEmail = response.Valor.Email ?? adminEmail;
+                adminEmail = usuario.Email ?? adminEmail;
             }
         }
         catch (Exception ex)
@@ -150,24 +151,15 @@
 
         try
         {
-            var loginResponse = await httpClient.PostAsJsonAsync("/api/Usuario/Login", login);
+            var sesionUsuario = await usuarioService.Login(login);
 
-            if (loginResponse.IsSuccessStatusCode)
-            {
-                var sesionUsuario = await loginResponse.Content.ReadFromJsonAsync<InicioSesionDTO>();
-                var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
-                await autenticacionExt.ActualizarEstadoAutenticacion(sesionUsuario);
-                navManager.NavigateTo("/registroProcesos");
-            }
-            else
-            {
-                var errorResult = await loginResponse.Content.ReadFromJsonAsync<ErrorResponse>();
-                errorMessage = errorResult?.Message ?? "Error al iniciar sesión. Verifique sus credenciales e intente nuevamente.";
-            }
+            var autenticacionExt = (AutenticacionExtension)autenticacionProvider;
+            await autenticacionExt.ActualizarEstadoAutenticacion(sesionUsuario);
+            navManager.NavigateTo("/registroProcesos");
         }
         catch (Exception ex)
         {
-            errorMessage = "Error de conexión. Por favor, intente nuevamente más tarde.";
+            errorMessage = ex.Message;
             Console.WriteLine($"Error en inicio de sesión: {ex.Message}");
         }
         finally

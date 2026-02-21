@@ -5,6 +5,7 @@ namespace S_Blazor_TDApp.Client.Services.Interfaces
     public interface IUsuarioService
     {
         Task<List<UsuarioDTO>> Lista();
+        Task<InicioSesionDTO> Login(LoginDTO login);
         Task<UsuarioDTO> Buscar(int id);
         Task<bool> ExisteCodigo(string codigo);
         Task<UsuarioDTO?> ObtenerPorEmail(string email);

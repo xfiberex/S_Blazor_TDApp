@@ -25,7 +25,8 @@ builder.Services.AddScoped<ITareaDiasService, TareaDiasService>();
 
 // Servicios para la autenticación de usuarios y roles
 builder.Services.AddBlazoredSessionStorage();
-builder.Services.AddScoped<AuthenticationStateProvider, AutenticacionExtension>();
+builder.Services.AddScoped<AutenticacionExtension>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<AutenticacionExtension>());
 builder.Services.AddAuthorizationCore();
 
 // Servicios de la aplicación para la gestion de la interfaz

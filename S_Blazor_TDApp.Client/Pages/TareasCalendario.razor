@@ -9,6 +9,7 @@
 
 @inject SweetAlertService SwalService
 @inject ITareaCalendarioService TareaCalendarioService
+@inject NavigationManager Navigation
 
 <div class="container-fluid mt-4">
     @if (isLoading)
@@ -194,6 +195,10 @@
             listaTareasCalendario = await TareaCalendarioService.Lista();
             filteredTasks = listaTareasCalendario;
             UpdatePagedTasks();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {

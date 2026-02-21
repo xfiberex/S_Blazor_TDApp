@@ -265,6 +265,10 @@
             }
             editContext = new EditContext(usuario);
         }
+        catch (UnauthorizedAccessException)
+        {
+            NavigationManager.NavigateTo("/");
+        }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions

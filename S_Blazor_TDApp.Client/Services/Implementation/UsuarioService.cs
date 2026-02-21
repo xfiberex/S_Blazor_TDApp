@@ -10,13 +10,35 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<UsuarioDTO>> Lista()
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<UsuarioDTO>>>("api/Usuario/Lista")
+            var httpResponse = await _http.GetAsync("api/Usuario/Lista");
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new UnauthorizedAccessException();
+
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<UsuarioDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
             return resultado.Valor ?? [];
+        }
+
+        public async Task<InicioSesionDTO> Login(LoginDTO login)
+        {
+            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/Login", login);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<InicioSesionDTO>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor!;
         }
 
         public async Task<UsuarioDTO> Buscar(int id)

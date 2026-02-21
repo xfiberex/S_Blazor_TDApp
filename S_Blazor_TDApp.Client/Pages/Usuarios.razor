@@ -204,6 +204,10 @@
             currentPage = 1;
             UpdatePagedUsers();
         }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/");
+        }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions

@@ -29,7 +29,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 // Obtiene la lista de roles
-                var listaRoles = await _context.Roles.ToListAsync();
+                var listaRoles = await _context.Roles.AsNoTracking().ToListAsync();
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaRolDTO = _mapper.Map<List<RolDTO>>(listaRoles);
@@ -55,7 +55,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var rolEntity = await _context.Roles.FirstOrDefaultAsync(u => u.RolId == id);
+                var rolEntity = await _context.Roles.AsNoTracking().FirstOrDefaultAsync(u => u.RolId == id);
 
                 if (rolEntity == null)
                 {

@@ -10,6 +10,7 @@
 
 @inject SweetAlertService SwalService
 @inject ITareaRecurrenteService TareaRecurrenteService
+@inject NavigationManager Navigation
 
 <div class="container-fluid mt-4">
     @if (isLoading)
@@ -206,6 +207,10 @@
             listaTareasRecurrentes = await TareaRecurrenteService.Lista();
             filteredTasks = listaTareasRecurrentes;
             UpdatePagedTasks();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {

@@ -11,6 +11,7 @@
 @inject SweetAlertService SwalService
 @inject ITareaRecurrenteService TareaRecurrenteService
 @inject ITareaDiasService TareaDiasService
+@inject NavigationManager Navigation
 
 <div class="container-fluid text-center">
     <div class="row justify-content-center">
@@ -282,6 +283,10 @@
 
             // Cargar los días asignados para la tarea actual
             listaTareasDias = await TareaDiasService.ListaPorTareaRecurrId(tareaDias.TareaRecurrId);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {

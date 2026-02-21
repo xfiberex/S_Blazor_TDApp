@@ -10,7 +10,11 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareasRecurrentesDTO>> Lista()
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<TareasRecurrentesDTO>>>("api/TareasRecurrentes/Lista")
+            var httpResponse = await _http.GetAsync("api/TareasRecurrentes/Lista");
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new UnauthorizedAccessException();
+
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<TareasRecurrentesDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)

@@ -23,30 +23,6 @@ namespace S_Blazor_TDApp.Server.Controllers
         #region APIs para listar y buscar
 
         [HttpGet]
-        [Route("ListaTareasRecurrentes")]
-        public async Task<IActionResult> Lista()
-        {
-            var responseApi = new ResponseAPI<List<TareasRecurrentesDTO>>();
-
-            try
-            {
-                var tareasRecurrentes = await _context.TareasRecurrentes.ToListAsync();
-
-                var listaTareasRecurrentesDTO = _mapper.Map<List<TareasRecurrentesDTO>>(tareasRecurrentes);
-
-                responseApi.EsCorrecto = true;
-                responseApi.Valor = listaTareasRecurrentesDTO;
-            }
-            catch (Exception ex)
-            {
-                responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
-            }
-            return Ok(responseApi);
-        }
-
-        [HttpGet]
         [Route("ListaProcesos")]
         public async Task<IActionResult> ListaProcesos()
         {
@@ -57,43 +33,13 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var procesos = await _context.RegistroProcesos
                     .Include(rp => rp.RefTareaRecurr) // Asegúrate de incluir solo la relación con TareaRecurrente
                     .Include(rp => rp.RefUsuario) // Asegúrate de incluir solo la relación con Usuario
+                    .AsNoTracking()
                     .ToListAsync();
 
                 var listaProcesosDTO = _mapper.Map<List<RegistroProcesoDTO>>(procesos);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = listaProcesosDTO;
-            }
-            catch (Exception ex)
-            {
-                responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
-            }
-            return Ok(responseApi);
-        }
-
-        [HttpGet]
-        [Route("Buscar/{id}")]
-        public async Task<IActionResult> Buscar(int id)
-        {
-            var responseApi = new ResponseAPI<TareasRecurrentesDTO>();
-            try
-            {
-                var tareaRecurrenteEntity = await _context.TareasRecurrentes
-                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
-
-                if (tareaRecurrenteEntity == null)
-                {
-                    responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "No se encontró la tarea.";
-                    return NotFound(responseApi);
-                }
-
-                var tareaRecurrenteDTO = _mapper.Map<TareasRecurrentesDTO>(tareaRecurrenteEntity);
-
-                responseApi.EsCorrecto = true;
-                responseApi.Valor = tareaRecurrenteDTO;
             }
             catch (Exception ex)
             {
@@ -112,6 +58,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 var procesosEntity = await _context.RegistroProcesos
+                                            .AsNoTracking()
                                             .FirstOrDefaultAsync(tc => tc.ProcesoId == id);
 
                 if (procesosEntity == null)

@@ -646,6 +646,10 @@
                                         .ToList();
             filteredTasks = listaTareasRecurrentes;
         }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/");
+        }
         catch (Exception ex)
         {
             await SwalService.FireAsync(new SweetAlertOptions
@@ -699,6 +703,10 @@
                                         .ToList();
             filteredTasksProcess = listaRegistroProcesos;
             BuildUserProcessCount();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Navigation.NavigateTo("/");
         }
         catch (Exception ex)
         {

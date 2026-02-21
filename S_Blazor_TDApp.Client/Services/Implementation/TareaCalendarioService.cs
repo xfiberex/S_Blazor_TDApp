@@ -10,7 +10,11 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareasCalendarioDTO>> Lista()
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<TareasCalendarioDTO>>>("api/TareasCalendario/Lista")
+            var httpResponse = await _http.GetAsync("api/TareasCalendario/Lista");
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new UnauthorizedAccessException();
+
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<TareasCalendarioDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)

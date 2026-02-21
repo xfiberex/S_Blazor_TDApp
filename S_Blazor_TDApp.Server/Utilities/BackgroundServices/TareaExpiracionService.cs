@@ -51,7 +51,11 @@ namespace S_Blazor_TDApp.Server.Utilities.BackgroundServices
                                 // _logger.LogInformation($"La tarea {tarea.TareaRecurrId} se ha renovado.");
                             }
                         }
-                        await context.SaveChangesAsync(stoppingToken);
+
+                        if (context.ChangeTracker.HasChanges())
+                        {
+                            await context.SaveChangesAsync(stoppingToken);
+                        }
                     }
                 }
                 catch (Exception ex)

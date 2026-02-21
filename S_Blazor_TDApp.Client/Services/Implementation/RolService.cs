@@ -15,8 +15,11 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<RolDTO>> Lista()
         {
-            // Llamar a la API para recuperar la lista de roles
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<List<RolDTO>>>("api/Rol/Lista");
+            var httpResponse = await _http.GetAsync("api/Rol/Lista");
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                throw new UnauthorizedAccessException();
+
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<RolDTO>>>();
 
             // Verificar si la respuesta es correcta
             if (resultado!.EsCorrecto)

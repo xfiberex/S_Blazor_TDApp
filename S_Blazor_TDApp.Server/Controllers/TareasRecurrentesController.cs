@@ -29,7 +29,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 // Obtiene la lista de tareas recurrentes
-                var tareasRecurrentes = await _context.TareasRecurrentes.ToListAsync();
+                var tareasRecurrentes = await _context.TareasRecurrentes.AsNoTracking().ToListAsync();
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaTareasRecurrentesDTO = _mapper.Map<List<TareasRecurrentesDTO>>(tareasRecurrentes);
@@ -54,6 +54,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 var tareaRecurrenteEntity = await _context.TareasRecurrentes
+                                            .AsNoTracking()
                                             .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
 
                 if (tareaRecurrenteEntity == null)

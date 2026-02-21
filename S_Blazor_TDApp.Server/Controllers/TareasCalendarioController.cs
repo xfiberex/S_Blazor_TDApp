@@ -28,7 +28,10 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var tareasCalendario = await _context.TareasCalendario.ToListAsync();
+                var tareasCalendario = await _context.TareasCalendario
+                                                     .Include(tc => tc.TareasCalendarioCompletados)
+                                                     .AsNoTracking()
+                                                     .ToListAsync();
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaTareasCalendarioDTO = _mapper.Map<List<TareasCalendarioDTO>>(tareasCalendario);
@@ -54,6 +57,8 @@ namespace S_Blazor_TDApp.Server.Controllers
             try
             {
                 var tareaCalendarioEntity = await _context.TareasCalendario
+                                                .Include(tc => tc.TareasCalendarioCompletados)
+                                                .AsNoTracking()
                                                 .FirstOrDefaultAsync(tc => tc.TareaId == id);
 
                 if (tareaCalendarioEntity == null)
