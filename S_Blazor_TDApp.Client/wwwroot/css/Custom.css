@@ -403,13 +403,15 @@ code {
 
 /* === Form Validation === */
 .valid.modified:not([type="checkbox"]) {
-    outline: 2px solid var(--success);
-    outline-offset: -1px;
+    outline: none;
+    border-color: var(--success) !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
 }
 
 .invalid {
-    outline: 2px solid var(--danger);
-    outline-offset: -1px;
+    outline: none;
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
 }
 
 .validation-message {
@@ -518,10 +520,17 @@ code {
 }
 
 /* === Tables === */
+.table-responsive {
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .table {
     border-radius: var(--radius-md);
     overflow: hidden;
     margin-bottom: 0;
+    min-width: 600px;
 }
 
 .table thead th {
@@ -850,42 +859,120 @@ code {
     background-color: var(--slate-400);
 }
 
-/* === Responsive === */
+/* === Responsive — Tablet === */
+@media (max-width: 991.98px) {
+    .session-info .user-email {
+        display: none;
+    }
+}
+
+/* === Responsive — Mobile === */
 @media (max-width: 767.98px) {
     .session-info {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
         align-items: center;
         text-align: center;
-        gap: 0.25rem;
-        padding: 0.5rem;
+        gap: 0.35rem;
+        padding: 0.45rem 0.75rem;
         font-size: 0.72rem;
+        width: 100%;
     }
 
     .session-info .separator {
         display: none;
     }
 
+    .session-info .user-email,
+    .session-info .user-permissions {
+        display: none;
+    }
+
     .nav-links {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .nav-links a {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
     }
 
     .table {
-        font-size: 0.82rem;
+        font-size: 0.8rem;
+        min-width: 500px;
     }
 
-    .table thead th,
+    .table thead th {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.68rem;
+    }
+
     .table tbody td {
-        padding: 0.5rem;
+        padding: 0.45rem 0.6rem;
+    }
+
+    .page-title {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
     }
 
     .page-title h3 {
         font-size: 1.1rem;
     }
+
     .page-title-icon {
-        width: 36px;
-        height: 36px;
-        font-size: 1rem;
+        width: 34px;
+        height: 34px;
+        font-size: 0.95rem;
+    }
+
+    .page-title .page-subtitle {
+        font-size: 0.78rem;
+    }
+
+    .card-body {
+        padding: 0.85rem;
+    }
+
+    .card-header {
+        padding: 0.75rem 0.85rem;
+    }
+
+    .content {
+        padding-top: 0.75rem;
+    }
+
+    .btn {
+        font-size: 0.85rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .modal-header {
+        padding: 0.85rem 1rem;
+    }
+
+    /* Form pages on mobile */
+    .container.mt-5 {
+        margin-top: 1rem !important;
+    }
+
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    /* Force sidebar labels visible on mobile regardless of collapsed state */
+    .nav-collapsed .nav-section-label {
+        opacity: 1;
+        width: auto;
+        overflow: visible;
+        padding: 1.25rem 1.5rem 0.4rem;
     }
 }
 

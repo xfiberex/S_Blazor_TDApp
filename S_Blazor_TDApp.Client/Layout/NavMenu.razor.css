@@ -2,6 +2,11 @@
     background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
 }
 
 .top-row {
@@ -140,6 +145,7 @@
     margin-top: 0.5rem;
 }
 
+/* === Mobile === */
 @media (max-width: 767.98px) {
     .navbar-toggler {
         display: block;
@@ -148,8 +154,38 @@
     .desktop-only {
         display: none !important;
     }
+
+    .nav-scrollable {
+        max-height: calc(100vh - 3.5rem);
+        overflow-y: auto;
+    }
+
+    .nav-item ::deep a,
+    .nav-item ::deep .toggle-link {
+        height: 2.6rem;
+        font-size: 0.85rem;
+    }
+
+    /* Force show labels on mobile regardless of collapsed state */
+    .nav-collapsed .nav-item ::deep .nav-label {
+        opacity: 1;
+        max-width: 200px;
+    }
+
+    .nav-collapsed .nav-section-label {
+        opacity: 1;
+        width: auto;
+        overflow: visible;
+        padding: 1.25rem 1.5rem 0.4rem;
+    }
+
+    .nav-collapsed .brand-text {
+        opacity: 1;
+        width: auto;
+    }
 }
 
+/* === Desktop === */
 @media (min-width: 768px) {
     .navbar-toggler {
         display: none;
