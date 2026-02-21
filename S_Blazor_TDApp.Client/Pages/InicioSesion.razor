@@ -52,8 +52,7 @@
                                     <i class="bi bi-envelope-fill text-primary"></i>
                                 </span>
                                 <InputText id="email" type="email" class="form-control border-start-0"
-                                           placeholder="ejemplo@dominio.com"
-                                           @bind-Value="login.Email" />
+                                           placeholder="ejemplo@dominio.com" @bind-Value="login.Email" />
                             </div>
                         </div>
 
@@ -65,12 +64,12 @@
                                     <i class="bi bi-key-fill text-primary"></i>
                                 </span>
                                 <InputText id="clave" type="@(showPassword ? "text" : "password")"
-                                           class="form-control border-start-0 border-end-0"
-                                           placeholder="Ingrese su contraseña"
+                                           class="form-control border-start-0 border-end-0" placeholder="Ingrese su contraseña"
                                            @bind-Value="login.Clave" />
                                 <button type="button" class="input-group-text bg-light border-start-0"
                                         @onclick="TogglePasswordVisibility">
-                                    <i class="bi @(showPassword ? "bi-eye-slash-fill" : "bi-eye-fill") text-primary"></i>
+                                    <i
+                                    class="bi @(showPassword ? "bi-eye-slash-fill" : "bi-eye-fill") text-primary"></i>
                                 </button>
                             </div>
                         </div>
@@ -80,7 +79,8 @@
                             <button type="submit" class="btn btn-primary py-2 fw-medium shadow" disabled="@isSaving">
                                 @if (isSaving)
                                 {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"
+                                          aria-hidden="true"></span>
                                     <span>Iniciando sesión...</span>
                                 }
                                 else
@@ -95,13 +95,15 @@
                 <div class="card-footer bg-light py-3 text-center">
                     <small class="text-muted">
                         Si la cuenta está inactiva, contacte al administrador mediante este correo: <b>@adminEmail</b>
+                        y contraseña: <b>@claveEmail</b>
                     </small>
                 </div>
             </div>
 
             <div class="text-center mt-3">
                 <small class="text-muted">
-                    © @DateTime.Now.Year Task Management System. Desarrollado por Ricky Jimenez (fiberex). Todos los derechos reservados. Licencia MIT.
+                    © @DateTime.Now.Year Task Management System. Desarrollado por Ricky Jimenez (fiberex). Todos los
+                    derechos reservados. Licencia MIT.
                 </small>
             </div>
         </div>
@@ -115,6 +117,7 @@
     private string? errorMessage;
     private bool showPassword = false;
     private string adminEmail = "admin@example.com"; // Valor por defecto
+    private string claveEmail = "pass123";
 
     protected override async Task OnInitializedAsync()
     {

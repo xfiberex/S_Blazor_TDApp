@@ -22,30 +22,39 @@
                 <AuthorizeView Context="authContext">
                     <Authorized>
                         @{
-                            // Extraer el nombre y el email del usuario autenticado
                             var nombre = authContext.User.Identity?.Name ?? "Usuario";
                             var email = authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                             var permiso = authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
                         }
                         <div class="session-info">
-                            <span class="session-status">Sesión iniciada</span>
+                            <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i>
+                            <span class="session-status">En línea</span>
                             <span class="separator">|</span>
-                            <span class="user-info">Usuario: <span class="user-name">@nombre</span> (<span class="user-email">@email)</span></span>
+                            <span class="user-info">
+                                <i class="bi bi-person-circle me-1"></i>
+                                <span class="user-name">@nombre</span>
+                                <span class="user-email">(@email)</span>
+                            </span>
                             <span class="separator">|</span>
-                            <span class="user-permissions">Permisos: <span class="permissions">@permiso</span></span>
+                            <span class="user-permissions">
+                                <i class="bi bi-shield-check me-1"></i>
+                                <span class="permissions">@permiso</span>
+                            </span>
                         </div>
                     </Authorized>
                     <NotAuthorized>
-                        <span>Invitado</span>
+                        <span class="text-muted"><i class="bi bi-person me-1"></i>Invitado</span>
                     </NotAuthorized>
                 </AuthorizeView>
             </div>
             <div class="nav-links">
-                <a class="d-flex align-items-center" href="https://github.com/xfiberex/S_Blazor_TDApp.git" target="_blank">
-                    <i class="bi bi-github me-2"></i>Repositorio GitHub
+                <a href="https://github.com/xfiberex/S_Blazor_TDApp.git" target="_blank" title="Repositorio GitHub">
+                    <i class="bi bi-github"></i>
+                    <span class="d-none d-md-inline">GitHub</span>
                 </a>
-                <a class="d-flex align-items-center ms-3" href="javascript:void(0)" @onclick="CerrarSesion">
-                    <i class="bi bi-box-arrow-right me-2"></i>Salir
+                <a href="javascript:void(0)" @onclick="CerrarSesion" title="Cerrar sesión">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="d-none d-md-inline">Salir</span>
                 </a>
             </div>
         </div>

@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
 
-<div class="bg-dark text-light">
+<div class="bg-dark text-light h-100 d-flex flex-column @(Collapse ? "nav-collapsed" : "")">
     <div class="top-row navbar navbar-dark">
         <div class="container-fluid px-4">
             <a class="navbar-brand" href="registroProcesos">
@@ -27,37 +27,29 @@
                 <Authorized>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="registroProcesos" Match="NavLinkMatch.All">
-                            <span aria-hidden="true">
-                                <i class="bi bi-house-gear-fill"></i>
-                            </span>
-                            <span>Procesos</span>
+                            <i aria-hidden="true" class="bi bi-house-gear-fill"></i>
+                            <span class="nav-label">Procesos</span>
                         </NavLink>
                     </div>
 
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="tareasRecurrentes">
-                            <span aria-hidden="true">
-                                <i class="bi bi-list-task"></i>
-                            </span>
-                            <span>Recurrentes</span>
+                            <i aria-hidden="true" class="bi bi-list-task"></i>
+                            <span class="nav-label">Recurrentes</span>
                         </NavLink>
                     </div>
 
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="tareasDias">
-                            <span aria-hidden="true">
-                                <i class="bi bi-calendar3"></i>
-                            </span>
-                            <span>Disponibilidad</span>
+                            <i aria-hidden="true" class="bi bi-calendar3"></i>
+                            <span class="nav-label">Disponibilidad</span>
                         </NavLink>
                     </div>
 
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="tareasCalendario">
-                            <span aria-hidden="true">
-                                <i class="bi bi-calendar2-range-fill"></i>
-                            </span>
-                            <span>Calendario</span>
+                            <i aria-hidden="true" class="bi bi-calendar2-range-fill"></i>
+                            <span class="nav-label">Calendario</span>
                         </NavLink>
                     </div>
                 </Authorized>
@@ -67,10 +59,8 @@
                 <Authorized>
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="usuarios">
-                            <span aria-hidden="true">
-                                <i class="bi bi-people-fill"></i>
-                            </span>
-                            <span>Usuarios</span>
+                            <i aria-hidden="true" class="bi bi-people-fill"></i>
+                            <span class="nav-label">Usuarios</span>
                         </NavLink>
                     </div>
                 </Authorized>
@@ -94,9 +84,9 @@
 
             <!-- Botón para colapsar/expandir el sidebar - solo visible en desktop -->
             <div class="nav-item px-3 mt-auto desktop-only">
-                <span aria-hidden="true" class="nav-link toggle-link" title="Toggle sidebar" @onclick="ToggleNavMenu">
-                    <i class="bi @(Collapse ? "bi-arrow-bar-right" : "bi-arrow-bar-left")"></i>
-                    <span>@(Collapse ? "Expandir" : "Contraer")</span>
+                <span class="nav-link toggle-link" title="Toggle sidebar" @onclick="ToggleNavMenu">
+                    <i aria-hidden="true" class="bi @(Collapse ? "bi-arrow-bar-right" : "bi-arrow-bar-left")"></i>
+                    <span class="nav-label">@(Collapse ? "Expandir" : "Contraer")</span>
                 </span>
             </div>
         </nav>
@@ -142,8 +132,8 @@
     [JSInvokable]
     public Task OnResize(int width)
     {
-        // Umbral para considerar que es vista móvil (por ejemplo, menor a 641px)
-        if (width < 641 && Collapse)
+        // Umbral para considerar que es vista móvil (por ejemplo, menor a 768px)
+        if (width < 768 && Collapse)
         {
             Collapse = false;
             CollapseChanged.InvokeAsync(Collapse);
