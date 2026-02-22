@@ -12,6 +12,10 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
             CreateMap<Rol, RolDTO>()
                 .ReverseMap();
 
+            // Mapeo entre Menu y MenuDTO
+            CreateMap<Menu, MenuDTO>()
+                .ReverseMap();
+
             CreateMap<TareaDia, TareaDiasDTO>()
                 .ReverseMap();
 

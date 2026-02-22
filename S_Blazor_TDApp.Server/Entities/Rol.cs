@@ -15,4 +15,6 @@ public partial class Rol
     public DateTime? FechaActualizacion { get; set; }
 
     public virtual ICollection<Usuario> Usuarios { get; set; } = new List<Usuario>();
+
+    public virtual ICollection<RolMenu> RolMenus { get; set; } = new List<RolMenu>();
 }

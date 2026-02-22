@@ -133,6 +133,14 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return NotFound(responseApi);
                 }
 
+                // Protección: no se puede renombrar el Super_Administrador
+                if (rolEntity.NombreRol == "Super_Administrador")
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El rol Super_Administrador es protegido y no puede editarse.";
+                    return BadRequest(responseApi);
+                }
+
                 // Mapea los valores del DTO a la entidad existente
                 _mapper.Map(rolDTO, rolEntity);
 
@@ -169,6 +177,14 @@ namespace S_Blazor_TDApp.Server.Controllers
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "El rol no existe.";
                     return NotFound(responseApi);
+                }
+
+                // Protección: no se puede eliminar el Super_Administrador
+                if (rolEntity.NombreRol == "Super_Administrador")
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "El rol Super_Administrador es protegido y no puede eliminarse.";
+                    return BadRequest(responseApi);
                 }
 
                 _context.Roles.Remove(rolEntity);

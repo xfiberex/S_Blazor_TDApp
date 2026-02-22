@@ -1,7 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Blazored.SessionStorage
+@using S_Blazor_TDApp.Client.Extensions
+@using S_Blazor_TDApp.Client.Services
+@using S_Blazor_TDApp.Shared
 
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
+@inject ISessionStorageService SessionStorage
+@inject MenuPermisoEstado MenuEstado
 
 <div class="bg-dark text-light h-100 d-flex flex-column @(Collapse ? "nav-collapsed" : "")">
     <div class="top-row navbar navbar-dark">
@@ -22,69 +28,77 @@
     <div class="@GetNavMenuCssClass() nav-scrollable">
         <nav class="flex-column">
 
-            @* Se utiliza AuthorizeView Roles, para que puedan ver los menús los usuarios con esos roles *@
-            <AuthorizeView Roles="Administrador, Supervisor, Empleado">
-                <Authorized>
-                    <span class="nav-section-label">GESTIÓN</span>
+            @* ── SECCIÓN GESTIÓN ──────────────────────────────────── *@
+            @if (MostrarSeccionGestion)
+            {
+                <span class="nav-section-label">GESTIÓN</span>
 
+                @if (MenuEstado.TieneAcceso("registroProcesos"))
+                {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="registroProcesos" Match="NavLinkMatch.All">
                             <i aria-hidden="true" class="bi bi-house-gear-fill"></i>
                             <span class="nav-label">Procesos</span>
                         </NavLink>
                     </div>
+                }
 
+                @if (MenuEstado.TieneAcceso("tareasRecurrentes"))
+                {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="tareasRecurrentes">
                             <i aria-hidden="true" class="bi bi-list-task"></i>
                             <span class="nav-label">Recurrentes</span>
                         </NavLink>
                     </div>
+                }
 
+                @if (MenuEstado.TieneAcceso("tareasDias"))
+                {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="tareasDias">
                             <i aria-hidden="true" class="bi bi-calendar3"></i>
                             <span class="nav-label">Disponibilidad</span>
                         </NavLink>
                     </div>
+                }
 
+                @if (MenuEstado.TieneAcceso("tareasCalendario"))
+                {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="tareasCalendario">
                             <i aria-hidden="true" class="bi bi-calendar2-range-fill"></i>
                             <span class="nav-label">Calendario</span>
                         </NavLink>
                     </div>
-                </Authorized>
-            </AuthorizeView>
-            
-            <AuthorizeView Roles="Administrador, Supervisor">
-                <Authorized>
-                    <span class="nav-section-label">ADMINISTRACIÓN</span>
+                }
+            }
 
+            @* ── SECCIÓN ADMINISTRACIÓN ───────────────────────────── *@
+            @if (MostrarSeccionAdministracion)
+            {
+                <span class="nav-section-label">ADMINISTRACIÓN</span>
+
+                @if (MenuEstado.TieneAcceso("usuarios"))
+                {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="usuarios">
                             <i aria-hidden="true" class="bi bi-people-fill"></i>
                             <span class="nav-label">Usuarios</span>
                         </NavLink>
                     </div>
-                </Authorized>
-            </AuthorizeView>
+                }
 
-            @* No es necesario a menos que se implemente una logica para que el usuario (Administrador) pueda cambiar -
-               los permisos de los roles dinamicamente desde el frontend *@
-
-            @* <AuthorizeView Roles="Administrador">
-                <Authorized>
+                @if (MenuEstado.TieneAcceso("rolesPermisos"))
+                {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="rolesPermisos">
-                            <span aria-hidden="true">
-                                <i class="bi bi-person-fill-gear"></i>
-                            </span>
-                            <span>Roles y Permisos</span>
+                            <i aria-hidden="true" class="bi bi-person-fill-gear"></i>
+                            <span class="nav-label">Roles y Permisos</span>
                         </NavLink>
                     </div>
-                </Authorized>
-            </AuthorizeView> *@
+                }
+            }
 
             <!-- Botón para colapsar/expandir el sidebar - solo visible en desktop -->
             <div class="nav-item px-3 mt-auto desktop-only">
@@ -107,6 +121,13 @@
     // Variable para controlar el estado del menú móvil
     private bool mobileMenuCollapsed = true;
 
+    // Rutas de cada sección para calcular visibilidad de etiquetas
+    private static readonly string[] RutasGestion = { "registroProcesos", "tareasRecurrentes", "tareasDias", "tareasCalendario" };
+    private static readonly string[] RutasAdministracion = { "usuarios", "rolesPermisos" };
+
+    private bool MostrarSeccionGestion => RutasGestion.Any(r => MenuEstado.TieneAcceso(r));
+    private bool MostrarSeccionAdministracion => RutasAdministracion.Any(r => MenuEstado.TieneAcceso(r));
+
     // Método para obtener la clase CSS del menú
     private string GetNavMenuCssClass() =>
         mobileMenuCollapsed ? "collapse" : string.Empty;
@@ -122,13 +143,31 @@
         mobileMenuCollapsed = !mobileMenuCollapsed;
     }
 
-    // Se registra el listener para el evento resize de la ventana
+    // Se registra el listener de resize y se cargan los menús al inicializar
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            // Registra el listener de resize y pasa la referencia del componente
             await JS.InvokeVoidAsync("addResizeListener", DotNetObjectReference.Create(this));
+            await CargarMenusPermitidos();
+        }
+    }
+
+    private async Task CargarMenusPermitidos()
+    {
+        try
+        {
+            var sesion = await SessionStorage.ObtenerStorage<InicioSesionDTO>("sesionUsuario");
+            if (sesion != null && sesion.RolId > 0)
+            {
+                await MenuEstado.ObtenerMenusPermitidos(sesion.RolId);
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            // Si falla la carga de permisos, el NavMenu no mostrará menús.
+            // El usuario puede recargar o volver a iniciar sesión.
         }
     }
 

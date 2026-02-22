@@ -16,9 +16,13 @@ public partial class DbTdappContext : DbContext
 
     public virtual DbSet<DiasDisponible> DiasDisponibles { get; set; }
 
+    public virtual DbSet<Menu> Menus { get; set; }
+
     public virtual DbSet<RegistroProceso> RegistroProcesos { get; set; }
 
     public virtual DbSet<Rol> Roles { get; set; }
+
+    public virtual DbSet<RolMenu> RolMenus { get; set; }
 
     public virtual DbSet<TareaDia> TareaDias { get; set; }
 
@@ -33,6 +37,32 @@ public partial class DbTdappContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Menu>(entity =>
+        {
+            entity.HasKey(e => e.MenuId);
+            entity.ToTable("Menu");
+            entity.Property(e => e.NombreMenu).HasMaxLength(50);
+            entity.Property(e => e.Ruta).HasMaxLength(100);
+            entity.Property(e => e.Icono).HasMaxLength(100);
+            entity.Property(e => e.Seccion).HasMaxLength(50);
+            entity.Property(e => e.Orden).HasDefaultValue(0);
+            entity.HasIndex(e => e.Ruta).IsUnique().HasDatabaseName("UQ_Menu_Ruta");
+        });
+
+        modelBuilder.Entity<RolMenu>(entity =>
+        {
+            entity.HasKey(e => new { e.RolId, e.MenuId });
+            entity.ToTable("RolMenu");
+            entity.HasOne(e => e.Rol)
+                .WithMany(r => r.RolMenus)
+                .HasForeignKey(e => e.RolId)
+                .HasConstraintName("FK_RolMenu_Rol");
+            entity.HasOne(e => e.Menu)
+                .WithMany(m => m.RolMenus)
+                .HasForeignKey(e => e.MenuId)
+                .HasConstraintName("FK_RolMenu_Menu");
+        });
+
         modelBuilder.Entity<DiasDisponible>(entity =>
         {
             entity.HasKey(e => e.DiaId).HasName("PK__Dias_Dis__ED194C769386BFF9");
@@ -40,6 +70,7 @@ public partial class DbTdappContext : DbContext
             entity.ToTable("Dias_Disponibles");
 
             entity.Property(e => e.NombreDia).HasMaxLength(20);
+            entity.HasIndex(e => e.NombreDia).IsUnique().HasDatabaseName("UQ_Dias_NombreDia");
         });
 
         modelBuilder.Entity<RegistroProceso>(entity =>
@@ -56,12 +87,12 @@ public partial class DbTdappContext : DbContext
             entity.HasOne(d => d.RefTareaRecurr).WithMany(p => p.RegistroProcesos)
                 .HasForeignKey(d => d.TareaRecurrId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Registro_Procesos_TareasRecurrentes");
+                .HasConstraintName("FK_RegProcesos_TareasRecurrentes");
 
             entity.HasOne(d => d.RefUsuario).WithMany(p => p.RegistroProcesos)
                 .HasForeignKey(d => d.UsuarioId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Registro_Procesos_Usuarios");
+                .HasConstraintName("FK_RegProcesos_Usuarios");
         });
 
         modelBuilder.Entity<Rol>(entity =>
@@ -77,6 +108,7 @@ public partial class DbTdappContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.NombreRol).HasMaxLength(50);
+            entity.HasIndex(e => e.NombreRol).IsUnique().HasDatabaseName("UQ_Rol_NombreRol");
         });
 
         modelBuilder.Entity<TareaDia>(entity =>
@@ -84,6 +116,8 @@ public partial class DbTdappContext : DbContext
             entity.HasKey(e => e.TareaDiaId).HasName("PK__Tarea_Di__B663D2D89DDB3DCF");
 
             entity.ToTable("Tarea_Dias");
+
+            entity.HasIndex(e => new { e.TareaRecurrId, e.DiaId }).IsUnique().HasDatabaseName("UQ_TareaDias_TareaRec_Dia");
 
             entity.HasOne(d => d.IdDiaNavigation).WithMany(p => p.TareaDia)
                 .HasForeignKey(d => d.DiaId)
@@ -122,11 +156,13 @@ public partial class DbTdappContext : DbContext
 
             entity.HasOne(d => d.RefTarea).WithMany(p => p.TareasCalendarioCompletados)
                 .HasForeignKey(d => d.TareaId)
-                .HasConstraintName("FK_Tareas_Calendario_Completado_Tareas_Calendario");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TarCalComp_TarCal");
 
             entity.HasOne(d => d.RefUsuario).WithMany(p => p.TareasCalendarioCompletados)
                 .HasForeignKey(d => d.UsuarioId)
-                .HasConstraintName("FK_Tareas_Calendario_Completado_Usuarios");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TarCalComp_Usuarios");
         });
 
         modelBuilder.Entity<TareasRecurrente>(entity =>
@@ -152,7 +188,7 @@ public partial class DbTdappContext : DbContext
             entity.HasKey(e => e.UsuarioId).HasName("PK__Usuarios__2B3DE7B8590D13C4");
 
             entity.Property(e => e.Activo).HasDefaultValue(true);
-            entity.Property(e => e.Codigo).HasMaxLength(100);
+            entity.Property(e => e.Codigo).HasMaxLength(10);
             entity.Property(e => e.Email).HasMaxLength(150);
             entity.Property(e => e.FechaActualizacion).HasColumnType("datetime");
             entity.Property(e => e.FechaCreacion)
@@ -160,6 +196,10 @@ public partial class DbTdappContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.NombreCompleto).HasMaxLength(100);
             entity.Property(e => e.NombreUsuario).HasMaxLength(100);
+
+            entity.HasIndex(e => e.Codigo).IsUnique().HasDatabaseName("UQ_Usuarios_Codigo");
+            entity.HasIndex(e => e.NombreUsuario).IsUnique().HasDatabaseName("UQ_Usuarios_NombreUsr");
+            entity.HasIndex(e => e.Email).IsUnique().HasDatabaseName("UQ_Usuarios_Email");
 
             entity.HasOne(d => d.IdRolNavigation).WithMany(p => p.Usuarios)
                 .HasForeignKey(d => d.RolId)

@@ -87,6 +87,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     Nombre = usuarioEntity.NombreUsuario,
                     Correo = usuarioEntity.Email ?? string.Empty,
                     Rol = rolNombre,
+                    RolId = usuarioEntity.RolId,
                     Token = tokenString
                 };
 

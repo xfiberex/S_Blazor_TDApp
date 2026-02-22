@@ -97,9 +97,16 @@
                             <tbody>
                                 @foreach (var item in pagedRoles)
                                 {
-                                    <tr>
+                                    var esProtegido = item.NombreRol == "Super_Administrador";
+                                    <tr class="@(esProtegido ? "table-warning" : "")">
                                         <td>@item.RolId</td>
-                                        <td>@item.NombreRol</td>
+                                        <td>
+                                            @item.NombreRol
+                                            @if (esProtegido)
+                                            {
+                                                <i class="bi bi-shield-lock-fill text-warning ms-2" title="Rol protegido — permisos fijos"></i>
+                                            }
+                                        </td>
                                         <td>@item.Descripcion</td>
                                         <td>
                                             <span class="badge bg-@(item.Activo ? "success" : "danger")">
@@ -110,13 +117,25 @@
                                         <td>@(item.FechaActualizacion.HasValue ? item.FechaActualizacion.Value.ToString("dd/MM/yyyy - hh:mm tt") : "Nunca")</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a class="btn btn-outline-primary btn-sm" href="/rolCargo/@item.RolId" title="Editar">
-                                                    <i class="bi bi-pencil-fill"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-outline-danger btn-sm"
-                                                        @onclick="(() => Eliminar(item.RolId, item.NombreRol))" title="Eliminar">
-                                                    <i class="bi bi-trash-fill"></i>
-                                                </button>
+                                                @if (!esProtegido)
+                                                {
+                                                    <a class="btn btn-outline-primary btn-sm" href="/rolCargo/@item.RolId" title="Editar rol">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </a>
+                                                    <a class="btn btn-outline-success btn-sm" href="/rolPermisos/@item.RolId" title="Configurar permisos de menú">
+                                                        <i class="bi bi-person-fill-gear"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                                            @onclick="(() => Eliminar(item.RolId, item.NombreRol))" title="Eliminar">
+                                                        <i class="bi bi-trash-fill"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="btn btn-sm btn-outline-warning disabled" title="Rol protegido">
+                                                        <i class="bi bi-shield-lock-fill"></i>
+                                                    </span>
+                                                }
                                             </div>
                                         </td>
                                     </tr>

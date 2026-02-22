@@ -1,5 +1,6 @@
 ﻿using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using S_Blazor_TDApp.Client.Services;
 using S_Blazor_TDApp.Shared;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -10,12 +11,14 @@ namespace S_Blazor_TDApp.Client.Extensions
     {
         private readonly ISessionStorageService _sessionStorage;
         private readonly HttpClient _httpClient;
+        private readonly MenuPermisoEstado _menuPermisoEstado;
         private ClaimsPrincipal _sinInformacion = new ClaimsPrincipal(new ClaimsIdentity());
 
-        public AutenticacionExtension(ISessionStorageService sessionStorage, HttpClient httpClient)
+        public AutenticacionExtension(ISessionStorageService sessionStorage, HttpClient httpClient, MenuPermisoEstado menuPermisoEstado)
         {
             _sessionStorage = sessionStorage;
             _httpClient = httpClient;
+            _menuPermisoEstado = menuPermisoEstado;
         }
 
         /// <summary>
@@ -45,6 +48,7 @@ namespace S_Blazor_TDApp.Client.Extensions
                 claimsPrincipal = _sinInformacion;
                 await _sessionStorage.RemoveItemAsync("sesionUsuario");
                 _httpClient.DefaultRequestHeaders.Authorization = null;
+                _menuPermisoEstado.Limpiar();
             }
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));

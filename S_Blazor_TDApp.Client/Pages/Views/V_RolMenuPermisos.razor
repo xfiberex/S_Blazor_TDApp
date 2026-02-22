@@ -1,0 +1,214 @@
+@page "/rolPermisos/{RolId:int}"
+
+@using S_Blazor_TDApp.Shared
+@using CurrieTechnologies.Razor.SweetAlert2
+@using S_Blazor_TDApp.Client.Services.Interfaces
+@using S_Blazor_TDApp.Client.Services
+
+@* Sólo el Administrador puede acceder a esta página *@
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Administrador")]
+
+@inject IRolService RolService
+@inject IMenuPermisoService MenuPermisoService
+@inject MenuPermisoEstado MenuEstado
+@inject NavigationManager NavigationManager
+@inject SweetAlertService SwalService
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-11 col-md-9 col-lg-7">
+
+            @if (isLoading)
+            {
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (esRolProtegido)
+            {
+                <div class="card shadow border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-shield-lock-fill me-2"></i>Rol protegido
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            El rol <strong>@rolActual?.NombreRol</strong> es el <strong>Super Administrador</strong>
+                            del sistema. Sus permisos son permanentes y no pueden modificarse.
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <a class="btn btn-outline-secondary" href="/rolesPermisos">
+                                <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-fill-gear me-2"></i>
+                            Permisos de acceso — <strong>@rolActual?.NombreRol</strong>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+
+                        <p class="text-muted mb-3">
+                            Seleccione los menús a los que tendrá acceso el rol
+                            <strong>@rolActual?.NombreRol</strong>.
+                        </p>
+
+                        @* Agrupamos los menús por sección *@
+                        @foreach (var seccion in todosLosMenus.GroupBy(m => m.Seccion).OrderBy(g => g.Min(m => m.Orden)))
+                        {
+                            <h6 class="text-secondary fw-bold mt-3 mb-2 border-bottom pb-1">
+                                <i class="bi bi-grid me-1"></i>@seccion.Key
+                            </h6>
+
+                            @foreach (var menu in seccion.OrderBy(m => m.Orden))
+                            {
+                                <div class="form-check ms-2 mb-2">
+                                    <input class="form-check-input" type="checkbox" id="menu_@menu.MenuId"
+                                           checked="@menuIdsSeleccionados.Contains(menu.MenuId)"
+                                           @onchange="e => OnMenuToggle(menu.MenuId, (bool)e.Value!)" />
+                                    <label class="form-check-label d-flex align-items-center gap-2"
+                                           for="menu_@menu.MenuId">
+                                        <i class="@menu.Icono"></i>
+                                        <span>@menu.NombreMenu</span>
+                                        <small class="text-muted">(@menu.Ruta)</small>
+                                    </label>
+                                </div>
+                            }
+                        }
+
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <button class="btn btn-primary" @onclick="Guardar" disabled="@isSaving">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            }
+                            <i class="bi bi-floppy-fill me-2"></i>Guardar permisos
+                        </button>
+                        <a class="btn btn-outline-secondary" href="/rolesPermisos">
+                            <i class="bi bi-arrow-left me-2"></i>Volver a la lista
+                        </a>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int RolId { get; set; }
+
+    private RolDTO? rolActual;
+    private List<MenuDTO> todosLosMenus = new();
+    private HashSet<int> menuIdsSeleccionados = new();
+
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool esRolProtegido = false;
+
+    private const string ROL_PROTEGIDO = "Super_Administrador";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Inicia las tres tareas en paralelo antes de hacer await
+            var tareaRol          = RolService.Buscar(RolId);
+            var tareatodosMenus   = MenuPermisoService.TodosLosMenus();
+            var tareaMenusActivos = MenuPermisoService.MenusPorRol(RolId);
+
+            rolActual         = await tareaRol;
+            todosLosMenus     = await tareatodosMenus;
+            var menusActuales = await tareaMenusActivos;
+
+            // Protege al Super_Administrador
+            esRolProtegido = rolActual.NombreRol == ROL_PROTEGIDO;
+
+            menuIdsSeleccionados = menusActuales.Select(m => m.MenuId).ToHashSet();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Error",
+                Text = $"No se pudo cargar la información: {ex.Message}",
+                Icon = SweetAlertIcon.Error
+            });
+            NavigationManager.NavigateTo("/rolesPermisos");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnMenuToggle(int menuId, bool tieneAcceso)
+    {
+        if (tieneAcceso)
+            menuIdsSeleccionados.Add(menuId);
+        else
+            menuIdsSeleccionados.Remove(menuId);
+    }
+
+    private async Task Guardar()
+    {
+        isSaving = true;
+        try
+        {
+            var dto = new ActualizarPermisosDTO
+            {
+                RolId = RolId,
+                MenuIds = menuIdsSeleccionados.ToList()
+            };
+
+            await MenuPermisoService.ActualizarPermisos(dto);
+
+            // Invalida la caché para que el NavMenu refleje los cambios
+            MenuEstado.Limpiar();
+
+            await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "¡Guardado!",
+                Text = $"Los permisos del rol '{rolActual?.NombreRol}' fueron actualizados correctamente.",
+                Icon = SweetAlertIcon.Success
+            });
+
+            NavigationManager.NavigateTo("/rolesPermisos");
+        }
+        catch (Exception ex)
+        {
+            await SwalService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Error",
+                Text = $"No se pudo actualizar los permisos: {ex.Message}",
+                Icon = SweetAlertIcon.Error
+            });
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}
