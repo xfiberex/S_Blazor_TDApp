@@ -28,9 +28,8 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
 
             // Mapeo para TareasCalendarioCompletado y TareasCalendarioCompletadoDTO
             CreateMap<TareasCalendarioCompletado, TareasCalendarioCompletadoDTO>()
-                // Mapea la referencia de la tarea: la propiedad RefTarea de la entidad se asigna a RefTareaCalendario del DTO.
-                .ForMember(dest => dest.RefTareaCalendario, opt =>
-                    opt.MapFrom(src => src.RefTarea))
+                // Ignorar la referencia inversa para evitar referencia circular en la serialización JSON
+                .ForMember(dest => dest.RefTareaCalendario, opt => opt.Ignore())
                 .ReverseMap()
                 .ForMember(dest => dest.RefTarea, opt =>
                     opt.MapFrom(src => src.RefTareaCalendario));

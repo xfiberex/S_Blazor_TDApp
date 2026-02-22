@@ -1,11 +1,11 @@
 # 🧩 Task Management System (S_Blazor_TDApp)
 **Sistema de Gestión de Tareas Recurrentes y de Calendario**
 
-[![.NET](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/download/dotnet/10.0)
 [![Blazor](https://img.shields.io/badge/Blazor-WebAssembly-blue.svg)](https://blazor.net/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**S_Blazor_TDApp** es una aplicación web moderna desarrollada con **Blazor WebAssembly** y **.NET 9** para la gestión integral de tareas recurrentes y calendarios. El sistema permite administrar diferentes tipos de tareas (estáticas, dinámicas y recurrentes) con un sistema robusto de autenticación, autorización por roles y seguimiento de procesos.
+**S_Blazor_TDApp** es una aplicación web moderna desarrollada con **Blazor WebAssembly** y **.NET 10** para la gestión integral de tareas recurrentes y calendarios. El sistema permite administrar diferentes tipos de tareas (calendario y recurrentes) con autenticación JWT, autorización por roles y seguimiento de procesos.
 
 ## 📋 Tabla de Contenido
 - [Características Principales](#-características-principales)
@@ -55,23 +55,26 @@
 
 ## 📸 Capturas de Pantalla
 
-![Pantalla de Login](https://github.com/user-attachments/assets/01a2e0cc-0dd9-4f35-b534-ef9c5d2c1ebe)
+![Pantalla de Login](public/Pantalla%20de%20Login.png)
 *Pantalla de inicio de sesión con validación de credenciales*
 
-![Dashboard Principal](https://github.com/user-attachments/assets/e5abd1ab-b8a5-46fb-b460-eb338b79fea1)
+![Dashboard Principal](public/Dashboard%20Principal.png)
 *Panel principal con navegación por roles*
 
-![Gestión de Tareas Recurrentes](https://github.com/user-attachments/assets/c39449c3-e04b-4851-8f1f-f6cd48cbb840)
+![Gestión de Tareas Recurrentes](public/Gesti%C3%B3n%20de%20Tareas%20Recurrentes.png)
 *Administración de tareas recurrentes con configuración de días*
 
-![Calendario de Tareas](https://github.com/user-attachments/assets/31ba143b-8d84-4a50-bb60-860eb5aff148)
+![Disponibilidad de Tareas](public/Disponibilidad%20de%20Tareas.png)
+*Vista de disponibilidad para gestionar en que dias estaran las tareas*
+
+![Calendario de Tareas](public/Calendario%20de%20Tareas.png)
 *Vista de calendario para programación de tareas*
 
-![Gestión de Usuarios](https://github.com/user-attachments/assets/b7114c3b-57eb-4bce-ab1d-bd103e338366)
-*Panel de administración de usuarios y roles*
+![Gestión de Usuarios](public/Gesti%C3%B3n%20de%20Usuarios.png)
+*Panel de administración de usuarios*
 
-![Reportes y Registro](https://github.com/user-attachments/assets/7c22d9e2-9408-4089-8b51-1cbc698aca8b)
-*Sistema de reportes y registro de procesos*
+![Gestión de Roles y Permisos](public/Gesti%C3%B3n%20de%20Roles%20y%20Permisos.png)
+*Panel de administración de Roles y Permisos para cada usuario*
 
 ## 🏗️ Arquitectura del Sistema
 
@@ -80,10 +83,10 @@ El proyecto sigue una arquitectura de **aplicación distribuida** con separació
 ```
 ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────────┐
 │   Blazor Client     │    │   ASP.NET Server    │    │   SQL Server DB     │
-│   (WebAssembly)     │◄──►│   (.NET 9 API)      │◄──►│   (Entity Framework)│
+│   (WebAssembly)     │◄──►│  (.NET 10 API)      │◄──►│   (Entity Framework)│
 │                     │    │                     │    │                     │
 │ • UI Components     │    │ • Controllers       │    │ • Entidades         │
-│ • Services          │    │ • Business Logic    │    │ • Stored Procedures │
+│ • Services          │    │ • Business Logic    │    │ • Tablas y Restrics.│
 │ • Authentication    │    │ • Data Access       │    │ • Relaciones        │
 └─────────────────────┘    └─────────────────────┘    └─────────────────────┘
 ```
@@ -106,7 +109,7 @@ El proyecto sigue una arquitectura de **aplicación distribuida** con separació
 - **🌟 CurrieTechnologies.Razor.SweetAlert2** - Alertas y notificaciones modernas
 
 ### Backend
-- **🛠 ASP.NET Core (.NET 9)** - Framework web moderno y multiplataforma
+- **🛠 ASP.NET Core (.NET 10)** - Framework web moderno y multiplataforma
 - **🗃 Entity Framework Core** - ORM para SQL Server con contexto `DbTdappContext`
 - **🧭 AutoMapper** - Mapeo automático entre entidades y DTOs
 - **📘 Swagger/OpenAPI** - Documentación interactiva de la API
@@ -114,7 +117,7 @@ El proyecto sigue una arquitectura de **aplicación distribuida** con separació
 
 ### Base de Datos
 - **💽 SQL Server** - Sistema de gestión de base de datos relacional
-- **📊 Entity Framework Core** - Code-first con migraciones automáticas
+- **📊 Entity Framework Core** - Mapeo ORM para acceso a datos y relaciones
 
 ### Herramientas de Desarrollo
 - **🔍 Visual Studio 2022** - IDE recomendado para desarrollo
@@ -124,13 +127,13 @@ El proyecto sigue una arquitectura de **aplicación distribuida** con separació
 ## ⚙️ Requisitos del Sistema
 
 ### Software Requerido
-- **[.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)** - Framework de desarrollo
-- **Visual Studio 2022** (17.8 o superior) - IDE recomendado
+- **[.NET 10 SDK](https://dotnet.microsoft.com/download)** - Framework de desarrollo
+- **Visual Studio 2022** (17.14 o superior) - IDE recomendado
 - **SQL Server** (Express, Developer o superior) - Base de datos
 - **Git** - Control de versiones
 
 ### Especificaciones Técnicas
-- **C# 13.0** - Lenguaje de programación
+- **C# (según SDK instalado con .NET 10)** - Lenguaje de programación
 - **Nullable reference types** habilitado
 - **Implicit usings** habilitado
 
@@ -146,18 +149,24 @@ cd S_Blazor_TDApp
 
 #### Crear la Base de Datos
 Ejecuta el script SQL ubicado en `Consultas BD TDApp/001.CREACIÓN DE BD Y TABLAS.sql` para:
-- Crear la base de datos `TDApp`
+- Recrear la base de datos `DB_TDApp`
 - Crear todas las tablas necesarias
-- Insertar datos iniciales (roles, usuarios por defecto)
+- Insertar datos iniciales (roles, menús, días disponibles y usuario semilla)
 
 #### Configurar Cadena de Conexión
 Edita el archivo `S_Blazor_TDApp.Server/appsettings.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=TU_SERVIDOR;Database=TDApp;Trusted_Connection=true;TrustServerCertificate=true;"
+    "cadenaSQLPrimary": "Server=TU_SERVIDOR;Database=DB_TDApp;Trusted_Connection=True;TrustServerCertificate=True;"
   }
 }
+```
+
+#### Configurar URL de API en el Cliente
+Verifica en `S_Blazor_TDApp.Client/Program.cs` que `HttpClient` apunte a la URL del servidor:
+```csharp
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7219/") });
 ```
 
 ### 3. 🚀 Ejecutar la Aplicación
@@ -185,13 +194,12 @@ dotnet run
 
 ### 4. 🌐 Acceder a la Aplicación
 
-- **Cliente Blazor**: `https://localhost:7264` (Puerto por defecto)
-- **API Swagger**: `https://localhost:7125/swagger` (Documentación de la API)
+- **Cliente Blazor**: `https://localhost:7041` (Puerto por defecto)
+- **API Swagger**: `https://localhost:7219/swagger` (Documentación de la API)
 
-#### Credenciales por Defecto
-- **Administrador**: `admin@tdapp.com` / `admin123`
-- **Supervisor**: `supervisor@tdapp.com` / `supervisor123`
-- **Empleado**: `empleado@tdapp.com` / `empleado123`
+#### Usuario Semilla (solo desarrollo)
+- El script inicial crea un usuario de prueba con nombre de usuario `Admin` y contraseña `pass123`.
+- Se recomienda cambiar la contraseña inmediatamente o regenerar hash usando `S_Blazor_TDApp.Password`.
 
 ## 📁 Estructura del Proyecto
 
@@ -242,6 +250,6 @@ manteniendo el aviso de copyright original.
 
 **⭐ Si te gusta este proyecto, no olvides darle una estrella en GitHub ⭐**
 
-Desarrollado con ❤️ usando Blazor WebAssembly y .NET 9
+Desarrollado con ❤️ usando Blazor WebAssembly y .NET 10
 
 </div>

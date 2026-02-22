@@ -779,9 +779,9 @@
             registroProceso.FechaRegistro = DateTime.Now;
 
             await RegistroProcesoService.GuardarProcesos(registroProceso);
+            await JSRuntime.InvokeVoidAsync("hideModalAsync", "registroProcesoModal");
             await LoadProcesosRegistrados();
             await LoadTareasRecurrentes();
-            await JSRuntime.InvokeVoidAsync("hideModal", "registroProcesoModal");
         }
         catch (Exception ex)
         {
@@ -859,8 +859,8 @@
         try
         {
             await RegistroProcesoService.RegistrarTareaCalendario(tareaCalendarioCompleto);
+            await JSRuntime.InvokeVoidAsync("hideModalAsync", "validarTareaCalendarioModal");
             await LoadTareasCalendario(); // Refrescar la lista de tareas de calendario
-            await JSRuntime.InvokeVoidAsync("hideModal", "validarTareaCalendarioModal");
             await SwalService.FireAsync(new SweetAlertOptions
                 {
                     Title = "Éxito",

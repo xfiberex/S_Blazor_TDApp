@@ -12,7 +12,6 @@
     min-width: 0;
     background-color: #f0f2f7;
     position: relative;
-    z-index: 1;
 }
 
 .sidebar {
@@ -71,10 +70,6 @@
         height: auto;
         max-height: 100vh;
         overflow-y: auto;
-    }
-
-    .main-content {
-        z-index: 1;
     }
 
     .top-row {
