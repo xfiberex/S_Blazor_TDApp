@@ -1,0 +1,2 @@
+- Revisón de Seguridad para el Backend y Frontend.
+- Nuevas mejoras que sean actas para este tipo de Sistemas.

@@ -1,7 +1,0 @@
--- Posibles mejoras --
-   
-	Mostrar las tareas de calendario al validar en el historial de procesos de forma similar a las tareas recurrentes.
-
-	Hacerle una sesión a parte para tareas recurrentes y de calendario, es decir, que el botón de Procesos en el Sidebar que esta en NavMenu tenga eso menús como submenús.
-
-	Posibilidad de que un usuario con permisos de administrador, puede cambiar los permisos de los roles dinámicamente desde el cliente
