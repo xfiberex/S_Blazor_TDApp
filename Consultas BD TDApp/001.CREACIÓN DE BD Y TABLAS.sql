@@ -57,6 +57,12 @@ CREATE TABLE Usuarios (
     NombreCompleto     NVARCHAR(100) NOT NULL,
     Clave              NVARCHAR(MAX) NOT NULL,            -- Contraseña hasheada
     Email              NVARCHAR(150) NULL,
+    CorreoConfirmado   BIT           NOT NULL DEFAULT 0,
+    TokenConfirmacion  NVARCHAR(250) NULL,
+    TokenRecuperacion  NVARCHAR(250) NULL,
+    FechaExpiracionToken DATETIME    NULL,
+    RefreshToken       NVARCHAR(250) NULL,
+    RefreshTokenExpiracion DATETIME  NULL,
     RolId              INT           NOT NULL,
     Activo             BIT           NOT NULL DEFAULT 1,
     FechaCreacion      DATETIME      NOT NULL DEFAULT GETDATE(),
@@ -72,14 +78,14 @@ GO
 CREATE INDEX IX_Usuarios_RolId ON Usuarios (RolId);
 GO
 
--- INSERCIÓN POR DEFECTO — ADMINISTRADOR, CONTRASEÑA: pass123
+-- INSERCIÓN POR DEFECTO — ADMINISTRADOR
 -- Los datos pueden cambiarse desde la página después de iniciar sesión.
 -- Para hashear otra contraseña ejecuta el proyecto de consola S_Blazor_TDApp.Password.
-INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, RolId, Activo)
+INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, CorreoConfirmado, RolId, Activo)
 VALUES (
     '00001', 'Admin', 'Admin',
     '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NYqCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGslz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==',
-    'admin@example.com', 1, 1
+    'admin@example.com', 1, 1, 1
 );
 GO
 

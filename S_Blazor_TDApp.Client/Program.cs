@@ -14,7 +14,14 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Configuraci�n para utilizar HTTPS:
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7219/") });
+builder.Services.AddTransient<JwtAuthenticationInterceptor>();
+
+builder.Services.AddHttpClient("API", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7219/");
+}).AddHttpMessageHandler<JwtAuthenticationInterceptor>();
+
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
 
 // Servicios de la aplicaci�n para la gestion de datos
 builder.Services.AddScoped<IRolService, RolService>();

@@ -41,6 +41,162 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             return response.Valor!;
         }
 
+        public async Task<bool> Registro(RegistroUsuarioDTO registro)
+        {
+            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/Registro", registro);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<bool>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor;
+        }
+
+        public async Task<string> ConfirmarCorreo(string token, string email)
+        {
+            var httpResponse = await _http.GetAsync($"api/Usuario/ConfirmarCorreo?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(email)}");
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception(errorContent);
+            }
+
+            return await httpResponse.Content.ReadAsStringAsync();
+        }
+
+        public async Task<bool> OlvideContrasena(OlvideContrasenaDTO request)
+        {
+            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/OlvideContrasena", request);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<bool>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor;
+        }
+
+        public async Task<bool> RestablecerContrasena(RestablecerContrasenaDTO request)
+        {
+            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/RestablecerContrasena", request);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<bool>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor;
+        }
+
+        public async Task<PerfilUsuarioDTO> ObtenerPerfil()
+        {
+            var httpResponse = await _http.GetAsync("api/Usuario/Perfil");
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<PerfilUsuarioDTO>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor!;
+        }
+
+        public async Task<bool> ActualizarPerfil(PerfilUsuarioDTO perfil)
+        {
+            var httpResponse = await _http.PutAsJsonAsync("api/Usuario/Perfil", perfil);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<bool>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor;
+        }
+
+        public async Task<bool> CambiarContrasenaPerfil(CambiarContrasenaPerfilDTO request)
+        {
+            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/CambiarContrasena", request);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<bool>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor;
+        }
+
+        public async Task<InicioSesionDTO> RefreshToken(RefreshTokenRequestDTO request)
+        {
+            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/RefreshToken", request);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<InicioSesionDTO>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor!;
+        }
+
+        public async Task<bool> RevocarToken()
+        {
+            var httpResponse = await _http.PostAsync("api/Usuario/RevocarToken", null);
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await httpResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Error en la llamada API: {httpResponse.ReasonPhrase} - {errorContent}");
+            }
+
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<bool>>()
+                ?? throw new Exception("No se recibió respuesta del servidor.");
+
+            if (!response.EsCorrecto)
+                throw new Exception(response.Mensaje);
+
+            return response.Valor;
+        }
+
         public async Task<UsuarioDTO> Buscar(int id)
         {
             var resultado = await _http.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>($"api/Usuario/Buscar/{id}")

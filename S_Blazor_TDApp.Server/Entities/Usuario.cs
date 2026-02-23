@@ -14,6 +14,18 @@ public partial class Usuario
 
     public string? Email { get; set; }
 
+    public bool CorreoConfirmado { get; set; }
+
+    public string? TokenConfirmacion { get; set; }
+
+    public string? TokenRecuperacion { get; set; }
+
+    public DateTime? FechaExpiracionToken { get; set; }
+
+    public string? RefreshToken { get; set; }
+
+    public DateTime? RefreshTokenExpiracion { get; set; }
+
     public int RolId { get; set; }
 
     public bool Activo { get; set; }

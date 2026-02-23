@@ -61,23 +61,23 @@ Proyecto revisado: **S_Blazor_TDApp** (Sistema de Gestión de Tareas Recurrentes
 
 ## 🔴 Prioridad Crítica (0–2 semanas)
 
-- [ ] Aplicar `[Authorize]` por defecto a controladores y usar `[AllowAnonymous]` solo en login/registro/recuperación.
-- [ ] Mover secretos a `User Secrets`/variables de entorno (dev) y a vault seguro (prod).
-- [ ] Restringir CORS a dominios concretos del cliente.
-- [ ] Eliminar credenciales visibles del README, UI de login y script inicial de producción.
-- [ ] Agregar rate limiting al endpoint de login.
-- [ ] Estandarizar errores con `ProblemDetails` + middleware global de excepciones.
+- [x] Aplicar `[Authorize]` por defecto a controladores y usar `[AllowAnonymous]` solo en login/registro/recuperación.
+- [x] Mover secretos a `User Secrets`/variables de entorno (dev) y a vault seguro (prod).
+- [x] Restringir CORS a dominios concretos del cliente.
+- [x] Eliminar credenciales visibles del README, UI de login y script inicial de producción.
+- [x] Agregar rate limiting al endpoint de login.
+- [x] Estandarizar errores con `ProblemDetails` + middleware global de excepciones.
 
 ## 🟠 Corto Plazo (2–6 semanas)
 
 ### Autenticación y Cuenta de Usuario (JWT completo)
 
-- [X] Inicio de sesión.
-- [ ] Registro de nuevo usuario con confirmación por correo.
-- [ ] Olvidé contraseña (generación de token con expiración).
-- [ ] Restablecimiento de contraseña validando token.
-- [ ] Sección de perfil de usuario (cambio de contraseña, correo y datos básicos).
-- [ ] Refresh token con rotación y revocación.
+- [x] Inicio de sesión.
+- [x] Registro de nuevo usuario con confirmación por correo.
+- [x] Olvidé contraseña (generación de token con expiración).
+- [x] Restablecimiento de contraseña validando token.
+- [x] Sección de perfil de usuario (cambio de contraseña, correo y datos básicos).
+- [x] Refresh token con rotación y revocación.
 
 ### Seguridad adicional
 

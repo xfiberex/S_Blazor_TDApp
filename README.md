@@ -153,15 +153,21 @@ Ejecuta el script SQL ubicado en `Consultas BD TDApp/001.CREACIÓN DE BD Y TABLA
 - Crear todas las tablas necesarias
 - Insertar datos iniciales (roles, menús, días disponibles y usuario semilla)
 
-#### Configurar Cadena de Conexión
-Edita el archivo `S_Blazor_TDApp.Server/appsettings.json`:
-```json
-{
-  "ConnectionStrings": {
-    "cadenaSQLPrimary": "Server=TU_SERVIDOR;Database=DB_TDApp;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-```
+#### Configurar Cadena de Conexión y Secretos (User Secrets)
+Por seguridad, las cadenas de conexión y la clave JWT no deben guardarse en `appsettings.json`. Utiliza **User Secrets** en desarrollo:
+
+1. Abre una terminal en la carpeta `S_Blazor_TDApp.Server`.
+2. Inicializa los secretos: `dotnet user-secrets init`
+3. Configura la cadena de conexión:
+   ```bash
+   dotnet user-secrets set "ConnectionStrings:cadenaSQLPrimary" "Server=TU_SERVIDOR;Database=DB_TDApp;Trusted_Connection=True;TrustServerCertificate=True;"
+   ```
+4. Configura la clave JWT (debe tener al menos 32 caracteres):
+   ```bash
+   dotnet user-secrets set "Jwt:Key" "TU_CLAVE_SECRETA_MUY_SEGURA_DE_AL_MENOS_32_CARACTERES"
+   ```
+
+En producción, utiliza variables de entorno o un servicio de Vault seguro (como Azure Key Vault).
 
 #### Configurar URL de API en el Cliente
 Verifica en `S_Blazor_TDApp.Client/Program.cs` que `HttpClient` apunte a la URL del servidor:
@@ -196,10 +202,6 @@ dotnet run
 
 - **Cliente Blazor**: `https://localhost:7041` (Puerto por defecto)
 - **API Swagger**: `https://localhost:7219/swagger` (Documentación de la API)
-
-#### Usuario Semilla (solo desarrollo)
-- El script inicial crea un usuario de prueba con nombre de usuario `Admin` y contraseña `pass123`.
-- Se recomienda cambiar la contraseña inmediatamente o regenerar hash usando `S_Blazor_TDApp.Password`.
 
 ## 📁 Estructura del Proyecto
 

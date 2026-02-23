@@ -1,18 +1,32 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Utilities.AutoMapper;
 using S_Blazor_TDApp.Server.Utilities.BackgroundServices;
+using S_Blazor_TDApp.Server.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+                     .RequireAuthenticatedUser()
+                     .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configuración de JWT
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+// Configuraciï¿½n de JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -41,11 +55,14 @@ builder.Services.AddAutoMapper(config => config.AddProfile<MappingProfile>());
 // Registrar el servicio en segundo plano
 builder.Services.AddHostedService<TareaExpiracionService>();
 
+// Registrar EmailService
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Contexto de base de datos
 builder.Services.AddDbContext<DbTdappContext>(options =>
 {
-    /* Para utilizar dos equipos SQL Server, puedes descomentar la línea correspondiente,
-       de acuerdo a tu configuración en el archivo appsettings.json */
+    /* Para utilizar dos equipos SQL Server, puedes descomentar la lï¿½nea correspondiente,
+       de acuerdo a tu configuraciï¿½n en el archivo appsettings.json */
 
     options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
     //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
@@ -55,13 +72,28 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("nuevaPolitica", app =>
     {
-        app.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        app.WithOrigins(allowedOrigins)
+           .AllowAnyMethod()
+           .AllowAnyHeader();
     });
 });
 
-var app = builder.Build();
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("LoginPolicy", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 5;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
-// Habilitar Swagger y la UI solo en Desarrollo (o según prefieras)
+var app = builder.Build();
+app.UseExceptionHandler();
+// Habilitar Swagger y la UI solo en Desarrollo (o segï¿½n prefieras)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -69,6 +101,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("nuevaPolitica");
+app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

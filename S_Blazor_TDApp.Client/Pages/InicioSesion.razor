@@ -95,6 +95,16 @@
                             </div>
                         </div>
 
+                        <!-- Inicio de Sesión de Prueba por Defecto -->
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-light"
+                                    style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);"
+                                    @onclick="CargarCredencialesPrueba">
+                                <i class="bi bi-person-badge me-1"></i> Usar Super_Admin
+                            </button>
+                        </div>
+
                         <!-- Botón de envío -->
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit"
@@ -113,13 +123,21 @@
                                 }
                             </button>
                         </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                            <a href="/olvide-contrasena" class="text-decoration-none" style="color: rgba(255,255,255,0.6); font-size: 0.85rem; transition: color 0.2s;">
+                                ¿Olvidó su contraseña?
+                            </a>
+                            <a href="/registro" class="text-decoration-none" style="color: rgba(165, 180, 252, 0.9); font-size: 0.85rem; font-weight: 500; transition: color 0.2s;">
+                                Crear cuenta
+                            </a>
+                        </div>
                     </EditForm>
                 </div>
 
                 <div class="py-3 text-center" style="background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.06);">
                     <small style="color: rgba(255,255,255,0.4);">
-                        Credenciales: <b style="color: rgba(165, 180, 252, 0.7);">@adminEmail</b>
-                        · Contraseña: <b style="color: rgba(165, 180, 252, 0.7);">@claveEmail</b>
+                        Ingrese sus credenciales para acceder al sistema.
                     </small>
                 </div>
             </div>
@@ -139,13 +157,10 @@
     private bool isSaving = false;
     private string? errorMessage;
     private bool showPassword = false;
-    private string adminEmail = "admin@example.com"; // Valor por defecto
-    private string claveEmail = "pass123";
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         editContext = new EditContext(login);
-        await GetAdminEmail();
     }
 
     private void TogglePasswordVisibility()
@@ -153,21 +168,10 @@
         showPassword = !showPassword;
     }
 
-    private async Task GetAdminEmail()
+    private void CargarCredencialesPrueba()
     {
-        try
-        {
-            var usuario = await usuarioService.Buscar(1);
-            if (usuario != null)
-            {
-                adminEmail = usuario.Email ?? adminEmail;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al obtener el email del administrador: {ex.Message}");
-            // Se puede dejar el valor por defecto o asignar otro
-        }
+        login.Email = "admin@example.com";
+        login.Clave = "pass123";
     }
 
     private async Task IniciarSesion()

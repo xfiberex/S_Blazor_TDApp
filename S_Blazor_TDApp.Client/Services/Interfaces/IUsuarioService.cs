@@ -6,6 +6,15 @@ namespace S_Blazor_TDApp.Client.Services.Interfaces
     {
         Task<List<UsuarioDTO>> Lista();
         Task<InicioSesionDTO> Login(LoginDTO login);
+        Task<bool> Registro(RegistroUsuarioDTO registro);
+        Task<string> ConfirmarCorreo(string token, string email);
+        Task<bool> OlvideContrasena(OlvideContrasenaDTO request);
+        Task<bool> RestablecerContrasena(RestablecerContrasenaDTO request);
+        Task<PerfilUsuarioDTO> ObtenerPerfil();
+        Task<bool> ActualizarPerfil(PerfilUsuarioDTO perfil);
+        Task<bool> CambiarContrasenaPerfil(CambiarContrasenaPerfilDTO request);
+        Task<InicioSesionDTO> RefreshToken(RefreshTokenRequestDTO request);
+        Task<bool> RevocarToken();
         Task<UsuarioDTO> Buscar(int id);
         Task<bool> ExisteCodigo(string codigo);
         Task<UsuarioDTO?> ObtenerPorEmail(string email);

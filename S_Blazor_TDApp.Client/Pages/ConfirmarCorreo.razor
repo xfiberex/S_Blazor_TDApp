@@ -1,0 +1,98 @@
+@page "/confirmar-correo"
+@layout LoginLayout
+
+@using S_Blazor_TDApp.Client.Services.Interfaces
+
+@inject IUsuarioService usuarioService
+@inject NavigationManager navManager
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center py-4">
+    <div class="row w-100 justify-content-center">
+        <div class="col-11 col-md-8 col-lg-5">
+            <div class="text-center mb-4 fade-in-up">
+                <img src="Logo_30x30.png" alt="Logo" width="56" height="56"
+                     style="border-radius: 16px; box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3); background: rgba(255,255,255,0.15); padding: 8px;">
+                <h4 class="mt-3" style="color: rgba(255,255,255,0.95); font-weight: 700; letter-spacing: -0.5px;">Task Management</h4>
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">Confirmación de Correo</p>
+            </div>
+
+            <div class="card border-0 overflow-hidden mx-auto fade-in-up"
+                 style="background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.12) !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
+                <div class="card-header text-white py-3"
+                     style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(139, 92, 246, 0.4)) !important; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h5 class="mb-0 d-flex align-items-center" style="color: white;">
+                        <i class="bi bi-envelope-check-fill me-2" style="color: rgba(255,255,255,0.85);"></i>
+                        Verificación
+                    </h5>
+                </div>
+
+                <div class="card-body p-4 text-center">
+                    @if (isConfirming)
+                    {
+                        <div class="spinner-border text-light mb-3" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p style="color: rgba(255,255,255,0.8);">Verificando su correo electrónico...</p>
+                    }
+                    else if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert d-flex align-items-center mb-3"
+                             style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px;">
+                            <i class="bi bi-exclamation-triangle-fill fs-6 me-2"></i>
+                            <div>@errorMessage</div>
+                        </div>
+                        <a href="/" class="btn btn-outline-light mt-3">Volver al Inicio</a>
+                    }
+                    else if (confirmacionExitosa)
+                    {
+                        <div class="alert d-flex align-items-center mb-3"
+                             style="background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 10px;">
+                            <i class="bi bi-check-circle-fill fs-6 me-2"></i>
+                            <div>@mensajeExito</div>
+                        </div>
+                        <a href="/" class="btn py-2 fw-semibold mt-3 w-100" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(99,102,241,0.35);">
+                            Iniciar Sesión
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? Token { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Email { get; set; }
+
+    private bool isConfirming = true;
+    private bool confirmacionExitosa = false;
+    private string? errorMessage;
+    private string? mensajeExito;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Token) || string.IsNullOrEmpty(Email))
+        {
+            errorMessage = "Enlace de confirmación inválido.";
+            isConfirming = false;
+            return;
+        }
+
+        try
+        {
+            mensajeExito = await usuarioService.ConfirmarCorreo(Token, Email);
+            confirmacionExitosa = true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isConfirming = false;
+        }
+    }
+}

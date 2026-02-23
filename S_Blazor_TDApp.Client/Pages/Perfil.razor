@@ -1,0 +1,268 @@
+@page "/perfil"
+@using S_Blazor_TDApp.Shared
+@using S_Blazor_TDApp.Client.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+@inject IUsuarioService usuarioService
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0" style="border-radius: 15px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-4">
+                        <i class="bi bi-person-circle text-primary fs-1"></i>
+                    </div>
+                    <div>
+                        <h2 class="mb-1 fw-bold text-dark">Mi Perfil</h2>
+                        <p class="text-muted mb-0">Gestione su información personal y seguridad</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else if (usuario != null)
+    {
+        <div class="row g-4">
+            <!-- Información Personal -->
+            <div class="col-12 col-lg-6">
+                <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-info-circle me-2 text-primary"></i>
+                            Información Personal
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(mensajePerfil))
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i> @mensajePerfil
+                                <button type="button" class="btn-close" @onclick="() => mensajePerfil = null"></button>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(errorPerfil))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorPerfil
+                                <button type="button" class="btn-close" @onclick="() => errorPerfil = null"></button>
+                            </div>
+                        }
+
+                        <EditForm Model="usuario" OnValidSubmit="ActualizarPerfil">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-secondary">Nombre de Usuario</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person-badge text-muted"></i></span>
+                                    <InputText @bind-Value="usuario.NombreUsuario" class="form-control border-start-0 bg-light" />
+                                </div>
+                                <ValidationMessage For="@(() => usuario.NombreUsuario)" class="text-danger small mt-1" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-secondary">Nombre Completo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                                    <InputText @bind-Value="usuario.NombreCompleto" class="form-control border-start-0 bg-light" />
+                                </div>
+                                <ValidationMessage For="@(() => usuario.NombreCompleto)" class="text-danger small mt-1" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-secondary">Correo Electrónico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                                    <InputText @bind-Value="usuario.Email" class="form-control border-start-0 bg-light" disabled />
+                                </div>
+                                <small class="text-muted mt-1 d-block">El correo electrónico no se puede cambiar.</small>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary py-2 fw-semibold" disabled="@isSavingPerfil">
+                                    @if (isSavingPerfil)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Guardando...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-save me-2"></i> <span>Guardar Cambios</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cambiar Contraseña -->
+            <div class="col-12 col-lg-6">
+                <div class="card shadow-sm border-0 h-100" style="border-radius: 15px;">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                        <h5 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-key me-2 text-warning"></i>
+                            Cambiar Contraseña
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @if (!string.IsNullOrEmpty(mensajeClave))
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i> @mensajeClave
+                                <button type="button" class="btn-close" @onclick="() => mensajeClave = null"></button>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(errorClave))
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorClave
+                                <button type="button" class="btn-close" @onclick="() => errorClave = null"></button>
+                            </div>
+                        }
+
+                        <EditForm Model="cambioClave" OnValidSubmit="CambiarContrasena">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold text-secondary">Contraseña Actual</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                                    <InputText @bind-Value="cambioClave.ClaveActual" type="password" class="form-control border-start-0 bg-light" />
+                                </div>
+                                <ValidationMessage For="@(() => cambioClave.ClaveActual)" class="text-danger small mt-1" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-secondary">Nueva Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock text-muted"></i></span>
+                                    <InputText @bind-Value="cambioClave.NuevaClave" type="password" class="form-control border-start-0 bg-light" />
+                                </div>
+                                <ValidationMessage For="@(() => cambioClave.NuevaClave)" class="text-danger small mt-1" />
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning text-dark py-2 fw-semibold" disabled="@isSavingClave">
+                                    @if (isSavingClave)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        <span>Actualizando...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-arrow-repeat me-2"></i> <span>Actualizar Contraseña</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> No se pudo cargar la información del perfil.
+        </div>
+    }
+</div>
+
+@code {
+    private PerfilUsuarioDTO? usuario;
+    private CambiarContrasenaPerfilDTO cambioClave = new();
+    
+    private bool isLoading = true;
+    private bool isSavingPerfil = false;
+    private bool isSavingClave = false;
+    
+    private string? mensajePerfil;
+    private string? errorPerfil;
+    private string? mensajeClave;
+    private string? errorClave;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPerfil();
+    }
+
+    private async Task CargarPerfil()
+    {
+        try
+        {
+            isLoading = true;
+            usuario = await usuarioService.ObtenerPerfil();
+        }
+        catch (Exception ex)
+        {
+            errorPerfil = "Error al cargar el perfil: " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ActualizarPerfil()
+    {
+        if (usuario == null) return;
+
+        try
+        {
+            isSavingPerfil = true;
+            errorPerfil = null;
+            mensajePerfil = null;
+
+            var actualizado = await usuarioService.ActualizarPerfil(usuario);
+            if (actualizado)
+            {
+                mensajePerfil = "Perfil actualizado correctamente.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorPerfil = ex.Message;
+        }
+        finally
+        {
+            isSavingPerfil = false;
+        }
+    }
+
+    private async Task CambiarContrasena()
+    {
+        try
+        {
+            isSavingClave = true;
+            errorClave = null;
+            mensajeClave = null;
+
+            var exito = await usuarioService.CambiarContrasenaPerfil(cambioClave);
+            if (exito)
+            {
+                mensajeClave = "Contraseña actualizada correctamente.";
+                cambioClave = new CambiarContrasenaPerfilDTO(); // Limpiar formulario
+            }
+        }
+        catch (Exception ex)
+        {
+            errorClave = ex.Message;
+        }
+        finally
+        {
+            isSavingClave = false;
+        }
+    }
+}

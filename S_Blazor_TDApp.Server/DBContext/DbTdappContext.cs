@@ -190,6 +190,12 @@ public partial class DbTdappContext : DbContext
             entity.Property(e => e.Activo).HasDefaultValue(true);
             entity.Property(e => e.Codigo).HasMaxLength(10);
             entity.Property(e => e.Email).HasMaxLength(150);
+            entity.Property(e => e.CorreoConfirmado).HasDefaultValue(false);
+            entity.Property(e => e.TokenConfirmacion).HasMaxLength(250);
+            entity.Property(e => e.TokenRecuperacion).HasMaxLength(250);
+            entity.Property(e => e.FechaExpiracionToken).HasColumnType("datetime");
+            entity.Property(e => e.RefreshToken).HasMaxLength(250);
+            entity.Property(e => e.RefreshTokenExpiracion).HasColumnType("datetime");
             entity.Property(e => e.FechaActualizacion).HasColumnType("datetime");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("(getdate())")
