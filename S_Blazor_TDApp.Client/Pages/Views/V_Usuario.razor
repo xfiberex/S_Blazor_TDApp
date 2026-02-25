@@ -19,8 +19,8 @@
     <div class="row justify-content-center">
         <div class="col-11 col-md-7 col-lg-6">
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>@titulo</h5>
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0 text-dark"><i class="bi bi-person-fill me-2 text-primary"></i>@titulo</h5>
                 </div>
                 <div class="card-body">
                     <EditForm Model="usuario" OnValidSubmit="OnValidSubmit" Context="editContext">
@@ -217,8 +217,13 @@
 
     // Variables para almacenar el ID del usuario autenticado y los valores originales de Email y Rol
     private int currentUserId;
+    private string currentRol = string.Empty;
     private string originalEmail = string.Empty;
     private int originalRolId;
+
+    // Roles que el Supervisor no puede asignar
+    private static readonly HashSet<string> RolesRestringidosParaSupervisor =
+        new() { "Super_Administrador", "Administrador" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -230,12 +235,17 @@
             {
                 var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(idClaim))
-                {
                     currentUserId = int.Parse(idClaim);
-                }
+
+                currentRol = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
             }
 
-            listaRoles = await RolService.Lista();
+            var todosLosRoles = await RolService.Lista();
+
+            // El Supervisor solo puede asignar roles de igual o menor jerarquía
+            listaRoles = currentRol == "Supervisor"
+                ? todosLosRoles.Where(r => !RolesRestringidosParaSupervisor.Contains(r.NombreRol)).ToList()
+                : todosLosRoles;
 
             if (IdUsuarioEditar != 0)
             {

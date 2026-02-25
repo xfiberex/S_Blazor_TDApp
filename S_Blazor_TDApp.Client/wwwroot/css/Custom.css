@@ -902,7 +902,7 @@ code {
 
     .table {
         font-size: 0.8rem;
-        min-width: 500px;
+        min-width: 640px;
     }
 
     .table thead th {
@@ -912,6 +912,21 @@ code {
 
     .table tbody td {
         padding: 0.45rem 0.6rem;
+    }
+
+    .table-responsive {
+        position: relative;
+        scrollbar-width: thin;
+        scrollbar-color: var(--slate-300) transparent;
+    }
+
+    .table-responsive::before {
+        content: "Desliza horizontalmente para ver más columnas";
+        display: block;
+        font-size: 0.72rem;
+        color: var(--slate-400);
+        margin: 0 0 0.45rem 0.15rem;
+        font-weight: 500;
     }
 
     .page-title {

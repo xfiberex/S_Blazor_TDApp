@@ -29,8 +29,8 @@
         <!-- Formulario para agregar disponibilidad -->
         <div class="col-md-10">
             <div class="card shadow mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Configurar disponibilidad</h5>
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 text-primary"><i class="bi bi-calendar2-plus me-2"></i>Configurar disponibilidad</h5>
                 </div>
                 <div class="card-body">
                     <EditForm EditContext="editContext" OnValidSubmit="OnValidSubmit">
@@ -166,8 +166,8 @@
     <div class="row justify-content-center mt-4">
         <div class="col-md-10">
             <div class="card shadow">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Días configurados</h5>
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 text-primary"><i class="bi bi-calendar-week me-2"></i>Días configurados</h5>
                 </div>
                 <div class="card-body">
                     @if (isLoading)

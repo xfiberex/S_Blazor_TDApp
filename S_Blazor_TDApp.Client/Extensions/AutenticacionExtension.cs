@@ -35,6 +35,7 @@ namespace S_Blazor_TDApp.Client.Extensions
             {
                 claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
+                    new Claim(ClaimTypes.NameIdentifier, sesionDTO.UsuarioId.ToString()),
                     new Claim(ClaimTypes.Name,sesionDTO.Nombre),
                     new Claim(ClaimTypes.Email,sesionDTO.Correo!),
                     new Claim(ClaimTypes.Role,sesionDTO.Rol)
@@ -72,6 +73,7 @@ namespace S_Blazor_TDApp.Client.Extensions
 
             var claimPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
+                    new Claim(ClaimTypes.NameIdentifier, sesionUsuario.UsuarioId.ToString()),
                     new Claim(ClaimTypes.Name,sesionUsuario.Nombre),
                     new Claim(ClaimTypes.Email,sesionUsuario.Correo!),
                     new Claim(ClaimTypes.Role,sesionUsuario.Rol)

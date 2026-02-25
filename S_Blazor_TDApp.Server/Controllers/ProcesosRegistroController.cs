@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
@@ -9,6 +10,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/procesos-registro")]
     [ApiController]
+    [Authorize(Roles = "Super_Administrador,Administrador,Supervisor,Empleado")]
     public class ProcesosRegistroController : ControllerBase
     {
         private readonly DbTdappContext _context;

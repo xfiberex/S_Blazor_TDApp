@@ -23,5 +23,9 @@ namespace S_Blazor_TDApp.Shared
         [Required(ErrorMessage = "La nueva contraseña es requerida")]
         [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
         public string NuevaClave { get; set; } = null!;
+
+        [Required(ErrorMessage = "Debe confirmar la nueva contraseña")]
+        [Compare(nameof(NuevaClave), ErrorMessage = "Las contraseñas no coinciden")]
+        public string ConfirmarClave { get; set; } = null!;
     }
 }

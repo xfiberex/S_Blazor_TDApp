@@ -115,7 +115,7 @@ namespace S_Blazor_TDApp.Server.Controllers
         /// No se puede modificar al Super_Administrador.
         /// </summary>
         [HttpPut("permisos")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "Super_Administrador,Administrador")]
         public async Task<IActionResult> ActualizarPermisos([FromBody] ActualizarPermisosDTO dto, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();

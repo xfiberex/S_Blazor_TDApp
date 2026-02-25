@@ -21,7 +21,7 @@
 ## ✨ Características Principales
 
 - 🔐 **Inicio de sesión con control de roles**  
-  Soporte para roles de **Administrador**, **Supervisor** y **Empleado**, con autorización personalizada por vista o menú.
+  Soporte para roles de **Super Administrador**, **Administrador**, **Supervisor** y **Empleado**, con autorización personalizada por vista o menú. Incluye sección de **credenciales de prueba** con acceso rápido por rol directo desde el login.
 
 - 📊 **Reportes de procesos y gestión de tareas**  
   Visualización y seguimiento de tareas **recurrentes** y **calendario de actividades**.
@@ -30,7 +30,7 @@
   Permite definir la disponibilidad específica para cada tarea dentro del sistema.
 
 - 👥 **Gestión de usuarios y roles**  
-  Administración de usuarios, con **asignación automática de roles por defecto y generación de codigo**.
+  Administración de usuarios, con **asignación automática de roles por defecto y generación de código**. Incluye gestión dinámica de permisos de acceso por menú para cada rol.
 
 - 🧾 **Validaciones en formularios**  
   Validaciones completas en los campos donde el usuario ingresa información para mantener integridad de datos.
@@ -52,6 +52,15 @@
 
 - 📄 **Paginación de datos**  
   Implementación de paginación para mejorar la navegación entre grandes volúmenes de registros.
+
+- 🛡️ **Restricción de escalada de roles**  
+  Los **Supervisores** no pueden asignar roles de Administrador o Super Administrador a otros usuarios. Validación aplicada en backend y frontend.
+
+- 🔑 **Cambio de contraseña seguro**  
+  El perfil de usuario incluye confirmación de nueva contraseña para evitar errores tipográficos al actualizar credenciales.
+
+- 📋 **Historial de procesos registrados**  
+  Registro con búsqueda por fecha y nombre, con indicador del usuario que realizó cada proceso.
 
 ## 📸 Capturas de Pantalla
 
@@ -235,7 +244,6 @@ S_Blazor_TDApp/
 ### Mejoras Planificadas
 - 📋 Mostrar tareas de calendario en el historial de procesos
 - 🔧 Submenús para tareas recurrentes y de calendario
-- ⚙️ Gestión dinámica de permisos de roles desde el cliente
 
 ## 📄 Licencia
 

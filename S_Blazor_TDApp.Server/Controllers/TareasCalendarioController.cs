@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
@@ -9,6 +10,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 {
     [Route("api/tareas-calendario")]
     [ApiController]
+    [Authorize(Roles = "Super_Administrador,Administrador,Supervisor,Empleado")]
     public class TareasCalendarioController : ControllerBase
     {
         private readonly DbTdappContext _context;

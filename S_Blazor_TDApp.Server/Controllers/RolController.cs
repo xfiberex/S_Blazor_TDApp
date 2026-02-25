@@ -25,7 +25,6 @@ namespace S_Blazor_TDApp.Server.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
         public async Task<IActionResult> Lista(CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<List<RolDTO>>();
@@ -53,7 +52,6 @@ namespace S_Blazor_TDApp.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
         public async Task<IActionResult> Buscar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<RolDTO>();

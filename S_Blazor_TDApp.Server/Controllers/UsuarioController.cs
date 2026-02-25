@@ -90,6 +90,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 var inicioSesion = new InicioSesionDTO
                 {
+                    UsuarioId = usuarioEntity.UsuarioId,
                     Nombre = usuarioEntity.NombreUsuario,
                     Correo = usuarioEntity.Email ?? string.Empty,
                     Rol = rolNombre,
@@ -601,6 +602,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 var inicioSesion = new InicioSesionDTO
                 {
+                    UsuarioId = usuario.UsuarioId,
                     Nombre = usuario.NombreUsuario,
                     Correo = usuario.Email ?? string.Empty,
                     Rol = rolNombre,
@@ -883,6 +885,23 @@ namespace S_Blazor_TDApp.Server.Controllers
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "El usuario no existe.";
                     return NotFound(responseApi);
+                }
+
+                // Validación: el Supervisor no puede asignar roles de mayor jerarquía
+                var callerRole = User.FindFirst(ClaimTypes.Role)?.Value;
+                if (callerRole == "Supervisor")
+                {
+                    var rolAsignado = await _context.Roles
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(r => r.RolId == usuarioDTO.RolId, ct);
+
+                    if (rolAsignado != null &&
+                        (rolAsignado.NombreRol == "Super_Administrador" || rolAsignado.NombreRol == "Administrador"))
+                    {
+                        responseApi.EsCorrecto = false;
+                        responseApi.Mensaje = "No tiene permisos para asignar el rol de Administrador o Super_Administrador.";
+                        return StatusCode(403, responseApi);
+                    }
                 }
 
                 // Validación: verificar si el nombre de usuario ya existe en otro registro
