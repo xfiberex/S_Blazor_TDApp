@@ -39,9 +39,10 @@ namespace S_Blazor_TDApp.Server.Utilities.AutoMapper
 
             CreateMap<Usuario, UsuarioDTO>()
                 .ForMember(dest => dest.Rol, opt => opt.MapFrom(src => src.IdRolNavigation))
+                .ForMember(dest => dest.Clave, opt => opt.Ignore())
                 .ReverseMap()
                 .ForMember(dest => dest.IdRolNavigation, opt => opt.Ignore())
-                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.Now));
+                .ForMember(dest => dest.FechaActualizacion, opt => opt.Ignore());
 
             CreateMap<RegistroProceso, RegistroProcesoDTO>()
                 .ReverseMap();

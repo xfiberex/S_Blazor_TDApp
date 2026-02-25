@@ -6,7 +6,7 @@
 
 @* Using para la autorización de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
-@attribute [Authorize(Roles = "Administrador, Supervisor, Empleado")]
+@attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor, Empleado")]
 
 @inject SweetAlertService SwalService
 @inject ITareaRecurrenteService TareaRecurrenteService

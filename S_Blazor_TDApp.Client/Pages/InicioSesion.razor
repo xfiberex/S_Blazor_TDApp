@@ -95,14 +95,52 @@
                             </div>
                         </div>
 
-                        <!-- Inicio de Sesión de Prueba por Defecto -->
+                        <!-- Credenciales de Prueba -->
                         <div class="d-flex justify-content-end mt-2">
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-light"
-                                    style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);"
-                                    @onclick="CargarCredencialesPrueba">
-                                <i class="bi bi-person-badge me-1"></i> Usar Super_Admin
-                            </button>
+                            <div class="dropdown">
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-light dropdown-toggle"
+                                        style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-badge me-1"></i> Credenciales de Prueba
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end"
+                                    style="background: rgba(25,25,40,0.97); border: 1px solid rgba(255,255,255,0.12);">
+                                    <li>
+                                        <button class="dropdown-item py-2" style="color: rgba(255,255,255,0.85);"
+                                                @onclick='() => CargarCredenciales("superadmin@example.com", "pass123")'>
+                                            <i class="bi bi-shield-fill-check me-2 text-warning"></i>
+                                            <strong>Super Admin</strong>
+                                            <small class="text-muted d-block ms-4">Acceso total permanente</small>
+                                        </button>
+                                    </li>
+                                    <li><hr class="dropdown-divider" style="border-color: rgba(255,255,255,0.1);"></li>
+                                    <li>
+                                        <button class="dropdown-item py-2" style="color: rgba(255,255,255,0.85);"
+                                                @onclick='() => CargarCredenciales("admin@example.com", "pass123")'>
+                                            <i class="bi bi-person-fill-gear me-2 text-info"></i>
+                                            Admin
+                                            <small class="text-muted d-block ms-4">Acceso total</small>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item py-2" style="color: rgba(255,255,255,0.85);"
+                                                @onclick='() => CargarCredenciales("supervisor@example.com", "pass123")'>
+                                            <i class="bi bi-person-fill me-2 text-success"></i>
+                                            Supervisor
+                                            <small class="text-muted d-block ms-4">Acceso parcial</small>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button class="dropdown-item py-2" style="color: rgba(255,255,255,0.85);"
+                                                @onclick='() => CargarCredenciales("empleado@example.com", "pass123")'>
+                                            <i class="bi bi-person me-2" style="color: rgba(165,180,252,0.8);"></i>
+                                            Empleado
+                                            <small class="text-muted d-block ms-4">Acceso específico</small>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
 
                         <!-- Botón de envío -->
@@ -168,10 +206,10 @@
         showPassword = !showPassword;
     }
 
-    private void CargarCredencialesPrueba()
+    private void CargarCredenciales(string email, string clave)
     {
-        login.Email = "admin@example.com";
-        login.Clave = "pass123";
+        login.Email = email;
+        login.Clave = clave;
     }
 
     private async Task IniciarSesion()

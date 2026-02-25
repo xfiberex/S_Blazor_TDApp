@@ -8,7 +8,7 @@
 
 @* Using para la autorización de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
-@attribute [Authorize(Roles = "Administrador, Supervisor, Empleado")]
+@attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor, Empleado")]
 
 @inject ITareaRecurrenteService TareaRecurrenteService
 @inject NavigationManager NavigationManager

@@ -7,7 +7,7 @@
 
 @* Sólo el Administrador puede acceder a esta página *@
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles = "Administrador")]
+@attribute [Authorize(Roles = "Super_Administrador, Administrador")]
 
 @inject IRolService RolService
 @inject IMenuPermisoService MenuPermisoService

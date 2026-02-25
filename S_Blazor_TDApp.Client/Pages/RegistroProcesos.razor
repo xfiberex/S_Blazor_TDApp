@@ -8,10 +8,9 @@
 @using System.Security.Claims
 @using System.Globalization
 @implements IDisposable
-@attribute [Authorize(Roles = "Administrador, Supervisor, Empleado")]
+@attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor, Empleado")]
 
 @inject SweetAlertService SwalService
-@inject IUsuarioService UsuarioService
 @inject ITareaDiasService TareaDiasService
 @inject ITareaRecurrenteService TareaRecurrenteService
 @inject ITareaCalendarioService TareaCalendarioService
@@ -590,16 +589,11 @@
 
         if (user.Identity?.IsAuthenticated == true)
         {
-            // Extraer el email del usuario autenticado
-            var email = user.FindFirst(ClaimTypes.Email)?.Value;
-            if (!string.IsNullOrEmpty(email))
+            // Obtener el ID del usuario directamente desde el claim NameIdentifier
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var parsedId))
             {
-                // Utilizar el servicio para obtener el usuario por email
-                var usuario = await UsuarioService.ObtenerPorEmail(email);
-                if (usuario != null)
-                {
-                    currentUserId = usuario.UsuarioId;
-                }
+                currentUserId = parsedId;
             }
         }
 

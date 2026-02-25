@@ -18,11 +18,16 @@ namespace S_Blazor_TDApp.Server.Utilities
         {
             try
             {
-                var host = _configuration["Smtp:Host"] ?? "sandbox.smtp.mailtrap.io";
-                var port = int.Parse(_configuration["Smtp:Port"] ?? "2525");
-                var user = _configuration["Smtp:User"] ?? "641dd41ef22868";
-                var pass = _configuration["Smtp:Pass"] ?? "03f352f084c47b";
-                var from = _configuration["Smtp:From"] ?? "noreply@taskmanagement.com";
+                var host = _configuration["Smtp:Host"]
+                    ?? throw new InvalidOperationException("Smtp:Host no configurado.");
+                var port = int.Parse(_configuration["Smtp:Port"]
+                    ?? throw new InvalidOperationException("Smtp:Port no configurado."));
+                var user = _configuration["Smtp:User"]
+                    ?? throw new InvalidOperationException("Smtp:User no configurado.");
+                var pass = _configuration["Smtp:Pass"]
+                    ?? throw new InvalidOperationException("Smtp:Pass no configurado.");
+                var from = _configuration["Smtp:From"]
+                    ?? throw new InvalidOperationException("Smtp:From no configurado.");
 
                 using var client = new SmtpClient(host, port)
                 {

@@ -7,59 +7,72 @@ using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/procesos-registro")]
     [ApiController]
     public class ProcesosRegistroController : ControllerBase
     {
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<ProcesosRegistroController> _logger;
 
-        public ProcesosRegistroController(DbTdappContext context, IMapper mapper)
+        public ProcesosRegistroController(DbTdappContext context, IMapper mapper, ILogger<ProcesosRegistroController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         #region APIs para listar y buscar
 
         [HttpGet]
-        [Route("ListaProcesos")]
-        public async Task<IActionResult> ListaProcesos()
+        public async Task<IActionResult> ListaProcesos([FromQuery] int pagina = 1, [FromQuery] int registrosPorPagina = 20, CancellationToken ct = default)
         {
-            var responseApi = new ResponseAPI<List<RegistroProcesoDTO>>();
+            var responseApi = new ResponseAPI<PaginatedResultDTO<RegistroProcesoDTO>>();
 
             try
             {
-                var procesos = await _context.RegistroProcesos
+                var query = _context.RegistroProcesos
                     .Include(rp => rp.RefTareaRecurr) // Asegúrate de incluir solo la relación con TareaRecurrente
                     .Include(rp => rp.RefUsuario) // Asegúrate de incluir solo la relación con Usuario
-                    .AsNoTracking()
-                    .ToListAsync();
+                    .AsNoTracking();
+
+                var total = await query.CountAsync(ct);
+
+                var procesos = await query
+                    .Skip((pagina - 1) * registrosPorPagina)
+                    .Take(registrosPorPagina)
+                    .ToListAsync(ct);
 
                 var listaProcesosDTO = _mapper.Map<List<RegistroProcesoDTO>>(procesos);
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaProcesosDTO;
+                responseApi.Valor = new PaginatedResultDTO<RegistroProcesoDTO>
+                {
+                    Items = listaProcesosDTO,
+                    TotalRegistros = total,
+                    Pagina = pagina,
+                    RegistrosPorPagina = registrosPorPagina
+                };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpGet]
-        [Route("BuscarProcesos/{id}")]
-        public async Task<IActionResult> BuscarProcesos(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> BuscarProcesos(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<RegistroProcesoDTO>();
             try
             {
                 var procesosEntity = await _context.RegistroProcesos
                                             .AsNoTracking()
-                                            .FirstOrDefaultAsync(tc => tc.ProcesoId == id);
+                                            .FirstOrDefaultAsync(tc => tc.ProcesoId == id, ct);
 
                 if (procesosEntity == null)
                 {
@@ -75,9 +88,10 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
@@ -85,8 +99,7 @@ namespace S_Blazor_TDApp.Server.Controllers
         #endregion
 
         [HttpPost]
-        [Route("GuardarProcesos")]
-        public async Task<IActionResult> Guardar(RegistroProcesoDTO registroProcesosDTO)
+        public async Task<IActionResult> Guardar(RegistroProcesoDTO registroProcesosDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
@@ -95,21 +108,21 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var procesoEntity = _mapper.Map<RegistroProceso>(registroProcesosDTO);
 
                 _context.RegistroProcesos.Add(procesoEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 if (procesoEntity.ProcesoId != 0)
                 {
                     // Actualizar la tarea recurrente asociada para renovar su expiración.
                     var tarea = await _context.TareasRecurrentes
-                                              .FirstOrDefaultAsync(t => t.TareaRecurrId == registroProcesosDTO.TareaRecurrId);
+                                              .FirstOrDefaultAsync(t => t.TareaRecurrId == registroProcesosDTO.TareaRecurrId, ct);
 
                     if (tarea != null && tarea.Recurrente)
                     {
                         // Se renueva la expiración: se actualiza la fecha de última renovación 
                         // y se marca el estado de expiración como activo (según la lógica de negocio, true = renovada).
-                        tarea.FechaUltimaRenovacion = DateTime.Now;
+                        tarea.FechaUltimaRenovacion = DateTime.UtcNow;
                         tarea.EstadoExpiracion = true;
-                        await _context.SaveChangesAsync();
+                        await _context.SaveChangesAsync(ct);
                     }
 
                     responseApi.EsCorrecto = true;
@@ -123,22 +136,22 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
-            return Ok(responseApi);
+            return CreatedAtAction(nameof(BuscarProcesos), new { id = responseApi.Valor }, responseApi);
         }
 
-        [HttpPost]
-        [Route("RegistrarTareaCalendario")]
-        public async Task<IActionResult> RegistrarTareaCalendario(TareasCalendarioCompletadoDTO calendarioDTO)
+        [HttpPost("calendario-completado")]
+        public async Task<IActionResult> RegistrarTareaCalendario(TareasCalendarioCompletadoDTO calendarioDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
             try
             {
                 // Buscar la tarea de calendario por su ID.
-                var tarea = await _context.TareasCalendario.FirstOrDefaultAsync(t => t.TareaId == calendarioDTO.TareaId);
+                var tarea = await _context.TareasCalendario.FirstOrDefaultAsync(t => t.TareaId == calendarioDTO.TareaId, ct);
                 if (tarea == null)
                 {
                     responseApi.EsCorrecto = false;
@@ -153,7 +166,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     UsuarioId = calendarioDTO.UsuarioId,
                     EstadoCompletado = true, // Se marca como completado (según la lógica de negocio)
                     DescripcionTareaCompletado = calendarioDTO.DescripcionTareaCompletado,
-                    Fecha = DateTime.Now
+                    Fecha = DateTime.UtcNow
                 };
                 _context.TareasCalendarioCompletados.Add(completado);
 
@@ -173,15 +186,16 @@ namespace S_Blazor_TDApp.Server.Controllers
                     tarea.Hora = calendarioDTO.RefTareaCalendario.Hora;
                 }
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = completado.TareaCompletoId;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }

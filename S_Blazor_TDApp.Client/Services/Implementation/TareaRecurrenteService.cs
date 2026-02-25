@@ -10,22 +10,22 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareasRecurrentesDTO>> Lista()
         {
-            var httpResponse = await _http.GetAsync("api/TareasRecurrentes/Lista");
+            var httpResponse = await _http.GetAsync("api/tareas-recurrentes");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
-            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<TareasRecurrentesDTO>>>()
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<PaginatedResultDTO<TareasRecurrentesDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? new List<TareasRecurrentesDTO>();
+            return resultado.Valor?.Items ?? new List<TareasRecurrentesDTO>();
         }
 
         public async Task<TareasRecurrentesDTO> Buscar(int id)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<TareasRecurrentesDTO>>($"api/TareasRecurrentes/Buscar/{id}")
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<TareasRecurrentesDTO>>($"api/tareas-recurrentes/{id}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -37,7 +37,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
         public async Task<int> Guardar(TareasRecurrentesDTO tareasRecurrentes)
         {
             // Se utiliza PostAsJsonAsync y se comprueba el código de estado HTTP.
-            var httpResponse = await _http.PostAsJsonAsync("api/TareasRecurrentes/Guardar", tareasRecurrentes);
+            var httpResponse = await _http.PostAsJsonAsync("api/tareas-recurrentes", tareasRecurrentes);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -55,7 +55,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<int> Editar(TareasRecurrentesDTO tareasRecurrentes)
         {
-            var httpResponse = await _http.PutAsJsonAsync($"api/TareasRecurrentes/Editar/{tareasRecurrentes.TareaRecurrId}", tareasRecurrentes);
+            var httpResponse = await _http.PutAsJsonAsync($"api/tareas-recurrentes/{tareasRecurrentes.TareaRecurrId}", tareasRecurrentes);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -73,7 +73,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> Eliminar(int id)
         {
-            var httpResponse = await _http.DeleteAsync($"api/TareasRecurrentes/Eliminar/{id}");
+            var httpResponse = await _http.DeleteAsync($"api/tareas-recurrentes/{id}");
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();

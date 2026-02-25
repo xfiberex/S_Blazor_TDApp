@@ -35,7 +35,7 @@ namespace S_Blazor_TDApp.Server.Utilities.BackgroundServices
                         foreach (var tarea in tareas)
                         {
                             // Calcula el tiempo transcurrido desde la última renovación.
-                            var tiempoTranscurrido = DateTime.Now - tarea.FechaUltimaRenovacion;
+                            var tiempoTranscurrido = DateTime.UtcNow - tarea.FechaUltimaRenovacion;
 
                             // Se asume que "TiempoEjecucion" está en minutos
                             if (tiempoTranscurrido.TotalMinutes >= tarea.TiempoEjecucion)
@@ -47,7 +47,7 @@ namespace S_Blazor_TDApp.Server.Utilities.BackgroundServices
 
                                 // O, si se desea renovar automáticamente:
                                 // tarea.EstadoExpiracion = true;
-                                // tarea.FechaUltimaRenovacion = DateTime.Now;
+                                // tarea.FechaUltimaRenovacion = DateTime.UtcNow;
                                 // _logger.LogInformation($"La tarea {tarea.TareaRecurrId} se ha renovado.");
                             }
                         }

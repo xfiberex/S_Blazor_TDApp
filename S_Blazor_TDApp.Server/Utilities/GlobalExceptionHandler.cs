@@ -6,10 +6,12 @@ namespace S_Blazor_TDApp.Server.Utilities
     public class GlobalExceptionHandler : IExceptionHandler
     {
         private readonly ILogger<GlobalExceptionHandler> _logger;
+        private readonly IHostEnvironment _env;
 
-        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
+        public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment env)
         {
             _logger = logger;
+            _env = env;
         }
 
         public async ValueTask<bool> TryHandleAsync(
@@ -23,7 +25,7 @@ namespace S_Blazor_TDApp.Server.Utilities
             {
                 Status = StatusCodes.Status500InternalServerError,
                 Title = "Server error",
-                Detail = exception.Message // In production, you might want to hide this
+                Detail = _env.IsDevelopment() ? exception.Message : "Error interno del servidor."
             };
 
             httpContext.Response.StatusCode = problemDetails.Status.Value;

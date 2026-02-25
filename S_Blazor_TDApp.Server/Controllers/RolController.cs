@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using S_Blazor_TDApp.Server.DBContext;
@@ -7,29 +8,32 @@ using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/roles")]
     [ApiController]
+    [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
     public class RolController : ControllerBase
     {
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<RolController> _logger;
 
-        public RolController(DbTdappContext context, IMapper mapper)
+        public RolController(DbTdappContext context, IMapper mapper, ILogger<RolController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
-        [Route("Lista")]
-        public async Task<IActionResult> Lista()
+        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
+        public async Task<IActionResult> Lista(CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<List<RolDTO>>();
 
             try
             {
                 // Obtiene la lista de roles
-                var listaRoles = await _context.Roles.AsNoTracking().ToListAsync();
+                var listaRoles = await _context.Roles.AsNoTracking().ToListAsync(ct);
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaRolDTO = _mapper.Map<List<RolDTO>>(listaRoles);
@@ -40,22 +44,23 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpGet]
-        [Route("Buscar/{id}")]
-        public async Task<IActionResult> Buscar(int id)
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
+        public async Task<IActionResult> Buscar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<RolDTO>();
 
             try
             {
-                var rolEntity = await _context.Roles.AsNoTracking().FirstOrDefaultAsync(u => u.RolId == id);
+                var rolEntity = await _context.Roles.AsNoTracking().FirstOrDefaultAsync(u => u.RolId == id, ct);
 
                 if (rolEntity == null)
                 {
@@ -71,16 +76,17 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
         [HttpPost]
-        [Route("Guardar")]
-        public async Task<IActionResult> Guardar(RolDTO rolDTO)
+        [Authorize(Roles = "Super_Administrador,Administrador")]
+        public async Task<IActionResult> Guardar(RolDTO rolDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
@@ -90,11 +96,11 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var rolEntity = _mapper.Map<Rol>(rolDTO);
 
                 // Asigna la fecha de creación y sin la de actualización al guardar
-                rolEntity.FechaCreacion = DateTime.Now;
+                rolEntity.FechaCreacion = DateTime.UtcNow;
                 rolEntity.FechaActualizacion = null;
 
                 _context.Roles.Add(rolEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 if (rolEntity.RolId != 0)
                 {
@@ -109,22 +115,23 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
-            return Ok(responseApi);
+            return CreatedAtAction(nameof(Buscar), new { id = responseApi.Valor }, responseApi);
         }
 
-        [HttpPut]
-        [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(RolDTO rolDTO, int id)
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Super_Administrador,Administrador")]
+        public async Task<IActionResult> Editar(RolDTO rolDTO, int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
-                var rolEntity = await _context.Roles.FirstOrDefaultAsync(u => u.RolId == id);
+                var rolEntity = await _context.Roles.FirstOrDefaultAsync(u => u.RolId == id, ct);
 
                 if (rolEntity == null)
                 {
@@ -145,32 +152,32 @@ namespace S_Blazor_TDApp.Server.Controllers
                 _mapper.Map(rolDTO, rolEntity);
 
                 // Asignamos la fecha de actualización solo al editar
-                rolEntity.FechaActualizacion = DateTime.Now;
+                rolEntity.FechaActualizacion = DateTime.UtcNow;
 
-                _context.Roles.Update(rolEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = rolEntity.RolId;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpDelete]
-        [Route("Eliminar/{id}")]
-        public async Task<IActionResult> Eliminar(int id)
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Super_Administrador,Administrador")]
+        public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
-                var rolEntity = await _context.Roles.FirstOrDefaultAsync(u => u.RolId == id);
+                var rolEntity = await _context.Roles.FirstOrDefaultAsync(u => u.RolId == id, ct);
 
                 if (rolEntity == null)
                 {
@@ -188,15 +195,16 @@ namespace S_Blazor_TDApp.Server.Controllers
                 }
 
                 _context.Roles.Remove(rolEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }

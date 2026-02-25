@@ -3,40 +3,40 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
+using S_Blazor_TDApp.Server.Services.Interfaces;
 using S_Blazor_TDApp.Server.Utilities;
 using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/usuarios")]
     [ApiController]
     public class UsuarioController : ControllerBase
     {
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
+        private readonly ILogger<UsuarioController> _logger;
+        private readonly IWebHostEnvironment _env;
 
-        public UsuarioController(DbTdappContext context, IMapper mapper, IConfiguration configuration, IEmailService emailService)
+        public UsuarioController(DbTdappContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService, ILogger<UsuarioController> logger, IWebHostEnvironment env)
         {
             _context = context;
             _mapper = mapper;
-            _configuration = configuration;
+            _tokenService = tokenService;
             _emailService = emailService;
+            _logger = logger;
+            _env = env;
         }
 
-        [HttpPost]
-        [Route("Login")]
+        [HttpPost("login")]
         [AllowAnonymous]
         [EnableRateLimiting("LoginPolicy")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO login)
+        public async Task<IActionResult> Login([FromBody] LoginDTO login, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<InicioSesionDTO>();
 
@@ -45,7 +45,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Busca al usuario en la base de datos por correo (sin comparar la contraseña en la consulta)
                 var usuarioEntity = await _context.Usuarios
                     .Include(u => u.IdRolNavigation)
-                    .FirstOrDefaultAsync(u => u.Email == login.Email);
+                    .FirstOrDefaultAsync(u => u.Email == login.Email, ct);
 
                 // Verifica que el usuario exista y que la contraseña sea válida
                 if (usuarioEntity == null || !PasswordHelper.VerifyPassword(login.Clave, usuarioEntity.Clave))
@@ -71,10 +71,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 var rolNombre = usuarioEntity.IdRolNavigation != null ? usuarioEntity.IdRolNavigation.NombreRol : "Sin Rol";
 
-                // Generar Token JWT
-                var jwtSettings = _configuration.GetSection("Jwt");
-                var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
-
+                // Generar Token JWT usando el servicio
                 var claims = new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, usuarioEntity.UsuarioId.ToString()),
@@ -83,24 +80,13 @@ namespace S_Blazor_TDApp.Server.Controllers
                     new Claim(ClaimTypes.Role, rolNombre)
                 };
 
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(claims),
-                    Expires = DateTime.UtcNow.AddHours(2),
-                    Issuer = jwtSettings["Issuer"],
-                    Audience = jwtSettings["Audience"],
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(token);
+                var tokenString = _tokenService.GenerarAccessToken(claims);
 
                 // Generar Refresh Token
-                var refreshToken = GenerarRefreshToken();
+                var refreshToken = _tokenService.GenerarRefreshToken();
                 usuarioEntity.RefreshToken = refreshToken;
                 usuarioEntity.RefreshTokenExpiracion = DateTime.UtcNow.AddDays(7); // Refresh token válido por 7 días
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 var inicioSesion = new InicioSesionDTO
                 {
@@ -118,41 +104,43 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado en Login: {ExType} - {ExMessage}", ex.GetType().Name, ex.Message);
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = _env.IsDevelopment()
+                    ? $"[{ex.GetType().Name}] {ex.Message}"
+                    : "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpPost]
-        [Route("Registro")]
+        [HttpPost("registro")]
         [AllowAnonymous]
-        public async Task<IActionResult> Registro([FromBody] RegistroUsuarioDTO registro)
+        public async Task<IActionResult> Registro([FromBody] RegistroUsuarioDTO registro, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
 
             try
             {
-                if (await _context.Usuarios.AnyAsync(u => u.Email == registro.Email))
+                if (await _context.Usuarios.AnyAsync(u => u.Email == registro.Email, ct))
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "El correo electrónico ya está registrado.";
                     return BadRequest(responseApi);
                 }
 
-                if (await _context.Usuarios.AnyAsync(u => u.NombreUsuario == registro.NombreUsuario))
+                if (await _context.Usuarios.AnyAsync(u => u.NombreUsuario == registro.NombreUsuario, ct))
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "El nombre de usuario ya está en uso.";
                     return BadRequest(responseApi);
                 }
 
-                // Generar código único
+                // Generar código único (usar Random.Shared para thread-safety)
                 string nuevoCodigo;
                 do
                 {
-                    nuevoCodigo = new Random().Next(10000, 99999).ToString();
-                } while (await _context.Usuarios.AnyAsync(u => u.Codigo == nuevoCodigo));
+                    nuevoCodigo = Random.Shared.Next(10000, 99999).ToString();
+                } while (await _context.Usuarios.AnyAsync(u => u.Codigo == nuevoCodigo, ct));
 
                 var tokenConfirmacion = Guid.NewGuid().ToString();
 
@@ -171,7 +159,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 };
 
                 _context.Usuarios.Add(nuevoUsuario);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 // Enviar correo de confirmación
                 var urlConfirmacion = $"https://localhost:7041/confirmar-correo?token={tokenConfirmacion}&email={registro.Email}";
@@ -215,7 +203,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     <tr>
                         <td align='center' style='background-color: #f9fafb; padding: 20px; border-top: 1px solid #e5e7eb;'>
                             <p style='margin: 0; color: #9ca3af; font-size: 13px;'>
-                                © {DateTime.Now.Year} Task Management System.<br>
+                                © {DateTime.UtcNow.Year} Task Management System.<br>
                                 Este es un correo automático, por favor no respondas a este mensaje.
                             </p>
                         </td>
@@ -236,48 +224,57 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpGet]
-        [Route("ConfirmarCorreo")]
+        [HttpGet("confirmar-correo")]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmarCorreo([FromQuery] string token, [FromQuery] string email)
-        {
-            try
-            {
-                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email && u.TokenConfirmacion == token);
-
-                if (usuario == null)
-                {
-                    return BadRequest("Token o correo inválido.");
-                }
-
-                usuario.CorreoConfirmado = true;
-                usuario.TokenConfirmacion = null;
-                await _context.SaveChangesAsync();
-
-                return Ok("Correo confirmado exitosamente. Ya puede iniciar sesión.");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("OlvideContrasena")]
-        [AllowAnonymous]
-        public async Task<IActionResult> OlvideContrasena([FromBody] OlvideContrasenaDTO request)
+        public async Task<IActionResult> ConfirmarCorreo([FromQuery] string token, [FromQuery] string email, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
 
             try
             {
-                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email);
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email && u.TokenConfirmacion == token, ct);
+
+                if (usuario == null)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "Token o correo inválido.";
+                    return BadRequest(responseApi);
+                }
+
+                usuario.CorreoConfirmado = true;
+                usuario.TokenConfirmacion = null;
+                await _context.SaveChangesAsync(ct);
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = true;
+                responseApi.Mensaje = "Correo confirmado exitosamente. Ya puede iniciar sesión.";
+                return Ok(responseApi);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado");
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
+            }
+        }
+
+        [HttpPost("olvide-contrasena")]
+        [AllowAnonymous]
+        public async Task<IActionResult> OlvideContrasena([FromBody] OlvideContrasenaDTO request, CancellationToken ct = default)
+        {
+            var responseApi = new ResponseAPI<bool>();
+
+            try
+            {
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
 
                 if (usuario == null)
                 {
@@ -292,7 +289,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 usuario.TokenRecuperacion = tokenRecuperacion;
                 usuario.FechaExpiracionToken = DateTime.UtcNow.AddHours(1); // Token válido por 1 hora
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 // Enviar correo de recuperación
                 // En un entorno real, la URL apuntaría a una página del cliente Blazor, no a la API directamente
@@ -343,7 +340,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     <tr>
                         <td align='center' style='background-color: #f9fafb; padding: 20px; border-top: 1px solid #e5e7eb;'>
                             <p style='margin: 0; color: #9ca3af; font-size: 13px;'>
-                                © {DateTime.Now.Year} Task Management System.<br>
+                                © {DateTime.UtcNow.Year} Task Management System.<br>
                                 Este es un correo automático, por favor no respondas a este mensaje.
                             </p>
                         </td>
@@ -364,22 +361,22 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpPost]
-        [Route("RestablecerContrasena")]
+        [HttpPost("restablecer-contrasena")]
         [AllowAnonymous]
-        public async Task<IActionResult> RestablecerContrasena([FromBody] RestablecerContrasenaDTO request)
+        public async Task<IActionResult> RestablecerContrasena([FromBody] RestablecerContrasenaDTO request, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
 
             try
             {
-                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email && u.TokenRecuperacion == request.Token);
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email && u.TokenRecuperacion == request.Token, ct);
 
                 if (usuario == null || usuario.FechaExpiracionToken < DateTime.UtcNow)
                 {
@@ -392,7 +389,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 usuario.TokenRecuperacion = null;
                 usuario.FechaExpiracionToken = null;
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = true;
@@ -401,16 +398,16 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpGet]
-        [Route("Perfil")]
+        [HttpGet("perfil")]
         [Authorize]
-        public async Task<IActionResult> ObtenerPerfil()
+        public async Task<IActionResult> ObtenerPerfil(CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<PerfilUsuarioDTO>();
 
@@ -422,7 +419,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return Unauthorized();
                 }
 
-                var usuario = await _context.Usuarios.FindAsync(userId);
+                var usuario = await _context.Usuarios.FindAsync(new object[] { userId }, ct);
                 if (usuario == null)
                 {
                     return NotFound();
@@ -439,16 +436,16 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpPut]
-        [Route("Perfil")]
+        [HttpPut("perfil")]
         [Authorize]
-        public async Task<IActionResult> ActualizarPerfil([FromBody] PerfilUsuarioDTO perfil)
+        public async Task<IActionResult> ActualizarPerfil([FromBody] PerfilUsuarioDTO perfil, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
 
@@ -460,21 +457,21 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return Unauthorized();
                 }
 
-                var usuario = await _context.Usuarios.FindAsync(userId);
+                var usuario = await _context.Usuarios.FindAsync(new object[] { userId }, ct);
                 if (usuario == null)
                 {
                     return NotFound();
                 }
 
                 // Verificar si el nuevo email o nombre de usuario ya están en uso por otro usuario
-                if (await _context.Usuarios.AnyAsync(u => u.Email == perfil.Email && u.UsuarioId != userId))
+                if (await _context.Usuarios.AnyAsync(u => u.Email == perfil.Email && u.UsuarioId != userId, ct))
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "El correo electrónico ya está en uso por otro usuario.";
                     return BadRequest(responseApi);
                 }
 
-                if (await _context.Usuarios.AnyAsync(u => u.NombreUsuario == perfil.NombreUsuario && u.UsuarioId != userId))
+                if (await _context.Usuarios.AnyAsync(u => u.NombreUsuario == perfil.NombreUsuario && u.UsuarioId != userId, ct))
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "El nombre de usuario ya está en uso por otro usuario.";
@@ -488,7 +485,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 usuario.Email = perfil.Email;
                 usuario.FechaActualizacion = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = true;
@@ -497,16 +494,16 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpPost]
-        [Route("CambiarContrasena")]
+        [HttpPost("cambiar-contrasena")]
         [Authorize]
-        public async Task<IActionResult> CambiarContrasena([FromBody] CambiarContrasenaPerfilDTO request)
+        public async Task<IActionResult> CambiarContrasena([FromBody] CambiarContrasenaPerfilDTO request, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
 
@@ -518,7 +515,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return Unauthorized();
                 }
 
-                var usuario = await _context.Usuarios.FindAsync(userId);
+                var usuario = await _context.Usuarios.FindAsync(new object[] { userId }, ct);
                 if (usuario == null)
                 {
                     return NotFound();
@@ -534,7 +531,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 usuario.Clave = PasswordHelper.HashPassword(request.NuevaClave);
                 usuario.FechaActualizacion = DateTime.UtcNow;
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = true;
@@ -543,22 +540,22 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpPost]
-        [Route("RefreshToken")]
+        [HttpPost("refresh-token")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDTO request)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDTO request, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<InicioSesionDTO>();
 
             try
             {
-                var principal = ObtenerPrincipalDeTokenExpirado(request.Token);
+                var principal = _tokenService.ObtenerPrincipalDeTokenExpirado(request.Token);
                 if (principal == null)
                 {
                     responseApi.EsCorrecto = false;
@@ -574,7 +571,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return BadRequest(responseApi);
                 }
 
-                var usuario = await _context.Usuarios.Include(u => u.IdRolNavigation).FirstOrDefaultAsync(u => u.UsuarioId == userId);
+                var usuario = await _context.Usuarios.Include(u => u.IdRolNavigation).FirstOrDefaultAsync(u => u.UsuarioId == userId, ct);
 
                 if (usuario == null || usuario.RefreshToken != request.RefreshToken || usuario.RefreshTokenExpiracion <= DateTime.UtcNow)
                 {
@@ -585,10 +582,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 var rolNombre = usuario.IdRolNavigation != null ? usuario.IdRolNavigation.NombreRol : "Sin Rol";
 
-                // Generar nuevo Token JWT
-                var jwtSettings = _configuration.GetSection("Jwt");
-                var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
-
+                // Generar nuevo Token JWT usando el servicio
                 var claims = new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, usuario.UsuarioId.ToString()),
@@ -597,24 +591,13 @@ namespace S_Blazor_TDApp.Server.Controllers
                     new Claim(ClaimTypes.Role, rolNombre)
                 };
 
-                var tokenDescriptor = new SecurityTokenDescriptor
-                {
-                    Subject = new ClaimsIdentity(claims),
-                    Expires = DateTime.UtcNow.AddHours(2),
-                    Issuer = jwtSettings["Issuer"],
-                    Audience = jwtSettings["Audience"],
-                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-                };
-
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                var tokenString = tokenHandler.WriteToken(token);
+                var tokenString = _tokenService.GenerarAccessToken(claims);
 
                 // Rotar Refresh Token
-                var nuevoRefreshToken = GenerarRefreshToken();
+                var nuevoRefreshToken = _tokenService.GenerarRefreshToken();
                 usuario.RefreshToken = nuevoRefreshToken;
                 usuario.RefreshTokenExpiracion = DateTime.UtcNow.AddDays(7);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 var inicioSesion = new InicioSesionDTO
                 {
@@ -632,16 +615,16 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
         }
 
-        [HttpPost]
-        [Route("RevocarToken")]
+        [HttpPost("revocar-token")]
         [Authorize]
-        public async Task<IActionResult> RevocarToken()
+        public async Task<IActionResult> RevocarToken(CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
 
@@ -653,7 +636,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return Unauthorized();
                 }
 
-                var usuario = await _context.Usuarios.FindAsync(userId);
+                var usuario = await _context.Usuarios.FindAsync(new object[] { userId }, ct);
                 if (usuario == null)
                 {
                     return NotFound();
@@ -661,7 +644,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 usuario.RefreshToken = null;
                 usuario.RefreshTokenExpiracion = null;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = true;
@@ -670,78 +653,57 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
-        }
-
-        private string GenerarRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
-
-        private ClaimsPrincipal? ObtenerPrincipalDeTokenExpirado(string token)
-        {
-            var jwtSettings = _configuration.GetSection("Jwt");
-            var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
-
-            var tokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateAudience = true,
-                ValidateIssuer = true,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateLifetime = false, // No validar expiración aquí
-                ValidIssuer = jwtSettings["Issuer"],
-                ValidAudience = jwtSettings["Audience"]
-            };
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
-
-            if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new SecurityTokenException("Token inválido");
-            }
-
-            return principal;
         }
 
         [HttpGet]
-        [Route("Lista")]
-        public async Task<IActionResult> Lista()
+        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
+        public async Task<IActionResult> Lista([FromQuery] int pagina = 1, [FromQuery] int registrosPorPagina = 20, CancellationToken ct = default)
         {
-            var responseApi = new ResponseAPI<List<UsuarioDTO>>();
+            var responseApi = new ResponseAPI<PaginatedResultDTO<UsuarioDTO>>();
 
             try
             {
-                var usuarios = await _context.Usuarios
-                                             .Include(u => u.IdRolNavigation)
-                                             .AsNoTracking()
-                                             .ToListAsync();
+                var query = _context.Usuarios
+                                    .Include(u => u.IdRolNavigation)
+                                    .AsNoTracking();
+
+                var total = await query.CountAsync(ct);
+
+                var usuarios = await query
+                                    .Skip((pagina - 1) * registrosPorPagina)
+                                    .Take(registrosPorPagina)
+                                    .ToListAsync(ct);
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaUsuarioDTO = _mapper.Map<List<UsuarioDTO>>(usuarios);
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaUsuarioDTO;
+                responseApi.Valor = new PaginatedResultDTO<UsuarioDTO>
+                {
+                    Items = listaUsuarioDTO,
+                    TotalRegistros = total,
+                    Pagina = pagina,
+                    RegistrosPorPagina = registrosPorPagina
+                };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpGet]
-        [Route("Buscar/{id}")]
-        public async Task<IActionResult> Buscar(int id)
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
+        public async Task<IActionResult> Buscar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<UsuarioDTO>();
 
@@ -750,7 +712,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var usuarioEntity = await _context.Usuarios
                                                   .Include(u => u.IdRolNavigation)
                                                   .AsNoTracking()
-                                                  .FirstOrDefaultAsync(u => u.UsuarioId == id);
+                                                  .FirstOrDefaultAsync(u => u.UsuarioId == id, ct);
                 if (usuarioEntity == null)
                 {
                     responseApi.EsCorrecto = false;
@@ -765,39 +727,41 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpGet]
-        [Route("ExisteCodigo/{codigo}")]
-        public async Task<IActionResult> ExisteCodigo(string codigo)
+        [HttpGet("existe-codigo/{codigo}")]
+        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
+        public async Task<IActionResult> ExisteCodigo(string codigo, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
 
             try
             {
                 // Se verifica si existe algún usuario con el código proporcionado.
-                bool existe = await _context.Usuarios.AnyAsync(u => u.Codigo == codigo);
+                bool existe = await _context.Usuarios.AnyAsync(u => u.Codigo == codigo, ct);
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = existe;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
 
             return Ok(responseApi);
         }
 
-        [HttpGet]
-        [Route("ObtenerPorEmail/{email}")]
-        public async Task<IActionResult> ObtenerPorEmail(string email)
+        [HttpGet("por-email")]
+        [Authorize(Roles = "Super_Administrador,Administrador")]
+        public async Task<IActionResult> ObtenerPorEmail([FromQuery] string email, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<UsuarioDTO>();
 
@@ -806,7 +770,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var usuarioEntity = await _context.Usuarios
                     .Include(u => u.IdRolNavigation)
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.Email == email);
+                    .FirstOrDefaultAsync(u => u.Email == email, ct);
 
                 if (usuarioEntity == null)
                 {
@@ -822,17 +786,18 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
 
             return Ok(responseApi);
         }
 
         [HttpPost]
-        [Route("Guardar")]
-        public async Task<IActionResult> Guardar(UsuarioDTO usuarioDTO)
+        [Authorize(Roles = "Super_Administrador,Administrador")]
+        public async Task<IActionResult> Guardar(UsuarioDTO usuarioDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
@@ -840,7 +805,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 // Validación: Verifica si ya existe un usuario con el mismo nombre de usuario
                 bool existeNombre = await _context.Usuarios
-                    .AnyAsync(u => u.NombreUsuario == usuarioDTO.NombreUsuario);
+                    .AnyAsync(u => u.NombreUsuario == usuarioDTO.NombreUsuario, ct);
                 if (existeNombre)
                 {
                     responseApi.EsCorrecto = false;
@@ -850,7 +815,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 // Validación: Verifica si ya existe un usuario con el mismo correo electrónico
                 bool existeEmail = await _context.Usuarios
-                    .AnyAsync(u => u.Email == usuarioDTO.Email);
+                    .AnyAsync(u => u.Email == usuarioDTO.Email, ct);
                 if (existeEmail)
                 {
                     responseApi.EsCorrecto = false;
@@ -871,12 +836,16 @@ namespace S_Blazor_TDApp.Server.Controllers
                     throw new Exception("La contraseña es obligatoria.");
                 }
 
+                // Los usuarios creados por administrador tienen el correo confirmado de forma automática
+                // (no requieren pasar por el flujo de confirmación por correo)
+                usuarioEntity.CorreoConfirmado = true;
+
                 // Asigna la fecha de creación y deja nula la de actualización al guardar
-                usuarioEntity.FechaCreacion = DateTime.Now;
+                usuarioEntity.FechaCreacion = DateTime.UtcNow;
                 usuarioEntity.FechaActualizacion = null;
 
                 _context.Usuarios.Add(usuarioEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 if (usuarioEntity.UsuarioId != 0)
                 {
@@ -891,22 +860,23 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
-            return Ok(responseApi);
+            return CreatedAtAction(nameof(Buscar), new { id = responseApi.Valor }, responseApi);
         }
 
-        [HttpPut]
-        [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(UsuarioDTO usuarioDTO, int id)
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
+        public async Task<IActionResult> Editar(UsuarioDTO usuarioDTO, int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
-                var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id);
+                var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id, ct);
 
                 if (usuarioEntity == null)
                 {
@@ -917,7 +887,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 // Validación: verificar si el nombre de usuario ya existe en otro registro
                 bool existeNombre = await _context.Usuarios
-                    .AnyAsync(u => u.NombreUsuario == usuarioDTO.NombreUsuario && u.UsuarioId != id);
+                    .AnyAsync(u => u.NombreUsuario == usuarioDTO.NombreUsuario && u.UsuarioId != id, ct);
                 if (existeNombre)
                 {
                     responseApi.EsCorrecto = false;
@@ -927,7 +897,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 // Validación: verificar si el correo electrónico ya existe en otro registro
                 bool existeEmail = await _context.Usuarios
-                    .AnyAsync(u => u.Email == usuarioDTO.Email && u.UsuarioId != id);
+                    .AnyAsync(u => u.Email == usuarioDTO.Email && u.UsuarioId != id, ct);
                 if (existeEmail)
                 {
                     responseApi.EsCorrecto = false;
@@ -945,32 +915,32 @@ namespace S_Blazor_TDApp.Server.Controllers
                 usuarioEntity.Clave = claveActual;
 
                 // Asigna la fecha de actualización
-                usuarioEntity.FechaActualizacion = DateTime.Now;
+                usuarioEntity.FechaActualizacion = DateTime.UtcNow;
 
-                _context.Usuarios.Update(usuarioEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = usuarioEntity.UsuarioId;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpDelete]
-        [Route("Eliminar/{id}")]
-        public async Task<IActionResult> Eliminar(int id)
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Super_Administrador,Administrador")]
+        public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
-                var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id);
+                var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id, ct);
 
                 if (usuarioEntity == null)
                 {
@@ -980,45 +950,60 @@ namespace S_Blazor_TDApp.Server.Controllers
                 }
 
                 _context.Usuarios.Remove(usuarioEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpPut]
-        [Route("CambiarClave/{id}")]
-        public async Task<IActionResult> CambiarClave(int id, [FromBody] CambioClaveDTO cambioClaveDto)
+        [HttpPut("cambiar-clave/{id}")]
+        [Authorize(Roles = "Super_Administrador,Administrador,Supervisor")]
+        public async Task<IActionResult> CambiarClave(int id, [FromBody] CambioClaveDTO cambioClaveDto, CancellationToken ct = default)
         {
+            var responseApi = new ResponseAPI<bool>();
+
             if (id != cambioClaveDto.UsuarioId)
             {
-                return BadRequest(new { Message = "El ID del usuario no coincide." });
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = "El ID del usuario no coincide.";
+                return BadRequest(responseApi);
             }
 
-            var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id);
-            if (usuarioEntity == null)
+            try
             {
-                return NotFound(new { Message = "Usuario no encontrado." });
+                var usuarioEntity = await _context.Usuarios.FirstOrDefaultAsync(u => u.UsuarioId == id, ct);
+                if (usuarioEntity == null)
+                {
+                    responseApi.EsCorrecto = false;
+                    responseApi.Mensaje = "Usuario no encontrado.";
+                    return NotFound(responseApi);
+                }
+
+                usuarioEntity.Clave = PasswordHelper.HashPassword(cambioClaveDto.NuevaClave);
+                usuarioEntity.FechaActualizacion = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync(ct);
+
+                responseApi.EsCorrecto = true;
+                responseApi.Valor = true;
+                responseApi.Mensaje = "Contraseña actualizada correctamente.";
+                return Ok(responseApi);
             }
-
-            // Aquí se puede validar adicionalmente si se requiere algún control extra
-            // ya que el DTO ya tiene validaciones (Compare) para asegurar que las contraseñas coincidan
-
-            // Hashea la nueva contraseña usando el helper
-            usuarioEntity.Clave = PasswordHelper.HashPassword(cambioClaveDto.NuevaClave);
-            usuarioEntity.FechaActualizacion = DateTime.Now;
-
-            _context.Usuarios.Update(usuarioEntity);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Contraseña actualizada correctamente." });
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado");
+                responseApi.EsCorrecto = false;
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
+            }
         }
     }
 }

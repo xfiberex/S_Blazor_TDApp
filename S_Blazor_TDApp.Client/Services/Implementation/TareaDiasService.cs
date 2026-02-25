@@ -10,7 +10,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareaDiasDTO>> Lista()
         {
-            var httpResponse = await _http.GetAsync("api/TareaDias/Lista");
+            var httpResponse = await _http.GetAsync("api/tarea-dias");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
@@ -25,7 +25,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareaDiasDTO>> ListaPorTareaRecurrId(int tareaRecurrId)
         {
-            var httpResponse = await _http.GetAsync($"api/TareaDias/ListaPorTarea?tareaRecurrId={tareaRecurrId}");
+            var httpResponse = await _http.GetAsync($"api/tarea-dias/por-tarea?tareaRecurrId={tareaRecurrId}");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
@@ -41,7 +41,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
         public async Task<TareaDiasDTO> Buscar(int id)
         {
             var resultado = await _http.GetFromJsonAsync<ResponseAPI<TareaDiasDTO>>(
-                $"api/TareaDias/Buscar/{id}")
+                $"api/tarea-dias/{id}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -52,7 +52,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<int> Guardar(TareaDiasDTO tareaDias)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/TareaDias/Guardar", tareaDias);
+            var httpResponse = await _http.PostAsJsonAsync("api/tarea-dias", tareaDias);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -70,7 +70,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> Eliminar(int id)
         {
-            var httpResponse = await _http.DeleteAsync($"api/TareaDias/Eliminar/{id}");
+            var httpResponse = await _http.DeleteAsync($"api/tarea-dias/{id}");
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();

@@ -7,55 +7,69 @@ using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/tareas-recurrentes")]
     [ApiController]
     public class TareasRecurrentesController : ControllerBase
     {
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<TareasRecurrentesController> _logger;
 
-        public TareasRecurrentesController(DbTdappContext context, IMapper mapper)
+        public TareasRecurrentesController(DbTdappContext context, IMapper mapper, ILogger<TareasRecurrentesController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
-        [Route("Lista")]
-        public async Task<IActionResult> Lista()
+        public async Task<IActionResult> Lista([FromQuery] int pagina = 1, [FromQuery] int registrosPorPagina = 20, CancellationToken ct = default)
         {
-            var responseApi = new ResponseAPI<List<TareasRecurrentesDTO>>();
+            var responseApi = new ResponseAPI<PaginatedResultDTO<TareasRecurrentesDTO>>();
 
             try
             {
                 // Obtiene la lista de tareas recurrentes
-                var tareasRecurrentes = await _context.TareasRecurrentes.AsNoTracking().ToListAsync();
+                var query = _context.TareasRecurrentes.AsNoTracking();
+
+                var total = await query.CountAsync(ct);
+
+                var tareasRecurrentes = await query
+                                            .Skip((pagina - 1) * registrosPorPagina)
+                                            .Take(registrosPorPagina)
+                                            .ToListAsync(ct);
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaTareasRecurrentesDTO = _mapper.Map<List<TareasRecurrentesDTO>>(tareasRecurrentes);
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaTareasRecurrentesDTO;
+                responseApi.Valor = new PaginatedResultDTO<TareasRecurrentesDTO>
+                {
+                    Items = listaTareasRecurrentesDTO,
+                    TotalRegistros = total,
+                    Pagina = pagina,
+                    RegistrosPorPagina = registrosPorPagina
+                };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpGet]
-        [Route("Buscar/{id}")]
-        public async Task<IActionResult> Buscar(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Buscar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<TareasRecurrentesDTO>();
             try
             {
                 var tareaRecurrenteEntity = await _context.TareasRecurrentes
                                             .AsNoTracking()
-                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
+                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id, ct);
 
                 if (tareaRecurrenteEntity == null)
                 {
@@ -71,16 +85,16 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
         [HttpPost]
-        [Route("Guardar")]
-        public async Task<IActionResult> Guardar(TareasRecurrentesDTO tareasRecurrentesDTO)
+        public async Task<IActionResult> Guardar(TareasRecurrentesDTO tareasRecurrentesDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
             try
@@ -89,7 +103,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var tareaRecurrenteEntity = _mapper.Map<TareasRecurrente>(tareasRecurrentesDTO);
 
                 _context.TareasRecurrentes.Add(tareaRecurrenteEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 if (tareaRecurrenteEntity.TareaRecurrId != 0)
                 {
@@ -104,22 +118,22 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
-            return Ok(responseApi);
+            return CreatedAtAction(nameof(Buscar), new { id = responseApi.Valor }, responseApi);
         }
 
-        [HttpPut]
-        [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(int id, TareasRecurrentesDTO tareasRecurrentesDTO)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Editar(int id, TareasRecurrentesDTO tareasRecurrentesDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
             try
             {
                 var tareaRecurrenteEntity = await _context.TareasRecurrentes
-                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
+                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id, ct);
 
                 if (tareaRecurrenteEntity == null)
                 {
@@ -131,30 +145,29 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Mapea los valores del DTO a la entidad existente
                 _mapper.Map(tareasRecurrentesDTO, tareaRecurrenteEntity);
 
-                _context.Entry(tareaRecurrenteEntity).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = tareaRecurrenteEntity.TareaRecurrId;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpDelete]
-        [Route("Eliminar/{id}")]
-        public async Task<IActionResult> Eliminar(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
             try
             {
                 var tareaRecurrenteEntity = await _context.TareasRecurrentes
-                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id);
+                                            .FirstOrDefaultAsync(tc => tc.TareaRecurrId == id, ct);
 
                 if (tareaRecurrenteEntity == null)
                 {
@@ -164,15 +177,16 @@ namespace S_Blazor_TDApp.Server.Controllers
                 }
 
                 _context.TareasRecurrentes.Remove(tareaRecurrenteEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }

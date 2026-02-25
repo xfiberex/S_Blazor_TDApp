@@ -6,7 +6,7 @@
 
 @* Using para la autorización de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
-@attribute [Authorize(Roles = "Administrador")]
+@attribute [Authorize(Roles = "Super_Administrador, Administrador")]
 
 @inject SweetAlertService SwalService
 @inject IRolService RolService

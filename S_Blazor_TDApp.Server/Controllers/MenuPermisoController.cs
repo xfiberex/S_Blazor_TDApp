@@ -8,21 +8,23 @@ using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/menus")]
     [ApiController]
     [Authorize]
     public class MenuPermisoController : ControllerBase
     {
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<MenuPermisoController> _logger;
 
         // Nombre protegido: sus permisos no pueden modificarse
         private const string ROL_PROTEGIDO = "Super_Administrador";
 
-        public MenuPermisoController(DbTdappContext context, IMapper mapper)
+        public MenuPermisoController(DbTdappContext context, IMapper mapper, ILogger<MenuPermisoController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         /// <summary>
@@ -30,8 +32,7 @@ namespace S_Blazor_TDApp.Server.Controllers
         /// Accesible para cualquier usuario autenticado.
         /// </summary>
         [HttpGet]
-        [Route("TodosLosMenus")]
-        public async Task<IActionResult> TodosLosMenus()
+        public async Task<IActionResult> TodosLosMenus(CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<List<MenuDTO>>();
             try
@@ -39,16 +40,17 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var menus = await _context.Menus
                     .AsNoTracking()
                     .OrderBy(m => m.Orden)
-                    .ToListAsync();
+                    .ToListAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = _mapper.Map<List<MenuDTO>>(menus);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
@@ -57,15 +59,14 @@ namespace S_Blazor_TDApp.Server.Controllers
         /// Devuelve los menús a los que tiene acceso el rol indicado.
         /// El Super_Administrador siempre recibe todos los menús, independientemente de la BD.
         /// </summary>
-        [HttpGet]
-        [Route("MenusPorRol/{rolId:int}")]
-        public async Task<IActionResult> MenusPorRol(int rolId)
+        [HttpGet("por-rol/{rolId:int}")]
+        public async Task<IActionResult> MenusPorRol(int rolId, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<List<MenuDTO>>();
             try
             {
                 var rol = await _context.Roles.AsNoTracking()
-                    .FirstOrDefaultAsync(r => r.RolId == rolId);
+                    .FirstOrDefaultAsync(r => r.RolId == rolId, ct);
 
                 if (rol == null)
                 {
@@ -82,7 +83,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     menus = await _context.Menus
                         .AsNoTracking()
                         .OrderBy(m => m.Orden)
-                        .ToListAsync();
+                        .ToListAsync(ct);
                 }
                 else
                 {
@@ -92,7 +93,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                         .Include(rm => rm.Menu)
                         .Select(rm => rm.Menu)
                         .OrderBy(m => m.Orden)
-                        .ToListAsync();
+                        .ToListAsync(ct);
                 }
 
                 responseApi.EsCorrecto = true;
@@ -100,9 +101,10 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
@@ -112,16 +114,15 @@ namespace S_Blazor_TDApp.Server.Controllers
         /// Solo accesible para el rol Administrador.
         /// No se puede modificar al Super_Administrador.
         /// </summary>
-        [HttpPut]
-        [Route("ActualizarPermisos")]
+        [HttpPut("permisos")]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> ActualizarPermisos([FromBody] ActualizarPermisosDTO dto)
+        public async Task<IActionResult> ActualizarPermisos([FromBody] ActualizarPermisosDTO dto, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<bool>();
             try
             {
                 var rol = await _context.Roles.AsNoTracking()
-                    .FirstOrDefaultAsync(r => r.RolId == dto.RolId);
+                    .FirstOrDefaultAsync(r => r.RolId == dto.RolId, ct);
 
                 if (rol == null)
                 {
@@ -141,7 +142,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Eliminar todos los permisos actuales del rol
                 var permisosActuales = await _context.RolMenus
                     .Where(rm => rm.RolId == dto.RolId)
-                    .ToListAsync();
+                    .ToListAsync(ct);
 
                 _context.RolMenus.RemoveRange(permisosActuales);
 
@@ -149,7 +150,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var menuIdsValidos = await _context.Menus
                     .Where(m => dto.MenuIds.Contains(m.MenuId))
                     .Select(m => m.MenuId)
-                    .ToListAsync();
+                    .ToListAsync(ct);
 
                 foreach (var menuId in menuIdsValidos)
                 {
@@ -160,7 +161,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     });
                 }
 
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = true;
@@ -168,9 +169,10 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }

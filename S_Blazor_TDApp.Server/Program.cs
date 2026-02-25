@@ -7,11 +7,16 @@ using System.Text;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using S_Blazor_TDApp.Server.DBContext;
+using S_Blazor_TDApp.Server.Services.Interfaces;
+using S_Blazor_TDApp.Server.Services.Implementation;
 using S_Blazor_TDApp.Server.Utilities.AutoMapper;
 using S_Blazor_TDApp.Server.Utilities.BackgroundServices;
 using S_Blazor_TDApp.Server.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// appsettings.Local.json sobreescribe cualquier valor de appsettings.json (está en .gitignore)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 builder.Services.AddControllers(options =>
 {
@@ -26,9 +31,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-// Configuraci�n de JWT
+// Configuración de JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
+var jwtKey = jwtSettings["Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("La clave JWT ('Jwt:Key') no está configurada. Use dotnet user-secrets o variables de entorno.");
+var key = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -58,10 +66,13 @@ builder.Services.AddHostedService<TareaExpiracionService>();
 // Registrar EmailService
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Registrar TokenService
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 // Contexto de base de datos
 builder.Services.AddDbContext<DbTdappContext>(options =>
 {
-    /* Para utilizar dos equipos SQL Server, puedes descomentar la l�nea correspondiente,
+    /* Para utilizar dos equipos SQL Server, puedes descomentar la línea correspondiente,
        de acuerdo a tu configuraci�n en el archivo appsettings.json */
 
     options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));

@@ -15,7 +15,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<MenuDTO>> TodosLosMenus()
         {
-            var httpResponse = await _http.GetAsync("api/MenuPermiso/TodosLosMenus");
+            var httpResponse = await _http.GetAsync("api/menus");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
@@ -28,7 +28,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<MenuDTO>> MenusPorRol(int rolId)
         {
-            var httpResponse = await _http.GetAsync($"api/MenuPermiso/MenusPorRol/{rolId}");
+            var httpResponse = await _http.GetAsync($"api/menus/por-rol/{rolId}");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
@@ -41,7 +41,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> ActualizarPermisos(ActualizarPermisosDTO dto)
         {
-            var httpResponse = await _http.PutAsJsonAsync("api/MenuPermiso/ActualizarPermisos", dto);
+            var httpResponse = await _http.PutAsJsonAsync("api/menus/permisos", dto);
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 

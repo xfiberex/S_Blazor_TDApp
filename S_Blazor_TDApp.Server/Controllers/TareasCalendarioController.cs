@@ -7,50 +7,63 @@ using S_Blazor_TDApp.Shared;
 
 namespace S_Blazor_TDApp.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/tareas-calendario")]
     [ApiController]
     public class TareasCalendarioController : ControllerBase
     {
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
+        private readonly ILogger<TareasCalendarioController> _logger;
 
-        public TareasCalendarioController(DbTdappContext context, IMapper mapper)
+        public TareasCalendarioController(DbTdappContext context, IMapper mapper, ILogger<TareasCalendarioController> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
         [HttpGet]
-        [Route("Lista")]
-        public async Task<IActionResult> Lista()
+        public async Task<IActionResult> Lista([FromQuery] int pagina = 1, [FromQuery] int registrosPorPagina = 20, CancellationToken ct = default)
         {
-            var responseApi = new ResponseAPI<List<TareasCalendarioDTO>>();
+            var responseApi = new ResponseAPI<PaginatedResultDTO<TareasCalendarioDTO>>();
 
             try
             {
-                var tareasCalendario = await _context.TareasCalendario
-                                                     .Include(tc => tc.TareasCalendarioCompletados)
-                                                     .AsNoTracking()
-                                                     .ToListAsync();
+                var query = _context.TareasCalendario
+                                    .Include(tc => tc.TareasCalendarioCompletados)
+                                    .AsNoTracking();
+
+                var total = await query.CountAsync(ct);
+
+                var tareasCalendario = await query
+                                            .Skip((pagina - 1) * registrosPorPagina)
+                                            .Take(registrosPorPagina)
+                                            .ToListAsync(ct);
 
                 // Mapea la lista de entidades a una lista de DTOs
                 var listaTareasCalendarioDTO = _mapper.Map<List<TareasCalendarioDTO>>(tareasCalendario);
 
                 responseApi.EsCorrecto = true;
-                responseApi.Valor = listaTareasCalendarioDTO;
+                responseApi.Valor = new PaginatedResultDTO<TareasCalendarioDTO>
+                {
+                    Items = listaTareasCalendarioDTO,
+                    TotalRegistros = total,
+                    Pagina = pagina,
+                    RegistrosPorPagina = registrosPorPagina
+                };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpGet]
-        [Route("Buscar/{id}")]
-        public async Task<IActionResult> Buscar(int id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Buscar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<TareasCalendarioDTO>();
 
@@ -59,7 +72,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var tareaCalendarioEntity = await _context.TareasCalendario
                                                 .Include(tc => tc.TareasCalendarioCompletados)
                                                 .AsNoTracking()
-                                                .FirstOrDefaultAsync(tc => tc.TareaId == id);
+                                                .FirstOrDefaultAsync(tc => tc.TareaId == id, ct);
 
                 if (tareaCalendarioEntity == null)
                 {
@@ -75,16 +88,16 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
         [HttpPost]
-        [Route("Guardar")]
-        public async Task<IActionResult> Guardar(TareasCalendarioDTO tareasCalendarioDTO)
+        public async Task<IActionResult> Guardar(TareasCalendarioDTO tareasCalendarioDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
@@ -94,7 +107,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 var tareaCalendarioEntity = _mapper.Map<TareasCalendario>(tareasCalendarioDTO);
 
                 _context.TareasCalendario.Add(tareaCalendarioEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 if (tareaCalendarioEntity.TareaId != 0)
                 {
@@ -109,23 +122,23 @@ namespace S_Blazor_TDApp.Server.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
-            return Ok(responseApi);
+            return CreatedAtAction(nameof(Buscar), new { id = responseApi.Valor }, responseApi);
         }
 
-        [HttpPut]
-        [Route("Editar/{id}")]
-        public async Task<IActionResult> Editar(int id, TareasCalendarioDTO tareasCalendarioDTO)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Editar(int id, TareasCalendarioDTO tareasCalendarioDTO, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
                 var tareaCalendarioEntity = await _context.TareasCalendario
-                                                .FirstOrDefaultAsync(tc => tc.TareaId == id);
+                                                .FirstOrDefaultAsync(tc => tc.TareaId == id, ct);
 
                 if (tareaCalendarioEntity == null)
                 {
@@ -137,31 +150,30 @@ namespace S_Blazor_TDApp.Server.Controllers
                 // Mapea los valores del DTO a la entidad existente
                 _mapper.Map(tareasCalendarioDTO, tareaCalendarioEntity);
 
-                _context.Entry(tareaCalendarioEntity).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = tareaCalendarioEntity.TareaId;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }
 
-        [HttpDelete]
-        [Route("Eliminar/{id}")]
-        public async Task<IActionResult> Eliminar(int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Eliminar(int id, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<int>();
 
             try
             {
                 var tareaCalendarioEntity = await _context.TareasCalendario
-                                                .FirstOrDefaultAsync(tc => tc.TareaId == id);
+                                                .FirstOrDefaultAsync(tc => tc.TareaId == id, ct);
 
                 if (tareaCalendarioEntity == null)
                 {
@@ -171,15 +183,16 @@ namespace S_Blazor_TDApp.Server.Controllers
                 }
 
                 _context.TareasCalendario.Remove(tareaCalendarioEntity);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error inesperado");
                 responseApi.EsCorrecto = false;
-                responseApi.Mensaje = ex.Message;
-                return BadRequest(responseApi);
+                responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
+                return StatusCode(500, responseApi);
             }
             return Ok(responseApi);
         }

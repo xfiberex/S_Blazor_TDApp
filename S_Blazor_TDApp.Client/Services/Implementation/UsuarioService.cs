@@ -10,22 +10,22 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<UsuarioDTO>> Lista()
         {
-            var httpResponse = await _http.GetAsync("api/Usuario/Lista");
+            var httpResponse = await _http.GetAsync("api/usuarios");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
-            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<UsuarioDTO>>>()
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<PaginatedResultDTO<UsuarioDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? [];
+            return resultado.Valor?.Items ?? [];
         }
 
         public async Task<InicioSesionDTO> Login(LoginDTO login)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/Login", login);
+            var httpResponse = await _http.PostAsJsonAsync("api/usuarios/login", login);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -43,7 +43,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> Registro(RegistroUsuarioDTO registro)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/Registro", registro);
+            var httpResponse = await _http.PostAsJsonAsync("api/usuarios/registro", registro);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -61,19 +61,20 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<string> ConfirmarCorreo(string token, string email)
         {
-            var httpResponse = await _http.GetAsync($"api/Usuario/ConfirmarCorreo?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(email)}");
+            var httpResponse = await _http.GetAsync($"api/usuarios/confirmar-correo?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(email)}");
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
                 throw new Exception(errorContent);
             }
 
-            return await httpResponse.Content.ReadAsStringAsync();
+            var response = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<bool>>();
+            return response?.Mensaje ?? "Correo confirmado exitosamente.";
         }
 
         public async Task<bool> OlvideContrasena(OlvideContrasenaDTO request)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/OlvideContrasena", request);
+            var httpResponse = await _http.PostAsJsonAsync("api/usuarios/olvide-contrasena", request);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -91,7 +92,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> RestablecerContrasena(RestablecerContrasenaDTO request)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/RestablecerContrasena", request);
+            var httpResponse = await _http.PostAsJsonAsync("api/usuarios/restablecer-contrasena", request);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -109,7 +110,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<PerfilUsuarioDTO> ObtenerPerfil()
         {
-            var httpResponse = await _http.GetAsync("api/Usuario/Perfil");
+            var httpResponse = await _http.GetAsync("api/usuarios/perfil");
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -127,7 +128,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> ActualizarPerfil(PerfilUsuarioDTO perfil)
         {
-            var httpResponse = await _http.PutAsJsonAsync("api/Usuario/Perfil", perfil);
+            var httpResponse = await _http.PutAsJsonAsync("api/usuarios/perfil", perfil);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -145,7 +146,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> CambiarContrasenaPerfil(CambiarContrasenaPerfilDTO request)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/CambiarContrasena", request);
+            var httpResponse = await _http.PostAsJsonAsync("api/usuarios/cambiar-contrasena", request);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -163,7 +164,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<InicioSesionDTO> RefreshToken(RefreshTokenRequestDTO request)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/RefreshToken", request);
+            var httpResponse = await _http.PostAsJsonAsync("api/usuarios/refresh-token", request);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -181,7 +182,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> RevocarToken()
         {
-            var httpResponse = await _http.PostAsync("api/Usuario/RevocarToken", null);
+            var httpResponse = await _http.PostAsync("api/usuarios/revocar-token", null);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -199,7 +200,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<UsuarioDTO> Buscar(int id)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>($"api/Usuario/Buscar/{id}")
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>($"api/usuarios/{id}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -210,7 +211,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> ExisteCodigo(string codigo)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<bool>>($"api/Usuario/ExisteCodigo/{codigo}")
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<bool>>($"api/usuarios/existe-codigo/{codigo}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -221,7 +222,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<UsuarioDTO?> ObtenerPorEmail(string email)
         {
-            var response = await _http.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>($"api/Usuario/ObtenerPorEmail/{email}")
+            var response = await _http.GetFromJsonAsync<ResponseAPI<UsuarioDTO>>($"api/usuarios/por-email?email={Uri.EscapeDataString(email)}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!response.EsCorrecto)
@@ -233,7 +234,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
         public async Task<int> Guardar(UsuarioDTO usuario)
         {
             // Se utiliza PostAsJsonAsync y se comprueba el código de estado HTTP.
-            var httpResponse = await _http.PostAsJsonAsync("api/Usuario/Guardar", usuario);
+            var httpResponse = await _http.PostAsJsonAsync("api/usuarios", usuario);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -251,7 +252,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<int> Editar(UsuarioDTO usuario)
         {
-            var httpResponse = await _http.PutAsJsonAsync($"api/Usuario/Editar/{usuario.UsuarioId}", usuario);
+            var httpResponse = await _http.PutAsJsonAsync($"api/usuarios/{usuario.UsuarioId}", usuario);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -269,7 +270,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<bool> Eliminar(int id)
         {
-            var httpResponse = await _http.DeleteAsync($"api/Usuario/Eliminar/{id}");
+            var httpResponse = await _http.DeleteAsync($"api/usuarios/{id}");
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -288,7 +289,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task CambiarClave(int usuarioId, CambioClaveDTO cambioClaveDto)
         {
-            var httpResponse = await _http.PutAsJsonAsync($"api/Usuario/CambiarClave/{usuarioId}", cambioClaveDto);
+            var httpResponse = await _http.PutAsJsonAsync($"api/usuarios/cambiar-clave/{usuarioId}", cambioClaveDto);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();

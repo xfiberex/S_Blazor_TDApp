@@ -7,7 +7,7 @@
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 @using System.ComponentModel.DataAnnotations
-@attribute [Authorize(Roles = "Administrador, Supervisor")]
+@attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor")]
 
 @inject IUsuarioService UsuarioService
 @inject IRolService RolService
@@ -200,8 +200,6 @@
     [Parameter]
     public int IdUsuarioEditar { get; set; } = 0;
 
-    private EditContext editContext = null!;
-    private EditContext editContextClave = null!;
     private string titulo = string.Empty;
     private string btnTexto = string.Empty;
     public bool isSaving = false;
@@ -263,7 +261,6 @@
 
                 usuario.Activo = true;
             }
-            editContext = new EditContext(usuario);
         }
         catch (UnauthorizedAccessException)
         {
@@ -338,18 +335,6 @@
 
     private async Task GuardarCambioClave()
     {
-        if (cambioClaveModel.NuevaClave != cambioClaveModel.ConfirmarClave)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = "Las contraseñas no coinciden.",
-                    Icon = SweetAlertIcon.Error
-                });
-            return;
-        }
-        editContextClave = new EditContext(cambioClaveModel);
-
         try
         {
             await UsuarioService.CambiarClave(usuario.UsuarioId, new CambioClaveDTO

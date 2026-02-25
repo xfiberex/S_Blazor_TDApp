@@ -10,37 +10,37 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<List<TareasRecurrentesDTO>> Lista()
         {
-            var httpResponse = await _http.GetAsync("api/TareasRecurrentes/Lista");
+            var httpResponse = await _http.GetAsync("api/tareas-recurrentes");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
-            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<TareasRecurrentesDTO>>>()
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<PaginatedResultDTO<TareasRecurrentesDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? new List<TareasRecurrentesDTO>();
+            return resultado.Valor?.Items ?? new List<TareasRecurrentesDTO>();
         }
 
         public async Task<List<RegistroProcesoDTO>> ListaProcesos()
         {
-            var httpResponse = await _http.GetAsync("api/ProcesosRegistro/ListaProcesos");
+            var httpResponse = await _http.GetAsync("api/procesos-registro");
             if (httpResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
-            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<List<RegistroProcesoDTO>>>()
+            var resultado = await httpResponse.Content.ReadFromJsonAsync<ResponseAPI<PaginatedResultDTO<RegistroProcesoDTO>>>()
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
                 throw new Exception(resultado.Mensaje);
 
-            return resultado.Valor ?? new List<RegistroProcesoDTO>();
+            return resultado.Valor?.Items ?? new List<RegistroProcesoDTO>();
         }
 
         public async Task<TareasRecurrentesDTO> Buscar(int id)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<TareasRecurrentesDTO>>($"api/TareasRecurrentes/Buscar/{id}")
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<TareasRecurrentesDTO>>($"api/tareas-recurrentes/{id}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -51,7 +51,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<RegistroProcesoDTO> BuscarProcesos(int id)
         {
-            var resultado = await _http.GetFromJsonAsync<ResponseAPI<RegistroProcesoDTO>>($"api/ProcesosRegistro/BuscarProcesos/{id}")
+            var resultado = await _http.GetFromJsonAsync<ResponseAPI<RegistroProcesoDTO>>($"api/procesos-registro/{id}")
                 ?? throw new Exception("No se recibió respuesta del servidor.");
 
             if (!resultado.EsCorrecto)
@@ -62,7 +62,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<int> GuardarProcesos(RegistroProcesoDTO proceso)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/ProcesosRegistro/GuardarProcesos", proceso);
+            var httpResponse = await _http.PostAsJsonAsync("api/procesos-registro", proceso);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();
@@ -80,7 +80,7 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
 
         public async Task<int> RegistrarTareaCalendario(TareasCalendarioCompletadoDTO calendarioDTO)
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/ProcesosRegistro/RegistrarTareaCalendario", calendarioDTO);
+            var httpResponse = await _http.PostAsJsonAsync("api/procesos-registro/calendario-completado", calendarioDTO);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();

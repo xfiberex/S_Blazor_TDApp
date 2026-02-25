@@ -78,15 +78,37 @@ GO
 CREATE INDEX IX_Usuarios_RolId ON Usuarios (RolId);
 GO
 
--- INSERCIÓN POR DEFECTO — ADMINISTRADOR
+-- INSERCIÓN POR DEFECTO — SUPER ADMINISTRADOR
 -- Los datos pueden cambiarse desde la página después de iniciar sesión.
 -- Para hashear otra contraseña ejecuta el proyecto de consola S_Blazor_TDApp.Password.
 INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, CorreoConfirmado, RolId, Activo)
 VALUES (
-    '00001', 'Admin', 'Admin',
+    '00001', 'SuperAdmin', 'Super Admin',
+    '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NYqCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGslz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==',
+    'superadmin@example.com', 1, 4, 1
+);
+GO
+INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, CorreoConfirmado, RolId, Activo)
+VALUES (
+    '00002', 'Admin', 'Admin',
     '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NYqCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGslz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==',
     'admin@example.com', 1, 1, 1
 );
+GO
+INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, CorreoConfirmado, RolId, Activo)
+VALUES (
+    '00003', 'Supervisor', 'Supervisor',
+    '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NYqCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGslz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==',
+    'supervisor@example.com', 1, 2, 1
+);
+GO
+INSERT INTO Usuarios (Codigo, NombreUsuario, NombreCompleto, Clave, Email, CorreoConfirmado, RolId, Activo)
+VALUES (
+    '00004', 'Empleado', 'Empleado',
+    '2nVKnIgOfbTH4j0ABP2K3/sRcJxvoEB5ZXllMaFCn2HR2ASW1tvqLOPNjapCZ955cBtXQG9/qLCW42PZ4HjeFzhtVQ2fpx3NYqCW68pfcegwubyzA1KGBoxOhFmqckeC6o9o8bCw8DgdW5KFi0Yl7TliJa4hgMwsg7xNg1tm4uk=:5ttgsRdFVWFqPdhjgbn3wGslz/FgzUUDBDAVIvPMoOTaRcppD7jVlsqJVkZZ89CJenfxor3DOgQekTjFunBTdw==',
+    'empleado@example.com', 1, 3, 1
+);
+
 GO
 
 -- =====================================================================

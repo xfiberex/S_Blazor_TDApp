@@ -7,7 +7,7 @@
 
 @* Using para la autorización de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
-@attribute [Authorize(Roles = "Administrador, Supervisor")]
+@attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor")]
 
 @inject SweetAlertService SwalService
 @inject IUsuarioService UsuarioService
@@ -65,18 +65,25 @@
                             }
                         </div>
                     </div>
-                    <div class="col-auto">
-                        <a class="btn btn-success shadow-sm" href="/usuario">
-                            <i class="bi bi-plus-circle me-2"></i>Nuevo
-                        </a>
-                    </div>
+                    <AuthorizeView Roles="Super_Administrador, Administrador">
+                        <Authorized>
+                            <div class="col-auto">
+                                <a class="btn btn-success shadow-sm" href="/usuario">
+                                    <i class="bi bi-plus-circle me-2"></i>Nuevo
+                                </a>
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
                 </div>
             </div>
 
             @if (listaUsuarios is null || !listaUsuarios.Any())
             {
                 <div class="alert alert-info shadow-sm m-3">
-                    <i class="bi bi-info-circle me-2"></i>No se encontraron usuarios. Presione el botón verde <b>"Nuevo"</b> para crearlo.
+                    <i class="bi bi-info-circle me-2"></i>No se encontraron usuarios.
+                    <AuthorizeView Roles="Super_Administrador, Administrador">
+                        <Authorized> Presione el botón verde <b>"Nuevo"</b> para crearlo.</Authorized>
+                    </AuthorizeView>
                 </div>
             }
             else
@@ -116,14 +123,29 @@
                                         <td>@item.FechaCreacion.ToString("dd/MM/yyyy - hh:mm tt")</td>
                                         <td>@(item.FechaActualizacion.HasValue ? item.FechaActualizacion.Value.ToString("dd/MM/yyyy - hh:mm tt") : "Nunca")</td>
                                         <td>
+                                            @{
+                                                var puedeModificar = PuedeModificar(item);
+                                                var tooltipBloqueo = item.UsuarioId == currentUserId
+                                                    ? "Edita tus propios datos desde Perfil"
+                                                    : "Sin permisos para modificar este usuario";
+                                            }
                                             <div class="btn-group" role="group">
-                                                <a class="btn btn-outline-primary btn-sm" href="/usuario/@item.UsuarioId" title="Editar">
-                                                    <i class="bi bi-pencil-fill"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-outline-danger btn-sm"
-                                                        @onclick="(() => Eliminar(item.UsuarioId, item.NombreUsuario))" title="Eliminar">
-                                                    <i class="bi bi-trash-fill"></i>
-                                                </button>
+                                                @if (puedeModificar)
+                                                {
+                                                    <a class="btn btn-outline-primary btn-sm" href="/usuario/@item.UsuarioId" title="Editar">
+                                                        <i class="bi bi-pencil-fill"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                                            @onclick="(() => Eliminar(item.UsuarioId, item.NombreUsuario))" title="Eliminar">
+                                                        <i class="bi bi-trash-fill"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted px-2" title="@tooltipBloqueo">
+                                                        <i class="bi bi-lock-fill"></i>
+                                                    </span>
+                                                }
                                             </div>
                                         </td>
                                     </tr>
@@ -189,8 +211,9 @@
     // Timer para el debounce en la búsqueda
     private System.Threading.Timer? _searchTimer;
 
-    // Variable para almacenar el ID del usuario autenticado
+    // Variable para almacenar el ID y rol del usuario autenticado
     private int currentUserId;
+    private string currentRol = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -206,9 +229,9 @@
         {
             var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(idClaim))
-            {
                 currentUserId = int.Parse(idClaim);
-            }
+
+            currentRol = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
         }
     }
 
@@ -244,6 +267,9 @@
 
     private async Task Eliminar(int id, string nombreUsuario)
     {
+        // Guardia: verificar permisos antes de proceder
+        var target = listaUsuarios.FirstOrDefault(u => u.UsuarioId == id);
+        if (target == null || !PuedeModificar(target)) return;
         var result = await SwalService.FireAsync(new SweetAlertOptions
             {
                 Title = "¿Estás seguro?",
@@ -353,5 +379,30 @@
             currentPage--;
             UpdatePagedUsers();
         }
+    }
+
+    /// <summary>
+    /// Devuelve la prioridad jerárquica de un rol.
+    /// Un usuario solo puede modificar a otro de menor prioridad.
+    /// </summary>
+    private static int GetRolPrioridad(string? rolNombre) => rolNombre switch
+    {
+        "Super_Administrador" => 100,
+        "Administrador"       => 50,
+        "Supervisor"          => 20,
+        "Empleado"            => 10,
+        _                     => 0
+    };
+
+    /// <summary>
+    /// Determina si el usuario autenticado puede editar/eliminar al usuario objetivo.
+    /// Reglas:
+    ///   - No puede modificarse a sí mismo (usar Perfil).
+    ///   - Solo puede modificar usuarios con rol de menor prioridad.
+    /// </summary>
+    private bool PuedeModificar(UsuarioDTO item)
+    {
+        if (item.UsuarioId == currentUserId) return false;
+        return GetRolPrioridad(currentRol) > GetRolPrioridad(item.Rol?.NombreRol);
     }
 }
