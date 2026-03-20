@@ -12,7 +12,12 @@
 
 # Archivos de configuración local con secretos (nunca commitear)
 appsettings.Local.json
+appsettings.Development.json
+appsettings.Production.json
 appsettings.json
+*.env
+.env*
+*.secret
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
