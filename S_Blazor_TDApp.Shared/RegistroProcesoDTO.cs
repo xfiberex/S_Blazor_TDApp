@@ -10,6 +10,13 @@ namespace S_Blazor_TDApp.Shared
 
         public TareasRecurrentesDTO? RefTareaRecurr { get; set; }
 
+        public int? TareaCalendarioId { get; set; }
+
+        public TareasCalendarioDTO? RefTareaCalendario { get; set; }
+
+        // Puede usarse para diferenciar en la vista
+        public string TipoTarea { get; set; } = "Recurrente";
+
         public int UsuarioId { get; set; }
 
         public UsuarioDTO? RefUsuario { get; set; }

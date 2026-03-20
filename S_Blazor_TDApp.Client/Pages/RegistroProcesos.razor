@@ -8,6 +8,13 @@
 @using System.Security.Claims
 @using System.Globalization
 @implements IDisposable
+
+<style>
+    .drag-shadow {
+        opacity: 0.5;
+        background-color: #f8f9fa;
+    }
+</style>
 @attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor, Empleado")]
 
 @inject SweetAlertService SwalService
@@ -86,6 +93,10 @@
                     <table class="table table-hover">
                         <thead class="table-light">
                             <tr>
+                                @if (listaTareasRecurrentes.Count > 1)
+                                {
+                                    <th style="width: 40px;"></th>
+                                }
                                 <th>Nombre</th>
                                 <th>Descripción</th>
                                 <th>Recurrente | Tiempo</th>
@@ -96,7 +107,21 @@
                         <tbody>
                             @foreach (var item in filteredTasks)
                             {
-                                <tr>
+                                <tr draggable="@(listaTareasRecurrentes.Count > 1 ? "true" : "false")"
+                                    @ondragstart="@(() => HandleDragStart(item))"
+                                    @ondrop="@(() => HandleDrop(item))"
+                                    @ondrop:preventDefault
+                                    @ondragover:preventDefault
+                                    @ondragover="@(() => {})"
+                                    class="@(_draggedTask?.TareaRecurrId == item.TareaRecurrId ? "drag-shadow" : "")"
+                                    style="@(listaTareasRecurrentes.Count > 1 ? "cursor: grab;" : "")">
+
+                                    @if (listaTareasRecurrentes.Count > 1)
+                                    {
+                                        <td class="text-center align-middle" title="Arrastra para reordenar">
+                                            <i class="bi bi-grip-vertical text-muted fs-5"></i>
+                                        </td>
+                                    }
                                     <td>@item.NombreTareaRecurr</td>
                                     <td>
                                         @if (item.DescripcionTareaRecurr.Length > 35)
@@ -365,8 +390,19 @@
                             @foreach (var item in filteredTasksProcess)
                             {
                                 <tr>
-                                    <td hidden>@item.TareaRecurrId</td>
-                                    <td>@item.RefTareaRecurr?.NombreTareaRecurr</td>
+                                    <td hidden>@(item.TipoTarea == "Calendario" ? item.TareaCalendarioId : item.TareaRecurrId)</td>
+                                    <td>
+                                        @if (item.TipoTarea == "Calendario")
+                                        {
+                                            <span class="badge bg-info me-2" style="font-size: 0.75rem;">Calendario</span>
+                                            @item.RefTareaCalendario?.NombreTarea
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary me-2" style="font-size: 0.75rem;">Recurrente</span>
+                                            @item.RefTareaRecurr?.NombreTareaRecurr
+                                        }
+                                    </td>
                                     <td hidden>@item.UsuarioId</td>
                                     <td>@item.RefUsuario?.NombreUsuario</td>
                                     <td>@item.FechaRegistro.ToString("dd/MM/yyyy - hh:mm:ss tt")</td>
@@ -657,7 +693,11 @@
             listaTareasRecurrentes = (await TareaRecurrenteService.Lista())
                                         .Where(t => t.Estado)
                                         .ToList();
-            filteredTasks = listaTareasRecurrentes;
+            
+            // Cargar orden personalizado de LocalStorage
+            await LoadUserTaskOrder();
+            
+            FilterTasks(); // Applies search and assigns safely to filteredTasks
         }
         catch (UnauthorizedAccessException)
         {
@@ -740,6 +780,7 @@
     private void BuildUserProcessCount()
     {
         userProcessCount = listaRegistroProcesos
+            .Where(rp => rp.TipoTarea != "Calendario")
             .GroupBy(rp => rp.TareaRecurrId)
             .ToDictionary(
                 g => g.Key,
@@ -855,6 +896,7 @@
             await RegistroProcesoService.RegistrarTareaCalendario(tareaCalendarioCompleto);
             await JSRuntime.InvokeVoidAsync("hideModalAsync", "validarTareaCalendarioModal");
             await LoadTareasCalendario(); // Refrescar la lista de tareas de calendario
+            await LoadProcesosRegistrados(); // Refrescar historial de procesos
             await SwalService.FireAsync(new SweetAlertOptions
                 {
                     Title = "Éxito",
@@ -1005,7 +1047,8 @@
         filteredTasksProcess = listaRegistroProcesos.Where(t =>
             (
                 string.IsNullOrWhiteSpace(searchTermProcess) ||
-                (t.RefTareaRecurr?.NombreTareaRecurr?.Contains(searchTermProcess, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (t.TipoTarea == "Calendario" && (t.RefTareaCalendario?.NombreTarea?.Contains(searchTermProcess, StringComparison.OrdinalIgnoreCase) ?? false)) ||
+                (t.TipoTarea != "Calendario" && (t.RefTareaRecurr?.NombreTareaRecurr?.Contains(searchTermProcess, StringComparison.OrdinalIgnoreCase) ?? false)) ||
                 (t.DescripcionRegistro?.Contains(searchTermProcess, StringComparison.OrdinalIgnoreCase) ?? false)
             )
             &&
@@ -1060,6 +1103,82 @@
     }
 
     private string ConvertirCantidadEjecuciones(int cantidad) => cantidad == 1 ? $"{cantidad} vez" : $"{cantidad} veces";
+
+    #region Drag and Drop para orden persistente
+    private string OrderStorageKey => $"user_task_order_{currentUserId}";
+    private TareasRecurrentesDTO? _draggedTask;
+
+    private async Task LoadUserTaskOrder()
+    {
+        try
+        {
+            var savedOrderJson = await JSRuntime.InvokeAsync<string>("localStorage.getItem", OrderStorageKey);
+            if (!string.IsNullOrEmpty(savedOrderJson))
+            {
+                var savedOrder = System.Text.Json.JsonSerializer.Deserialize<List<int>>(savedOrderJson);
+                if (savedOrder != null && savedOrder.Any())
+                {
+                    var orderedList = new List<TareasRecurrentesDTO>();
+                    foreach (var id in savedOrder)
+                    {
+                        var task = listaTareasRecurrentes.FirstOrDefault(t => t.TareaRecurrId == id);
+                        if (task != null) orderedList.Add(task);
+                    }
+                    var missingTasks = listaTareasRecurrentes.Where(t => !savedOrder.Contains(t.TareaRecurrId));
+                    orderedList.AddRange(missingTasks);
+
+                    listaTareasRecurrentes = orderedList;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore parse errors from localStorage
+        }
+    }
+
+    private async Task SaveUserTaskOrder()
+    {
+        var currentOrder = listaTareasRecurrentes.Select(t => t.TareaRecurrId).ToList();
+        var json = System.Text.Json.JsonSerializer.Serialize(currentOrder);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", OrderStorageKey, json);
+    }
+
+    private void HandleDragStart(TareasRecurrentesDTO task)
+    {
+        _draggedTask = task;
+    }
+
+    private async Task HandleDrop(TareasRecurrentesDTO targetTask)
+    {
+        if (_draggedTask == null || _draggedTask.TareaRecurrId == targetTask.TareaRecurrId)
+        {
+            _draggedTask = null;
+            return;
+        }
+
+        var originalIndex = listaTareasRecurrentes.IndexOf(_draggedTask);
+        var targetIndex = listaTareasRecurrentes.IndexOf(targetTask);
+
+        if (originalIndex >= 0 && targetIndex >= 0)
+        {
+            listaTareasRecurrentes.RemoveAt(originalIndex);
+            
+            // Adjust insertion index if dragging downwards
+            var insertIndex = listaTareasRecurrentes.IndexOf(targetTask);
+            if (originalIndex < targetIndex)
+            {
+                insertIndex++;
+            }
+            listaTareasRecurrentes.Insert(insertIndex, _draggedTask);
+            
+            FilterTasks();
+            await SaveUserTaskOrder();
+        }
+
+        _draggedTask = null;
+    }
+    #endregion
 
     #endregion
 }

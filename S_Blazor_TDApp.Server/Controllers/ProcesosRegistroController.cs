@@ -27,30 +27,63 @@ namespace S_Blazor_TDApp.Server.Controllers
         #region APIs para listar y buscar
 
         [HttpGet]
-        public async Task<IActionResult> ListaProcesos([FromQuery] int pagina = 1, [FromQuery] int registrosPorPagina = 20, CancellationToken ct = default)
+        public async Task<IActionResult> ListaProcesos([FromQuery] int pagina = 1, [FromQuery] int registrosPorPagina = 1000, CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<PaginatedResultDTO<RegistroProcesoDTO>>();
 
             try
             {
-                var query = _context.RegistroProcesos
-                    .Include(rp => rp.RefTareaRecurr) // Asegúrate de incluir solo la relación con TareaRecurrente
-                    .Include(rp => rp.RefUsuario) // Asegúrate de incluir solo la relación con Usuario
-                    .AsNoTracking();
-
-                var total = await query.CountAsync(ct);
-
-                var procesos = await query
-                    .Skip((pagina - 1) * registrosPorPagina)
-                    .Take(registrosPorPagina)
+                // Tareas Recurrentes
+                var procesosRecurrentes = await _context.RegistroProcesos
+                    .Include(rp => rp.RefTareaRecurr)
+                    .Include(rp => rp.RefUsuario)
+                    .AsNoTracking()
                     .ToListAsync(ct);
 
-                var listaProcesosDTO = _mapper.Map<List<RegistroProcesoDTO>>(procesos);
+                var listaRecurrentesDTO = _mapper.Map<List<RegistroProcesoDTO>>(procesosRecurrentes);
+
+                // Tareas Calendario Completadas
+                var procesosCalendario = await _context.TareasCalendarioCompletados
+                    .Include(tc => tc.RefTarea)
+                    .Include(tc => tc.RefUsuario)
+                    .AsNoTracking()
+                    .ToListAsync(ct);
+
+                var listaCalendarioDTO = procesosCalendario.Select(tc => new RegistroProcesoDTO
+                {
+                    ProcesoId = tc.TareaCompletoId,
+                    TareaCalendarioId = tc.TareaId,
+                    RefTareaCalendario = tc.RefTarea != null ? new TareasCalendarioDTO 
+                    { 
+                        TareaId = tc.RefTarea.TareaId, 
+                        NombreTarea = tc.RefTarea.NombreTarea,
+                        DescripcionTarea = tc.RefTarea.DescripcionTarea 
+                    } : null,
+                    UsuarioId = tc.UsuarioId ?? 0,
+                    RefUsuario = tc.RefUsuario != null ? new UsuarioDTO 
+                    { 
+                        UsuarioId = tc.RefUsuario.UsuarioId, 
+                        NombreUsuario = tc.RefUsuario.NombreUsuario 
+                    } : null,
+                    FechaRegistro = tc.Fecha,
+                    DescripcionRegistro = tc.DescripcionTareaCompletado ?? string.Empty,
+                    TipoTarea = "Calendario"
+                }).ToList();
+
+                var listaCompletaDTO = listaRecurrentesDTO.Concat(listaCalendarioDTO)
+                                       .OrderByDescending(x => x.FechaRegistro)
+                                       .ToList();
+
+                var total = listaCompletaDTO.Count;
+                var pagedList = listaCompletaDTO
+                    .Skip((pagina - 1) * registrosPorPagina)
+                    .Take(registrosPorPagina)
+                    .ToList();
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = new PaginatedResultDTO<RegistroProcesoDTO>
                 {
-                    Items = listaProcesosDTO,
+                    Items = pagedList,
                     TotalRegistros = total,
                     Pagina = pagina,
                     RegistrosPorPagina = registrosPorPagina
