@@ -1,17 +1,17 @@
-Ôªø@page "/rolesPermisos"
+@page "/rolesPermisos"
 
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 
-@* Using para la autorizaci√≥n de usuarios *@
+@* Using para la autorizaciÛn de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
 @attribute [Authorize(Roles = "Super_Administrador, Administrador")]
 
-@inject SweetAlertService SwalService
-@inject IRolService RolService
-@inject IJSRuntime JSRuntime
-@inject NavigationManager Navigation
+
+
+
+
 
 <!-- Page Title -->
 <div class="page-title">
@@ -48,7 +48,7 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <h5 class="text-primary mb-0">
-                            <i class="bi bi-person-fill-gear me-2"></i>Configuraci√≥n - Roles y permisos de usuarios
+                            <i class="bi bi-person-fill-gear me-2"></i>ConfiguraciÛn - Roles y permisos de usuarios
                         </h5>
                     </div>
                     <div class="col-auto">
@@ -75,7 +75,7 @@
             @if (listaRoles is null || !listaRoles.Any())
             {
                 <div class="alert alert-info shadow-sm m-3">
-                    <i class="bi bi-info-circle me-2"></i>No se encontraron roles. Presione el bot√≥n verde <b>"Nuevo"</b> para crearlo.
+                    <i class="bi bi-info-circle me-2"></i>No se encontraron roles. Presione el botÛn verde <b>"Nuevo"</b> para crearlo.
                 </div>
             }
             else
@@ -87,10 +87,10 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Nombre</th>
-                                    <th>Descripci√≥n</th>
+                                    <th>DescripciÛn</th>
                                     <th>Estado</th>
-                                    <th>Creaci√≥n</th>
-                                    <th>Actualizaci√≥n</th>
+                                    <th>CreaciÛn</th>
+                                    <th>ActualizaciÛn</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -104,7 +104,7 @@
                                             @item.NombreRol
                                             @if (esProtegido)
                                             {
-                                                <i class="bi bi-shield-lock-fill text-warning ms-2" title="Rol protegido ‚Äî permisos fijos"></i>
+                                                <i class="bi bi-shield-lock-fill text-warning ms-2" title="Rol protegido ó permisos fijos"></i>
                                             }
                                         </td>
                                         <td>@item.Descripcion</td>
@@ -122,7 +122,7 @@
                                                     <a class="btn btn-outline-primary btn-sm" href="/rolCargo/@item.RolId" title="Editar rol">
                                                         <i class="bi bi-pencil-fill"></i>
                                                     </a>
-                                                    <a class="btn btn-outline-success btn-sm" href="/rolPermisos/@item.RolId" title="Configurar permisos de men√∫">
+                                                    <a class="btn btn-outline-success btn-sm" href="/rolPermisos/@item.RolId" title="Configurar permisos de men˙">
                                                         <i class="bi bi-person-fill-gear"></i>
                                                     </a>
                                                     <button type="button" class="btn btn-outline-danger btn-sm"
@@ -165,7 +165,7 @@
                         <div>
                             <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
                             <span class="mx-2">
-                                P√°gina @currentPage de @Math.Ceiling((double)filteredRoles.Count / pageSize)
+                                P·gina @currentPage de @Math.Ceiling((double)filteredRoles.Count / pageSize)
                             </span>
                             <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredRoles.Count)">Siguiente</button>
                         </div>
@@ -174,7 +174,7 @@
                     {
                         <div>
                             <label>
-                                <b>@filteredRoles.Count</b> registros encontrados. Si hay m√°s de 10, se filtrar√° y paginar√° seg√∫n la cantidad seleccionada.
+                                <b>@filteredRoles.Count</b> registros encontrados. Si hay m·s de 10, se filtrar· y paginar· seg˙n la cantidad seleccionada.
                             </label>
                         </div>
                     }
@@ -184,167 +184,3 @@
         <br />
     }
 </div>
-
-@code {
-    private List<RolDTO> listaRoles = new();
-    private List<RolDTO> filteredRoles = new();
-    private List<RolDTO> pagedRoles = new();
-
-    private bool isLoading = true;
-    private string searchTerm = "";
-
-    // Par√°metros de paginaci√≥n
-    private int currentPage = 1;
-    private int pageSize = 10;
-    private readonly int[] pageSizeOptions = { 10, 15, 20 };
-
-    // Timer para el debounce en la b√∫squeda
-    private System.Threading.Timer? _searchTimer;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadRoles();
-    }
-
-    private async Task LoadRoles()
-    {
-        try
-        {
-            isLoading = true;
-            listaRoles = await RolService.Lista();
-            filteredRoles = listaRoles;
-            currentPage = 1;
-            UpdatePagedRoles();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            Navigation.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al cargar roles: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
-    }
-
-    private async Task Eliminar(int id, string nombreRol)
-    {
-        var result = await SwalService.FireAsync(new SweetAlertOptions
-            {
-                Title = "¬øEst√°s seguro?",
-                Text = $"¬øDeseas eliminar el rol {nombreRol}?",
-                Icon = SweetAlertIcon.Warning,
-                ShowCancelButton = true,
-                ConfirmButtonText = "S√≠, eliminar",
-                CancelButtonText = "Cancelar"
-            });
-
-        if (result.IsConfirmed)
-        {
-            try
-            {
-                if (await RolService.Eliminar(id))
-                {
-                    listaRoles.RemoveAll(u => u.RolId == id);
-                    FilterRoles();
-                    await SwalService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Eliminado",
-                            Text = "El rol ha sido eliminado correctamente.",
-                            Icon = SweetAlertIcon.Success
-                        });
-                }
-            }
-            catch (Exception ex)
-            {
-                await SwalService.FireAsync(new SweetAlertOptions
-                    {
-                        Title = "Error",
-                        Text = $"Ha ocurrido un error al eliminar el rol: {ex.Message}",
-                        Icon = SweetAlertIcon.Error
-                    });
-            }
-        }
-    }
-
-    #region M√©todos para la paginaci√≥n y buqueda
-
-    private void OnSearchTermChanged(ChangeEventArgs e)
-    {
-        searchTerm = e.Value?.ToString() ?? string.Empty;
-        _searchTimer?.Dispose();
-        _searchTimer = new System.Threading.Timer(_ =>
-        {
-            InvokeAsync(() =>
-            {
-                FilterRoles();
-                StateHasChanged();
-            });
-        }, null, 500, System.Threading.Timeout.Infinite);
-    }
-
-    private void FilterRoles()
-    {
-        filteredRoles = string.IsNullOrWhiteSpace(searchTerm)
-            ? listaRoles
-            : listaRoles.Where(u =>
-                u.NombreRol.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                (u.Descripcion?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
-
-        currentPage = 1;
-        UpdatePagedRoles();
-    }
-
-    private void ClearSearch()
-    {
-        searchTerm = string.Empty;
-        FilterRoles();
-    }
-
-    private void UpdatePagedRoles()
-    {
-        pagedRoles = filteredRoles
-            .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
-    }
-
-    private void OnPageSizeChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int newPageSize))
-        {
-            pageSize = newPageSize;
-            currentPage = 1;
-            UpdatePagedRoles();
-        }
-    }
-
-    private void NextPage()
-    {
-        if (currentPage * pageSize < filteredRoles.Count)
-        {
-            currentPage++;
-            UpdatePagedRoles();
-        }
-    }
-
-    private void PrevPage()
-    {
-        if (currentPage > 1)
-        {
-            currentPage--;
-            UpdatePagedRoles();
-        }
-    }
-
-    #endregion
-}

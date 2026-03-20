@@ -1,4 +1,4 @@
-using Blazored.SessionStorage;
+﻿using Blazored.SessionStorage;
 using CurrieTechnologies.Razor.SweetAlert2;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,7 +13,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Configuraci�n para utilizar HTTPS:
+// Configuración para utilizar HTTPS:
 builder.Services.AddTransient<JwtAuthenticationInterceptor>();
 
 builder.Services.AddHttpClient("API", client =>
@@ -23,7 +23,7 @@ builder.Services.AddHttpClient("API", client =>
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
 
-// Servicios de la aplicaci�n para la gestion de datos
+// Servicios de la aplicación para la gestion de datos
 builder.Services.AddScoped<IRolService, RolService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ITareaCalendarioService, TareaCalendarioService>();
@@ -33,13 +33,13 @@ builder.Services.AddScoped<ITareaDiasService, TareaDiasService>();
 builder.Services.AddScoped<IMenuPermisoService, MenuPermisoService>();
 builder.Services.AddScoped<MenuPermisoEstado>();
 
-// Servicios para la autenticaci�n de usuarios y roles
+// Servicios para la autenticación de usuarios y roles
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<AutenticacionExtension>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<AutenticacionExtension>());
 builder.Services.AddAuthorizationCore();
 
-// Servicios de la aplicaci�n para la gestion de la interfaz
+// Servicios de la aplicación para la gestion de la interfaz
 builder.Services.AddSweetAlert2();
 
 await builder.Build().RunAsync();

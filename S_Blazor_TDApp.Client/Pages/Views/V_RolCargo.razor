@@ -1,17 +1,17 @@
-﻿@page "/rolCargo"
+@page "/rolCargo"
 @page "/rolCargo/{IdRolEditar:int}"
 
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
 @using S_Blazor_TDApp.Client.Services.Interfaces
 
-@* Using para la autorización de usuarios *@
+@* Using para la autorizaci�n de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
 @attribute [Authorize(Roles = "Super_Administrador, Administrador")]
 
-@inject IRolService RolService
-@inject NavigationManager NavigationManager
-@inject SweetAlertService SwalService
+
+
+
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -50,7 +50,7 @@
                             </div>
                         </div>
 
-                        <!-- Descripción -->
+                        <!-- Descripci�n -->
                         <div class="mb-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-text"></i></span>
@@ -91,86 +91,3 @@
         </div>
     </div>
 </div>
-
-@code {
-    [Parameter]
-    public int IdRolEditar { get; set; } = 0;
-
-    private string titulo = string.Empty;
-    private string btnTexto = string.Empty;
-    public bool isSaving = false;
-
-    private RolDTO rolCargo = new RolDTO();
-    
-    // Variables para mostrar el ID
-    private string idRolDisplay = string.Empty;
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            if (IdRolEditar != 0)
-            {
-                rolCargo = await RolService.Buscar(IdRolEditar);
-                btnTexto = "Actualizar";
-                titulo = "Editar rol";
-                idRolDisplay = rolCargo.RolId.ToString();
-            }
-            else
-            {
-                btnTexto = "Guardar";
-                titulo = "Nuevo rol";
-
-                // Calcula el próximo ID basado en la lista de roles
-                var roles = await RolService.Lista();
-                int nextId = roles.Any() ? roles.Max(r => r.RolId) + 1 : 1;
-                idRolDisplay = nextId.ToString();
-                
-                // Establece el estado predeterminado a 'Habilitado'
-                rolCargo.Activo = true;
-            }
-        }
-        catch (UnauthorizedAccessException)
-        {
-            NavigationManager.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al cargar datos: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-    }
-
-    private async Task OnValidSubmit()
-    {
-        isSaving = true;
-        try
-        {
-            int idDevuelto = (IdRolEditar == 0)
-                ? await RolService.Guardar(rolCargo)
-                : await RolService.Editar(rolCargo);
-
-            if (idDevuelto != 0)
-            {
-                NavigationManager.NavigateTo("/rolesPermisos");
-            }
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Ha ocurrido un error al guardar el rol: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-        finally
-        {
-            isSaving = false;
-        }
-    }
-}

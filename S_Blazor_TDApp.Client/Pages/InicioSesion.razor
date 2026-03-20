@@ -95,46 +95,6 @@
                             </div>
                         </div>
 
-                        <!-- Credenciales de Prueba -->
-                        <div class="mt-3 p-3"
-                             style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;">
-                            <div class="d-flex align-items-center mb-2"
-                                 style="color: rgba(255,255,255,0.75); font-size: 0.85rem; font-weight: 600;">
-                                <i class="bi bi-person-badge me-2" style="color: rgba(165,180,252,0.8);"></i>
-                                Credenciales de Prueba
-                            </div>
-                            <div class="row g-2">
-                                <div class="col-12 col-sm-6">
-                                    <button type="button" class="btn w-100 btn-sm"
-                                            style="background: rgba(245, 158, 11, 0.16); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.35);"
-                                            @onclick='() => IniciarSesionConCredenciales("superadmin@example.com", "pass123")' disabled="@isSaving">
-                                        <i class="bi bi-shield-fill-check me-1"></i> Super Admin
-                                    </button>
-                                </div>
-                                <div class="col-12 col-sm-6">
-                                    <button type="button" class="btn w-100 btn-sm"
-                                            style="background: rgba(59, 130, 246, 0.14); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35);"
-                                            @onclick='() => IniciarSesionConCredenciales("admin@example.com", "pass123")' disabled="@isSaving">
-                                        <i class="bi bi-person-fill-gear me-1"></i> Admin
-                                    </button>
-                                </div>
-                                <div class="col-12 col-sm-6">
-                                    <button type="button" class="btn w-100 btn-sm"
-                                            style="background: rgba(34, 197, 94, 0.14); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.35);"
-                                            @onclick='() => IniciarSesionConCredenciales("supervisor@example.com", "pass123")' disabled="@isSaving">
-                                        <i class="bi bi-person-fill me-1"></i> Supervisor
-                                    </button>
-                                </div>
-                                <div class="col-12 col-sm-6">
-                                    <button type="button" class="btn w-100 btn-sm"
-                                            style="background: rgba(99, 102, 241, 0.14); color: #c7d2fe; border: 1px solid rgba(99, 102, 241, 0.35);"
-                                            @onclick='() => IniciarSesionConCredenciales("empleado@example.com", "pass123")' disabled="@isSaving">
-                                        <i class="bi bi-person me-1"></i> Empleado
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Botón de envío -->
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit"
@@ -196,18 +156,6 @@
     private void TogglePasswordVisibility()
     {
         showPassword = !showPassword;
-    }
-
-    private void CargarCredenciales(string email, string clave)
-    {
-        login.Email = email;
-        login.Clave = clave;
-    }
-
-    private async Task IniciarSesionConCredenciales(string email, string clave)
-    {
-        CargarCredenciales(email, clave);
-        await IniciarSesion();
     }
 
     private async Task IniciarSesion()

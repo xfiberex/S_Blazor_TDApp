@@ -1,4 +1,4 @@
-Ôªø@page "/usuario"
+@page "/usuario"
 @page "/usuario/{IdUsuarioEditar:int}"
 
 @using Microsoft.AspNetCore.Authorization
@@ -9,11 +9,11 @@
 @using System.ComponentModel.DataAnnotations
 @attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor")]
 
-@inject IUsuarioService UsuarioService
-@inject IRolService RolService
-@inject NavigationManager NavigationManager
-@inject SweetAlertService SwalService
-@inject AuthenticationStateProvider authStateProvider
+
+
+
+
+
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -37,7 +37,7 @@
                         @if (listaRoles is null || !listaRoles.Any())
                         {
                             <div class="alert alert-warning shadow-sm mb-0">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>No existen roles. Para crearlos dir√≠jase a la secci√≥n <b>"Roles y Permisos"</b> en la barra lateral izquierda.
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>No existen roles. Para crearlos dirÌjase a la secciÛn <b>"Roles y Permisos"</b> en la barra lateral izquierda.
                             </div>
                         }
                         else
@@ -51,10 +51,10 @@
                                     </div>
                                 </div>
 
-                                <!-- C√≥digo del Usuario -->
+                                <!-- CÛdigo del Usuario -->
                                 <div class="col-md-4 col-lg-4">
                                     <div class="input-group">
-                                        <span class="input-group-text">C√≥digo</span>
+                                        <span class="input-group-text">CÛdigo</span>
                                         <InputText id="codigoUsuario" class="form-control text-center" @bind-Value="codigoUsuarioDisplay" disabled />
                                     </div>
                                 </div>
@@ -78,29 +78,29 @@
                                 </div>
                             </div>
 
-                            <!-- Contrase√±a o bot√≥n para cambiarla -->
+                            <!-- ContraseÒa o botÛn para cambiarla -->
                             @if (IdUsuarioEditar == 0)
                             {
-                                <!-- Para un usuario nuevo se muestra el input de contrase√±a -->
+                                <!-- Para un usuario nuevo se muestra el input de contraseÒa -->
                                 <div class="mb-4">
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                        <InputText id="clave" type="password" class="form-control" placeholder="Ingrese la contrase√±a"
+                                        <InputText id="clave" type="password" class="form-control" placeholder="Ingrese la contraseÒa"
                                                    @bind-Value="usuario.Clave" />
                                     </div>
                                 </div>
                             }
                             else
                             {
-                                <!-- En modo edici√≥n se oculta el input y se muestra un bot√≥n para cambiar la contrase√±a -->
+                                <!-- En modo ediciÛn se oculta el input y se muestra un botÛn para cambiar la contraseÒa -->
                                 <div class="mb-4">
                                     <button class="btn btn-outline-secondary" type="button" @onclick="AbrirModalCambioClave">
-                                        <i class="bi bi-key"></i> Cambiar Contrase√±a
+                                        <i class="bi bi-key"></i> Cambiar ContraseÒa
                                     </button>
                                 </div>
                             }
 
-                            <!-- Correo Electr√≥nico -->
+                            <!-- Correo ElectrÛnico -->
                             <div class="mb-4">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
@@ -162,7 +162,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Cambiar Contrase√±a</h5>
+                    <h5 class="modal-title">Cambiar ContraseÒa</h5>
                     <button type="button" class="btn-close" @onclick="CerrarModalCambioClave"></button>
                 </div>
                 <div class="modal-body">
@@ -178,12 +178,12 @@
                         }
 
                         <div class="mb-3">
-                            <label for="nuevaClave" class="form-label">Nueva Contrase√±a</label>
+                            <label for="nuevaClave" class="form-label">Nueva ContraseÒa</label>
                             <InputText id="nuevaClave" type="password" class="form-control"
                                        @bind-Value="cambioClaveModel.NuevaClave" />
                         </div>
                         <div class="mb-3">
-                            <label for="confirmarClave" class="form-label">Confirmar Contrase√±a</label>
+                            <label for="confirmarClave" class="form-label">Confirmar ContraseÒa</label>
                             <InputText id="confirmarClave" type="password" class="form-control"
                                        @bind-Value="cambioClaveModel.ConfirmarClave" />
                         </div>
@@ -194,185 +194,4 @@
         </div>
     </div>
     <div class="modal-backdrop fade show"></div>
-}
-
-@code {
-    [Parameter]
-    public int IdUsuarioEditar { get; set; } = 0;
-
-    private string titulo = string.Empty;
-    private string btnTexto = string.Empty;
-    public bool isSaving = false;
-
-    private UsuarioDTO usuario = new UsuarioDTO();
-    private List<RolDTO> listaRoles = new List<RolDTO>();
-
-    // Variables para mostrar el ID y C√≥digo del usuario
-    private string idUsuarioDisplay = string.Empty;
-    private string codigoUsuarioDisplay = string.Empty;
-
-    // Variables para el modal de cambio de contrase√±a
-    private bool mostrarModalCambioClave = false;
-    private CambioClaveDTO cambioClaveModel = new CambioClaveDTO();
-
-    // Variables para almacenar el ID del usuario autenticado y los valores originales de Email y Rol
-    private int currentUserId;
-    private string currentRol = string.Empty;
-    private string originalEmail = string.Empty;
-    private int originalRolId;
-
-    // Roles que el Supervisor no puede asignar
-    private static readonly HashSet<string> RolesRestringidosParaSupervisor =
-        new() { "Super_Administrador", "Administrador" };
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            var authState = await authStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-            if (user.Identity?.IsAuthenticated == true)
-            {
-                var idClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(idClaim))
-                    currentUserId = int.Parse(idClaim);
-
-                currentRol = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? string.Empty;
-            }
-
-            var todosLosRoles = await RolService.Lista();
-
-            // El Supervisor solo puede asignar roles de igual o menor jerarqu√≠a
-            listaRoles = currentRol == "Supervisor"
-                ? todosLosRoles.Where(r => !RolesRestringidosParaSupervisor.Contains(r.NombreRol)).ToList()
-                : todosLosRoles;
-
-            if (IdUsuarioEditar != 0)
-            {
-                usuario = await UsuarioService.Buscar(IdUsuarioEditar);
-                btnTexto = "Actualizar";
-                titulo = "Editar Usuario";
-                idUsuarioDisplay = usuario.UsuarioId.ToString();
-                codigoUsuarioDisplay = usuario.Codigo;
-
-                originalEmail = usuario.Email!;
-                originalRolId = usuario.RolId;
-            }
-            else
-            {
-                btnTexto = "Guardar";
-                titulo = "Nuevo Usuario";
-
-                var usuarios = await UsuarioService.Lista();
-                int nextId = usuarios.Any() ? usuarios.Max(u => u.UsuarioId) + 1 : 1;
-                idUsuarioDisplay = nextId.ToString();
-
-                await GenerarCodigoUsuario();
-
-                usuario.Activo = true;
-            }
-        }
-        catch (UnauthorizedAccessException)
-        {
-            NavigationManager.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al cargar datos: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-    }
-
-    private async Task GenerarCodigoUsuario()
-    {
-        string codigo;
-        bool existe;
-        var random = new Random();
-        do
-        {
-            codigo = random.Next(10000, 100000).ToString();
-            existe = await UsuarioService.ExisteCodigo(codigo);
-        }
-        while (existe);
-
-        codigoUsuarioDisplay = codigo;
-        usuario.Codigo = codigo;
-    }
-
-    private async Task OnValidSubmit()
-    {
-        isSaving = true;
-        try
-        {
-            int idDevuelto = (IdUsuarioEditar == 0)
-                ? await UsuarioService.Guardar(usuario)
-                : await UsuarioService.Editar(usuario);
-
-            if (idDevuelto != 0)
-            {
-                NavigationManager.NavigateTo("/usuarios");
-            }
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al guardar el usuario: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-        finally
-        {
-            isSaving = false;
-        }
-    }
-
-    private void AbrirModalCambioClave()
-    {
-        cambioClaveModel = new CambioClaveDTO();
-        mostrarModalCambioClave = true;
-    }
-
-    private void CerrarModalCambioClave()
-    {
-        mostrarModalCambioClave = false;
-    }
-
-    private async Task GuardarCambioClave()
-    {
-        try
-        {
-            await UsuarioService.CambiarClave(usuario.UsuarioId, new CambioClaveDTO
-                {
-                    UsuarioId = usuario.UsuarioId,
-                    NuevaClave = cambioClaveModel.NuevaClave,
-                    ConfirmarClave = cambioClaveModel.ConfirmarClave
-                });
-
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "√âxito",
-                    Text = "La contrase√±a se actualiz√≥ correctamente.",
-                    Icon = SweetAlertIcon.Success
-                });
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al cambiar la contrase√±a: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-        finally
-        {
-            mostrarModalCambioClave = false;
-        }
-    }
 }

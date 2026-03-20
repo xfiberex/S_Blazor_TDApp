@@ -26,17 +26,17 @@
                             var email = authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
                             var permiso = authContext.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
                         }
-                        <div class="session-info">
+                        <div class="session-info d-flex align-items-center">
                             <span class="pulse-dot"></span>
-                            <span class="session-status">En línea</span>
-                            <span class="separator">|</span>
+                            <span class="session-status d-none d-md-inline">En línea</span>
+                            <span class="separator d-none d-md-inline">|</span>
                             <span class="user-info">
                                 <i class="bi bi-person-circle me-1"></i>
                                 <span class="user-name">@nombre</span>
-                                <span class="user-email">(@email)</span>
+                                <span class="user-email d-none d-lg-inline">(@email)</span>
                             </span>
-                            <span class="separator">|</span>
-                            <span class="user-permissions">
+                            <span class="separator d-none d-md-inline">|</span>
+                            <span class="user-permissions d-none d-md-inline">
                                 <i class="bi bi-shield-check me-1"></i>
                                 <span class="permissions">@permiso</span>
                             </span>

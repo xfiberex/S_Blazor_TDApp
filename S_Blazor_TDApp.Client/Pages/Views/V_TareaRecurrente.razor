@@ -1,4 +1,4 @@
-Ôªø@page "/tareaRecurrente"
+@page "/tareaRecurrente"
 @page "/tareaRecurrente/{IdTareaRecurrenteEditar:int}"
 
 @using S_Blazor_TDApp.Shared
@@ -6,13 +6,13 @@
 @using S_Blazor_TDApp.Client.Services.Interfaces
 @using System.Globalization
 
-@* Using para la autorizaci√≥n de usuarios *@
+@* Using para la autorizaciÛn de usuarios *@
 @using Microsoft.AspNetCore.Authorization;
 @attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor, Empleado")]
 
-@inject ITareaRecurrenteService TareaRecurrenteService
-@inject NavigationManager NavigationManager
-@inject SweetAlertService SwalService
+
+
+
 
 <div class="container-fluid">
     <div class="row justify-content-center">
@@ -38,7 +38,7 @@
                             <div class="alert alert-info shadow-sm mb-4">
                                 <h6 class="alert-heading">
                                     <i class="bi bi-info-circle me-1"></i>
-                                    Si una tarea <b>no es recurrente,</b> el tiempo existente pasar√° a ser un intervalo espec√≠fico y estar√° disponible solo durante ese per√≠odo en la secci√≥n de procesos.
+                                    Si una tarea <b>no es recurrente,</b> el tiempo existente pasar· a ser un intervalo especÌfico y estar· disponible solo durante ese perÌodo en la secciÛn de procesos.
                                 </h6>
                             </div>
                         }
@@ -52,7 +52,7 @@
                             </div>
                         </div>
 
-                        <!-- Descripci√≥n -->
+                        <!-- DescripciÛn -->
                         <div class="mb-4">
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-card-text"></i></span>
@@ -91,21 +91,21 @@
                             </div>
                         </div>
 
-                        <!-- Tiempo de ejecuci√≥n -->
+                        <!-- Tiempo de ejecuciÛn -->
                         <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-hourglass-split me-2"></i>Tiempo de Ejecuci√≥n</span>
+                                <span class="input-group-text"><i class="bi bi-hourglass-split me-2"></i>Tiempo de EjecuciÛn</span>
                                 <InputNumber id="tiempoEjecucion" class="form-control"
                                              @bind-Value="tareaRecurrente.TiempoEjecucion" disabled />
                             </div>
                         </div>
 
-                        <!-- Cantidad de ejecuci√≥n -->
+                        <!-- Cantidad de ejecuciÛn -->
                         <div class="mb-4">
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-hash me-2"></i>Cantidad de Ejecuci√≥n</span>
+                                <span class="input-group-text"><i class="bi bi-hash me-2"></i>Cantidad de EjecuciÛn</span>
                                 <InputNumber id="cantidadEjecucion" class="form-control"
-                                             placeholder="Indica la cantidad de veces que se habilitar√° la tarea"
+                                             placeholder="Indica la cantidad de veces que se habilitar· la tarea"
                                              @bind-Value="tareaRecurrente.CantidadEjecuciones"
                                              disabled="@tareaRecurrente.Recurrente" />
                             </div>
@@ -150,162 +150,3 @@
         </div>
     </div>
 </div>
-
-@code {
-    [Parameter]
-    public int IdTareaRecurrenteEditar { get; set; } = 0;
-
-    private EditContext editContext = null!;
-    private string titulo = string.Empty;
-    private string btnTexto = string.Empty;
-    public bool isSaving = false;
-
-    private TareasRecurrentesDTO tareaRecurrente = new TareasRecurrentesDTO();
-
-    private bool recurrente
-    {
-        get => tareaRecurrente.Recurrente;
-        set
-        {
-            tareaRecurrente.Recurrente = value;
-            // Si es recurrente, se fija la cantidad de ejecuciones en 1 por defecto.
-            tareaRecurrente.CantidadEjecuciones = value ? 1 : tareaRecurrente.CantidadEjecuciones;
-            CalcularTiempoEjecucion();
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            if (IdTareaRecurrenteEditar != 0)
-            {
-                tareaRecurrente = await TareaRecurrenteService.Buscar(IdTareaRecurrenteEditar);
-                btnTexto = "Actualizar";
-                titulo = "Editar tarea recurrente";
-            }
-            else
-            {
-                btnTexto = "Guardar";
-                titulo = "Nueva tarea recurrente";
-
-                // Establece el estado predeterminado a 'Habilitado'
-                tareaRecurrente.Estado = true;
-            }
-            editContext = new EditContext(tareaRecurrente);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            NavigationManager.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al cargar datos: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-    }
-
-    private async Task OnValidSubmit()
-    {
-        isSaving = true;
-        try
-        {
-            int idDevuelto = (IdTareaRecurrenteEditar == 0)
-                ? await TareaRecurrenteService.Guardar(tareaRecurrente)
-                : await TareaRecurrenteService.Editar(tareaRecurrente);
-
-            if (idDevuelto != 0)
-            {
-                NavigationManager.NavigateTo("/tareasRecurrentes");
-            }
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Ha ocurrido un error al guardar la tarea recurrente: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-        finally
-        {
-            isSaving = false;
-        }
-    }
-
-    private string horaDesdeInput
-    {
-        get => tareaRecurrente.HoraDesde.ToString("HH:mm:ss");
-        set => _ = SetHoraDesdeInputAsync(value);
-    }
-
-    private string horaHastaInput
-    {
-        get => tareaRecurrente.HorasHasta.ToString("HH:mm:ss");
-        set => _ = SetHoraHastaInputAsync(value);
-    }
-
-    private async Task SetHoraDesdeInputAsync(string value)
-    {
-        try
-        {
-            if (DateTime.TryParseExact(value, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
-            {
-                tareaRecurrente.HoraDesde = tareaRecurrente.HoraDesde.Date.Add(parsedTime.TimeOfDay);
-                CalcularTiempoEjecucion();
-            }
-            else
-            {
-                throw new FormatException("El formato de la hora debe ser 'HH:mm:ss'.");
-            }
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = ex.Message,
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-    }
-
-    private async Task SetHoraHastaInputAsync(string value)
-    {
-        try
-        {
-            if (DateTime.TryParseExact(value, "HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedTime))
-            {
-                tareaRecurrente.HorasHasta = tareaRecurrente.HorasHasta.Date.Add(parsedTime.TimeOfDay);
-                CalcularTiempoEjecucion();
-            }
-            else
-            {
-                throw new FormatException("El formato de la hora debe ser 'HH:mm:ss'.");
-            }
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = ex.Message,
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-    }
-
-    private void CalcularTiempoEjecucion()
-    {
-        if (tareaRecurrente.HoraDesde != default && tareaRecurrente.HorasHasta != default)
-        {
-            var diffMinutes = (tareaRecurrente.HorasHasta - tareaRecurrente.HoraDesde).TotalMinutes;
-            tareaRecurrente.TiempoEjecucion = (int)diffMinutes;
-        }
-    }
-}

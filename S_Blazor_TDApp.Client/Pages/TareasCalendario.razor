@@ -1,4 +1,4 @@
-Ôªø@page "/tareasCalendario"
+@page "/tareasCalendario"
 
 @using S_Blazor_TDApp.Shared
 @using CurrieTechnologies.Razor.SweetAlert2
@@ -7,9 +7,9 @@
 @using Microsoft.AspNetCore.Authorization;
 @attribute [Authorize(Roles = "Super_Administrador, Administrador, Supervisor, Empleado")]
 
-@inject SweetAlertService SwalService
-@inject ITareaCalendarioService TareaCalendarioService
-@inject NavigationManager Navigation
+
+
+
 
 <!-- Page Title -->
 <div class="page-title">
@@ -18,7 +18,7 @@
     </div>
     <div>
         <h3>Tareas de Calendario</h3>
-        <span class="page-subtitle">Gesti√≥n de tareas programadas por fecha</span>
+        <span class="page-subtitle">GestiÛn de tareas programadas por fecha</span>
     </div>
 </div>
 
@@ -46,7 +46,7 @@
                 <div class="row align-items-center">
                     <div class="col">
                         <h5 class="text-primary mb-0">
-                            <i class="bi bi-calendar-event me-2"></i>Gesti√≥n - Tareas de calendario
+                            <i class="bi bi-calendar-event me-2"></i>GestiÛn - Tareas de calendario
                         </h5>
                     </div>
                     <div class="col-auto">
@@ -74,7 +74,7 @@
             {
                 <div class="alert alert-info shadow-sm m-3">
                     <i class="bi bi-info-circle me-2"></i>No se encontraron tareas de calendario.
-                    Presione el bot√≥n verde <b>"Nueva"</b> para crearla.
+                    Presione el botÛn verde <b>"Nueva"</b> para crearla.
                 </div>
             }
             else
@@ -85,7 +85,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Nombre</th>
-                                    <th>Descripci√≥n</th>
+                                    <th>DescripciÛn</th>
                                     <th>Estado</th>
                                     <th>Fecha y Hora</th>
                                     <th>Acciones</th>
@@ -165,7 +165,7 @@
                         <div>
                             <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
                             <span class="mx-2">
-                                P√°gina @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
+                                P·gina @currentPage de @Math.Ceiling((double)filteredTasks.Count / pageSize)
                             </span>
                             <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredTasks.Count)">Siguiente</button>
                         </div>
@@ -174,7 +174,7 @@
                     {
                         <div>
                             <label>
-                                <b>@filteredTasks.Count</b> registros encontrados. Si hay m√°s de 10, se filtrar√° y paginar√° seg√∫n la cantidad seleccionada.
+                                <b>@filteredTasks.Count</b> registros encontrados. Si hay m·s de 10, se filtrar· y paginar· seg˙n la cantidad seleccionada.
                             </label>
                         </div>
                     }
@@ -184,171 +184,3 @@
         <br />
     }
 </div>
-
-@code {
-    private List<TareasCalendarioDTO> listaTareasCalendario = new();
-    private List<TareasCalendarioDTO> filteredTasks = new();
-    private List<TareasCalendarioDTO> pagedTasks = new();
-
-    private bool isLoading = true;
-    private string searchTerm = "";
-    private TareasCalendarioDTO? expandedItem = null;
-
-    private System.Threading.Timer? _searchTimer;
-
-    private int currentPage = 1;
-    private int pageSize = 10;
-    private readonly int[] pageSizeOptions = { 10, 15, 20 };
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadTareasCalendario();
-    }
-
-    private async Task LoadTareasCalendario()
-    {
-        try
-        {
-            isLoading = true;
-            listaTareasCalendario = await TareaCalendarioService.Lista();
-            filteredTasks = listaTareasCalendario;
-            UpdatePagedTasks();
-        }
-        catch (UnauthorizedAccessException)
-        {
-            Navigation.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            await SwalService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = $"Error al cargar las tareas de calendario: {ex.Message}",
-                    Icon = SweetAlertIcon.Error
-                });
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
-    }
-
-    private async Task Eliminar(int id, string nombreTareaCalendario)
-    {
-        var result = await SwalService.FireAsync(new SweetAlertOptions
-            {
-                Title = "¬øEst√°s seguro?",
-                Text = $"¬øDeseas eliminar la tarea de calendario: {nombreTareaCalendario}?",
-                Icon = SweetAlertIcon.Warning,
-                ShowCancelButton = true,
-                ConfirmButtonText = "S√≠, eliminar",
-                CancelButtonText = "Cancelar"
-            });
-
-        if (result.IsConfirmed)
-        {
-            try
-            {
-                if (await TareaCalendarioService.Eliminar(id))
-                {
-                    listaTareasCalendario.RemoveAll(u => u.TareaId == id);
-                    FilterTasks();
-                    await SwalService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Eliminado",
-                            Text = "La tarea de calendario ha sido eliminada correctamente.",
-                            Icon = SweetAlertIcon.Success
-                        });
-                }
-            }
-            catch (Exception ex)
-            {
-                await SwalService.FireAsync(new SweetAlertOptions
-                    {
-                        Title = "Error",
-                        Text = $"Ha ocurrido un error al eliminar la tarea de calendario: {ex.Message}",
-                        Icon = SweetAlertIcon.Error
-                    });
-            }
-        }
-    }
-
-    private void ToggleDescription(TareasCalendarioDTO item)
-    {
-        if (expandedItem != null && expandedItem != item)
-        {
-            expandedItem.ShowFullDescription = false;
-        }
-        item.ShowFullDescription = !item.ShowFullDescription;
-        expandedItem = item.ShowFullDescription ? item : null;
-    }
-
-    private void OnSearchTermChanged(ChangeEventArgs e)
-    {
-        searchTerm = e.Value?.ToString() ?? string.Empty;
-        _searchTimer?.Dispose();
-        _searchTimer = new System.Threading.Timer(_ =>
-        {
-            InvokeAsync(() =>
-            {
-                FilterTasks();
-                StateHasChanged();
-            });
-        }, null, 500, System.Threading.Timeout.Infinite);
-    }
-
-    private void FilterTasks()
-    {
-        filteredTasks = string.IsNullOrWhiteSpace(searchTerm)
-            ? listaTareasCalendario
-            : listaTareasCalendario.Where(t =>
-                t.NombreTarea.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                (t.DescripcionTarea?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false)
-            ).ToList();
-        currentPage = 1;
-        UpdatePagedTasks();
-    }
-
-    private void ClearSearch()
-    {
-        searchTerm = string.Empty;
-        FilterTasks();
-    }
-
-    private void UpdatePagedTasks()
-    {
-        pagedTasks = filteredTasks
-            .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
-    }
-
-    private void OnPageSizeChanged(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value?.ToString(), out int newPageSize))
-        {
-            pageSize = newPageSize;
-            currentPage = 1;
-            UpdatePagedTasks();
-        }
-    }
-
-    private void NextPage()
-    {
-        if (currentPage * pageSize < filteredTasks.Count)
-        {
-            currentPage++;
-            UpdatePagedTasks();
-        }
-    }
-
-    private void PrevPage()
-    {
-        if (currentPage > 1)
-        {
-            currentPage--;
-            UpdatePagedTasks();
-        }
-    }
-}
