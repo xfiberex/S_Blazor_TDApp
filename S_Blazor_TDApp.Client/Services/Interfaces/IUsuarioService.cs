@@ -13,7 +13,7 @@ namespace S_Blazor_TDApp.Client.Services.Interfaces
         Task<PerfilUsuarioDTO> ObtenerPerfil();
         Task<bool> ActualizarPerfil(PerfilUsuarioDTO perfil);
         Task<bool> CambiarContrasenaPerfil(CambiarContrasenaPerfilDTO request);
-        Task<InicioSesionDTO> RefreshToken(RefreshTokenRequestDTO request);
+        Task<InicioSesionDTO> RefreshToken();
         Task<bool> RevocarToken();
         Task<UsuarioDTO> Buscar(int id);
         Task<bool> ExisteCodigo(string codigo);

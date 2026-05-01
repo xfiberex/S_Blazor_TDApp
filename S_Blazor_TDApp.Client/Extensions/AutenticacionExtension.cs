@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using S_Blazor_TDApp.Client.Services;
 using S_Blazor_TDApp.Shared;
-using System.Net.Http.Headers;
 using System.Security.Claims;
 
 namespace S_Blazor_TDApp.Client.Extensions
@@ -10,14 +9,12 @@ namespace S_Blazor_TDApp.Client.Extensions
     public class AutenticacionExtension : AuthenticationStateProvider
     {
         private readonly ISessionStorageService _sessionStorage;
-        private readonly HttpClient _httpClient;
         private readonly MenuPermisoEstado _menuPermisoEstado;
         private ClaimsPrincipal _sinInformacion = new ClaimsPrincipal(new ClaimsIdentity());
 
-        public AutenticacionExtension(ISessionStorageService sessionStorage, HttpClient httpClient, MenuPermisoEstado menuPermisoEstado)
+        public AutenticacionExtension(ISessionStorageService sessionStorage, MenuPermisoEstado menuPermisoEstado)
         {
             _sessionStorage = sessionStorage;
-            _httpClient = httpClient;
             _menuPermisoEstado = menuPermisoEstado;
         }
 
@@ -42,13 +39,11 @@ namespace S_Blazor_TDApp.Client.Extensions
                 }, "JwtAuth"));
 
                 await _sessionStorage.GuardarStorage("sesionUsuario", sesionDTO);
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sesionDTO.Token);
             }
             else
             {
                 claimsPrincipal = _sinInformacion;
                 await _sessionStorage.RemoveItemAsync("sesionUsuario");
-                _httpClient.DefaultRequestHeaders.Authorization = null;
                 _menuPermisoEstado.Limpiar();
             }
 
@@ -67,7 +62,6 @@ namespace S_Blazor_TDApp.Client.Extensions
 
             if (sesionUsuario == null)
             {
-                _httpClient.DefaultRequestHeaders.Authorization = null;
                 return await Task.FromResult(new AuthenticationState(_sinInformacion));
             }
 
@@ -78,8 +72,6 @@ namespace S_Blazor_TDApp.Client.Extensions
                     new Claim(ClaimTypes.Email,sesionUsuario.Correo!),
                     new Claim(ClaimTypes.Role,sesionUsuario.Rol)
                 }, "JwtAuth"));
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sesionUsuario.Token);
 
             return await Task.FromResult(new AuthenticationState(claimPrincipal));
         }

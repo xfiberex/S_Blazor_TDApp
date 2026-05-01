@@ -5,7 +5,7 @@
 [![Blazor](https://img.shields.io/badge/Blazor-WebAssembly-blue.svg)](https://blazor.net/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**S_Blazor_TDApp** es una aplicación web moderna desarrollada con **Blazor WebAssembly** y **.NET 10** para la gestión integral de tareas recurrentes y calendarios. El sistema permite administrar diferentes tipos de tareas (calendario y recurrentes) con autenticación JWT, autorización por roles y seguimiento de procesos.
+**S_Blazor_TDApp** es una aplicación web moderna desarrollada con **Blazor WebAssembly** y **.NET 10** para la gestión integral de tareas recurrentes y calendarios. El sistema permite administrar diferentes tipos de tareas (calendario y recurrentes) con autenticación JWT transportada por cookies seguras, autorización por roles y seguimiento de procesos.
 
 ## 📋 Tabla de Contenido
 - [Características Principales](#-características-principales)
@@ -21,7 +21,7 @@
 ## ✨ Características Principales
 
 - 🔐 **Inicio de sesión con control de roles**  
-  Soporte para roles de **Super Administrador**, **Administrador**, **Supervisor** y **Empleado**, con autorización personalizada por vista o menú. Incluye sección de **credenciales de prueba** con acceso rápido por rol directo desde el login.
+  Soporte para roles de **Super Administrador**, **Administrador**, **Supervisor** y **Empleado**, con autorización personalizada por vista o menú. Incluye credenciales de prueba preconfiguradas para uso inmediato en entornos prácticos.
 
 - 📊 **Reportes de procesos y gestión de tareas**  
   Visualización y seguimiento de tareas **recurrentes** y **calendario de actividades**.
@@ -160,10 +160,10 @@ cd S_Blazor_TDApp
 Ejecuta el script SQL ubicado en `Consultas BD TDApp/001.CREACIÓN DE BD Y TABLAS.sql` para:
 - Recrear la base de datos `DB_TDApp`
 - Crear todas las tablas necesarias
-- Insertar datos iniciales (roles, menús, días disponibles y usuario semilla)
+- Insertar datos iniciales (roles, menús, días disponibles y usuarios de prueba)
 
 #### Configurar Cadena de Conexión y Secretos (User Secrets)
-Por seguridad, las cadenas de conexión y la clave JWT no deben guardarse en `appsettings.json`. Utiliza **User Secrets** en desarrollo:
+El proyecto incluye una configuración práctica en `appsettings.json` para facilitar el arranque inmediato. Si necesitas separar entornos o externalizar secretos, también puedes utilizar **User Secrets** en desarrollo:
 
 1. Abre una terminal en la carpeta `S_Blazor_TDApp.Server`.
 2. Inicializa los secretos: `dotnet user-secrets init`
@@ -176,13 +176,56 @@ Por seguridad, las cadenas de conexión y la clave JWT no deben guardarse en `ap
    dotnet user-secrets set "Jwt:Key" "TU_CLAVE_SECRETA_MUY_SEGURA_DE_AL_MENOS_32_CARACTERES"
    ```
 
-En producción, utiliza variables de entorno o un servicio de Vault seguro (como Azure Key Vault).
+En producción, también puedes mover estos valores a variables de entorno o a un servicio de Vault si tu despliegue lo requiere.
 
-#### Configurar URL de API en el Cliente
-Verifica en `S_Blazor_TDApp.Client/Program.cs` que `HttpClient` apunte a la URL del servidor:
-```csharp
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7219/") });
+#### Configurar URLs por Entorno
+Las URLs del cliente y del API ya no están cableadas en código. Se configuran por entorno:
+
+- Cliente Blazor:
+  - `S_Blazor_TDApp.Client/wwwroot/appsettings.Development.json`
+  - `S_Blazor_TDApp.Client/wwwroot/appsettings.Production.json`
+- Servidor API:
+  - `S_Blazor_TDApp.Server/appsettings.Development.json`
+  - `S_Blazor_TDApp.Server/appsettings.Production.json`
+
+Valores esperados:
+
+- `Api:BaseUrl`: URL pública del API que consumirá el cliente.
+- `ClientApp:BaseUrl`: URL pública del frontend usada en enlaces de confirmación de correo y recuperación de contraseña.
+- `Cors:AllowedOrigins`: lista de orígenes permitidos para el frontend.
+
+Ejemplo para desarrollo:
+```json
+{
+  "Api": {
+    "BaseUrl": "https://localhost:7219/"
+  }
+}
 ```
+
+Ejemplo para producción:
+```json
+{
+  "ClientApp": {
+    "BaseUrl": "https://app.example.com/"
+  },
+  "Cors": {
+    "AllowedOrigins": [
+      "https://app.example.com"
+    ]
+  }
+}
+```
+
+Si necesitas un override local no versionado para el servidor, puedes copiar `S_Blazor_TDApp.Server/appsettings.Local.example.json` a `S_Blazor_TDApp.Server/appsettings.Local.json`.
+
+#### Credenciales de Prueba
+Después de ejecutar el script inicial, puedes ingresar con cualquiera de estos usuarios usando la contraseña común `pass123`:
+
+- `superadmin@example.com` - Rol `Super_Administrador`
+- `admin@example.com` - Rol `Administrador`
+- `supervisor@example.com` - Rol `Supervisor`
+- `empleado@example.com` - Rol `Empleado`
 
 ### 3. 🚀 Ejecutar la Aplicación
 
@@ -211,6 +254,13 @@ dotnet run
 
 - **Cliente Blazor**: `https://localhost:7041` (Puerto por defecto)
 - **API Swagger**: `https://localhost:7219/swagger` (Documentación de la API)
+
+### 5. 🧪 Validar Compilación y Pruebas
+
+```bash
+dotnet build S_Blazor_TDApp.sln
+dotnet test S_Blazor_TDApp.Tests/S_Blazor_TDApp.Tests.csproj
+```
 
 ## 📁 Estructura del Proyecto
 

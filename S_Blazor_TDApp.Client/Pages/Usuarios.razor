@@ -162,33 +162,33 @@
 
             <div class="card-footer text-muted">
                 <div class="d-flex justify-content-between align-items-center">
-                    @if (filteredUsers.Count > 10)
+                    @if ((filteredUsers?.Count ?? 0) > 10)
                     {
                         <div>
                             <label>Mostrar: </label>
-                            <select @onchange="OnPageSizeChanged" class="form-select d-inline-block w-auto">
+                            <select @onchange="OnPageSizeChanged" value="@pageSize" class="form-select d-inline-block w-auto">
                                 @foreach (var option in pageSizeOptions)
                                 {
-                                    <option value="@option" selected="@(option == pageSize)">
+                                    <option value="@option">
                                         @option
                                     </option>
                                 }
                             </select>
-                            usuarios de @filteredUsers.Count en total
+                            usuarios de @(filteredUsers?.Count ?? 0) en total
                         </div>
                         <div>
                             <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(currentPage == 1)">Anterior</button>
                             <span class="mx-2">
-                                Página @currentPage de @Math.Ceiling((double)filteredUsers.Count / pageSize)
+                                Página @currentPage de @Math.Ceiling((double)(filteredUsers?.Count ?? 0) / pageSize)
                             </span>
-                            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= filteredUsers.Count)">Siguiente</button>
+                            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(currentPage * pageSize >= (filteredUsers?.Count ?? 0))">Siguiente</button>
                         </div>
                     }
                     else
                     {
                         <div>
                             <label>
-                                <b>@filteredUsers.Count</b> registros encontrados. Si hay más de 10, se filtrará y paginará según la cantidad seleccionada.
+                                <b>@(filteredUsers?.Count ?? 0)</b> registros encontrados. Si hay más de 10, se filtrará y paginará según la cantidad seleccionada.
                             </label>
                         </div>
                     }

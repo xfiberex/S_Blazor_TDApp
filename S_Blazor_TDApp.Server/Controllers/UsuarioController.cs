@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using S_Blazor_TDApp.Server.DBContext;
 using S_Blazor_TDApp.Server.Entities;
@@ -16,20 +18,28 @@ namespace S_Blazor_TDApp.Server.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
+        private const string AccessTokenCookieName = "tdapp.access_token";
+        private const string RefreshTokenCookieName = "tdapp.refresh_token";
+        private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
+        private static readonly TimeSpan ConfirmacionTokenLifetime = TimeSpan.FromHours(24);
+        private static readonly TimeSpan RecuperacionTokenLifetime = TimeSpan.FromHours(1);
+
         private readonly DbTdappContext _context;
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
         private readonly ILogger<UsuarioController> _logger;
+        private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
 
-        public UsuarioController(DbTdappContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService, ILogger<UsuarioController> logger, IWebHostEnvironment env)
+        public UsuarioController(DbTdappContext context, IMapper mapper, ITokenService tokenService, IEmailService emailService, ILogger<UsuarioController> logger, IConfiguration configuration, IWebHostEnvironment env)
         {
             _context = context;
             _mapper = mapper;
             _tokenService = tokenService;
             _emailService = emailService;
             _logger = logger;
+            _configuration = configuration;
             _env = env;
         }
 
@@ -81,12 +91,16 @@ namespace S_Blazor_TDApp.Server.Controllers
                 };
 
                 var tokenString = _tokenService.GenerarAccessToken(claims);
+                var accessTokenExpiresAt = GetJwtExpiryUtc(tokenString);
 
                 // Generar Refresh Token
                 var refreshToken = _tokenService.GenerarRefreshToken();
-                usuarioEntity.RefreshToken = refreshToken;
-                usuarioEntity.RefreshTokenExpiracion = DateTime.UtcNow.AddDays(7); // Refresh token válido por 7 días
+                usuarioEntity.RefreshToken = TokenHashHelper.HashToken(refreshToken);
+                usuarioEntity.RefreshTokenExpiracion = DateTime.UtcNow.Add(RefreshTokenLifetime);
                 await _context.SaveChangesAsync(ct);
+
+                AppendAccessTokenCookie(tokenString, accessTokenExpiresAt);
+                AppendRefreshTokenCookie(refreshToken, usuarioEntity.RefreshTokenExpiracion.Value);
 
                 var inicioSesion = new InicioSesionDTO
                 {
@@ -94,9 +108,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     Nombre = usuarioEntity.NombreUsuario,
                     Correo = usuarioEntity.Email ?? string.Empty,
                     Rol = rolNombre,
-                    RolId = usuarioEntity.RolId,
-                    Token = tokenString,
-                    RefreshToken = refreshToken
+                    RolId = usuarioEntity.RolId
                 };
 
                 responseApi.EsCorrecto = true;
@@ -143,7 +155,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     nuevoCodigo = Random.Shared.Next(10000, 99999).ToString();
                 } while (await _context.Usuarios.AnyAsync(u => u.Codigo == nuevoCodigo, ct));
 
-                var tokenConfirmacion = Guid.NewGuid().ToString();
+                var tokenConfirmacion = _tokenService.GenerarRefreshToken();
 
                 var nuevoUsuario = new Usuario
                 {
@@ -155,7 +167,8 @@ namespace S_Blazor_TDApp.Server.Controllers
                     RolId = 3, // Rol Empleado por defecto
                     Activo = true,
                     CorreoConfirmado = false,
-                    TokenConfirmacion = tokenConfirmacion,
+                    TokenConfirmacion = TokenHashHelper.HashToken(tokenConfirmacion),
+                    FechaExpiracionToken = DateTime.UtcNow.Add(ConfirmacionTokenLifetime),
                     FechaCreacion = DateTime.UtcNow
                 };
 
@@ -163,7 +176,11 @@ namespace S_Blazor_TDApp.Server.Controllers
                 await _context.SaveChangesAsync(ct);
 
                 // Enviar correo de confirmación
-                var urlConfirmacion = $"https://localhost:7041/confirmar-correo?token={tokenConfirmacion}&email={registro.Email}";
+                var urlConfirmacion = BuildClientUrl("confirmar-correo", new Dictionary<string, string?>
+                {
+                    ["token"] = tokenConfirmacion,
+                    ["email"] = registro.Email
+                });
                 var mensaje = $@"
 <!DOCTYPE html>
 <html>
@@ -240,9 +257,13 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email && u.TokenConfirmacion == token, ct);
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email, ct);
 
-                if (usuario == null)
+                if (usuario == null ||
+                    usuario.CorreoConfirmado ||
+                    usuario.FechaExpiracionToken == null ||
+                    usuario.FechaExpiracionToken < DateTime.UtcNow ||
+                    !TokenHashHelper.Matches(token, usuario.TokenConfirmacion))
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "Token o correo inválido.";
@@ -251,6 +272,7 @@ namespace S_Blazor_TDApp.Server.Controllers
 
                 usuario.CorreoConfirmado = true;
                 usuario.TokenConfirmacion = null;
+                usuario.FechaExpiracionToken = null;
                 await _context.SaveChangesAsync(ct);
 
                 responseApi.EsCorrecto = true;
@@ -277,7 +299,7 @@ namespace S_Blazor_TDApp.Server.Controllers
             {
                 var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
 
-                if (usuario == null)
+                if (usuario == null || !usuario.CorreoConfirmado)
                 {
                     // No revelar si el correo existe o no por seguridad
                     responseApi.EsCorrecto = true;
@@ -286,15 +308,18 @@ namespace S_Blazor_TDApp.Server.Controllers
                     return Ok(responseApi);
                 }
 
-                var tokenRecuperacion = Guid.NewGuid().ToString();
-                usuario.TokenRecuperacion = tokenRecuperacion;
-                usuario.FechaExpiracionToken = DateTime.UtcNow.AddHours(1); // Token válido por 1 hora
+                var tokenRecuperacion = _tokenService.GenerarRefreshToken();
+                usuario.TokenRecuperacion = TokenHashHelper.HashToken(tokenRecuperacion);
+                usuario.FechaExpiracionToken = DateTime.UtcNow.Add(RecuperacionTokenLifetime);
 
                 await _context.SaveChangesAsync(ct);
 
                 // Enviar correo de recuperación
-                // En un entorno real, la URL apuntaría a una página del cliente Blazor, no a la API directamente
-                var urlRecuperacion = $"https://localhost:7041/restablecer-contrasena?token={tokenRecuperacion}&email={request.Email}";
+                var urlRecuperacion = BuildClientUrl("restablecer-contrasena", new Dictionary<string, string?>
+                {
+                    ["token"] = tokenRecuperacion,
+                    ["email"] = request.Email
+                });
                 var mensaje = $@"
 <!DOCTYPE html>
 <html>
@@ -377,9 +402,12 @@ namespace S_Blazor_TDApp.Server.Controllers
 
             try
             {
-                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email && u.TokenRecuperacion == request.Token, ct);
+                var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email, ct);
 
-                if (usuario == null || usuario.FechaExpiracionToken < DateTime.UtcNow)
+                if (usuario == null ||
+                    usuario.FechaExpiracionToken == null ||
+                    usuario.FechaExpiracionToken < DateTime.UtcNow ||
+                    !TokenHashHelper.Matches(request.Token, usuario.TokenRecuperacion))
                 {
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "Token inválido o expirado.";
@@ -550,32 +578,34 @@ namespace S_Blazor_TDApp.Server.Controllers
 
         [HttpPost("refresh-token")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDTO request, CancellationToken ct = default)
+        public async Task<IActionResult> RefreshToken(CancellationToken ct = default)
         {
             var responseApi = new ResponseAPI<InicioSesionDTO>();
 
             try
             {
-                var principal = _tokenService.ObtenerPrincipalDeTokenExpirado(request.Token);
-                if (principal == null)
+                var refreshToken = Request.Cookies[RefreshTokenCookieName];
+                if (string.IsNullOrWhiteSpace(refreshToken))
                 {
+                    DeleteAuthCookies();
                     responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "Token inválido.";
+                    responseApi.Mensaje = "Refresh token inválido o expirado.";
                     return BadRequest(responseApi);
                 }
 
-                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
-                {
-                    responseApi.EsCorrecto = false;
-                    responseApi.Mensaje = "Token inválido.";
-                    return BadRequest(responseApi);
-                }
+                var refreshTokenHash = TokenHashHelper.HashToken(refreshToken);
+                var usuario = await _context.Usuarios
+                    .Include(u => u.IdRolNavigation)
+                    .FirstOrDefaultAsync(
+                        u => u.RefreshToken == refreshTokenHash || u.RefreshToken == refreshToken,
+                        ct);
 
-                var usuario = await _context.Usuarios.Include(u => u.IdRolNavigation).FirstOrDefaultAsync(u => u.UsuarioId == userId, ct);
-
-                if (usuario == null || usuario.RefreshToken != request.RefreshToken || usuario.RefreshTokenExpiracion <= DateTime.UtcNow)
+                if (usuario == null ||
+                    usuario.RefreshTokenExpiracion == null ||
+                    usuario.RefreshTokenExpiracion <= DateTime.UtcNow ||
+                    !TokenHashHelper.Matches(refreshToken, usuario.RefreshToken))
                 {
+                    DeleteAuthCookies();
                     responseApi.EsCorrecto = false;
                     responseApi.Mensaje = "Refresh token inválido o expirado.";
                     return BadRequest(responseApi);
@@ -593,12 +623,16 @@ namespace S_Blazor_TDApp.Server.Controllers
                 };
 
                 var tokenString = _tokenService.GenerarAccessToken(claims);
+                var accessTokenExpiresAt = GetJwtExpiryUtc(tokenString);
 
                 // Rotar Refresh Token
                 var nuevoRefreshToken = _tokenService.GenerarRefreshToken();
-                usuario.RefreshToken = nuevoRefreshToken;
-                usuario.RefreshTokenExpiracion = DateTime.UtcNow.AddDays(7);
+                usuario.RefreshToken = TokenHashHelper.HashToken(nuevoRefreshToken);
+                usuario.RefreshTokenExpiracion = DateTime.UtcNow.Add(RefreshTokenLifetime);
                 await _context.SaveChangesAsync(ct);
+
+                AppendAccessTokenCookie(tokenString, accessTokenExpiresAt);
+                AppendRefreshTokenCookie(nuevoRefreshToken, usuario.RefreshTokenExpiracion.Value);
 
                 var inicioSesion = new InicioSesionDTO
                 {
@@ -606,9 +640,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                     Nombre = usuario.NombreUsuario,
                     Correo = usuario.Email ?? string.Empty,
                     Rol = rolNombre,
-                    RolId = usuario.RolId,
-                    Token = tokenString,
-                    RefreshToken = nuevoRefreshToken
+                    RolId = usuario.RolId
                 };
 
                 responseApi.EsCorrecto = true;
@@ -647,6 +679,7 @@ namespace S_Blazor_TDApp.Server.Controllers
                 usuario.RefreshToken = null;
                 usuario.RefreshTokenExpiracion = null;
                 await _context.SaveChangesAsync(ct);
+                DeleteAuthCookies();
 
                 responseApi.EsCorrecto = true;
                 responseApi.Valor = true;
@@ -660,6 +693,93 @@ namespace S_Blazor_TDApp.Server.Controllers
                 responseApi.Mensaje = "Ocurrió un error interno. Intente nuevamente.";
                 return StatusCode(500, responseApi);
             }
+        }
+
+        private void AppendAccessTokenCookie(string accessToken, DateTime expiresAt)
+        {
+            Response.Cookies.Append(AccessTokenCookieName, accessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Path = "/",
+                Expires = new DateTimeOffset(expiresAt)
+            });
+        }
+
+        private void AppendRefreshTokenCookie(string refreshToken, DateTime expiresAt)
+        {
+            Response.Cookies.Append(RefreshTokenCookieName, refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Path = "/",
+                Expires = new DateTimeOffset(expiresAt)
+            });
+        }
+
+        private void DeleteAccessTokenCookie()
+        {
+            Response.Cookies.Delete(AccessTokenCookieName, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Path = "/"
+            });
+        }
+
+        private void DeleteRefreshTokenCookie()
+        {
+            Response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                IsEssential = true,
+                Path = "/"
+            });
+        }
+
+        private void DeleteAuthCookies()
+        {
+            DeleteAccessTokenCookie();
+            DeleteRefreshTokenCookie();
+        }
+
+        private string BuildClientUrl(string path, IReadOnlyDictionary<string, string?> queryParameters)
+        {
+            var clientBaseUrl = _configuration["ClientApp:BaseUrl"];
+            if (string.IsNullOrWhiteSpace(clientBaseUrl))
+            {
+                throw new InvalidOperationException("La URL base del cliente ('ClientApp:BaseUrl') no está configurada.");
+            }
+
+            var clientUri = new Uri(EnsureTrailingSlash(clientBaseUrl), UriKind.Absolute);
+            var targetUri = new Uri(clientUri, path.TrimStart('/')).ToString();
+
+            return QueryHelpers.AddQueryString(
+                targetUri,
+                queryParameters
+                    .Where(item => !string.IsNullOrWhiteSpace(item.Value))
+                    .ToDictionary(item => item.Key, item => item.Value));
+        }
+
+        private static string EnsureTrailingSlash(string baseUrl)
+        {
+            return baseUrl.EndsWith("/", StringComparison.Ordinal)
+                ? baseUrl
+                : $"{baseUrl}/";
+        }
+
+        private static DateTime GetJwtExpiryUtc(string jwtToken)
+        {
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(jwtToken);
+            return jwt.ValidTo;
         }
 
         [HttpGet]

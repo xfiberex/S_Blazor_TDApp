@@ -162,9 +162,9 @@ namespace S_Blazor_TDApp.Client.Services.Implementation
             return response.Valor;
         }
 
-        public async Task<InicioSesionDTO> RefreshToken(RefreshTokenRequestDTO request)
+        public async Task<InicioSesionDTO> RefreshToken()
         {
-            var httpResponse = await _http.PostAsJsonAsync("api/usuarios/refresh-token", request);
+            var httpResponse = await _http.PostAsync("api/usuarios/refresh-token", null);
             if (!httpResponse.IsSuccessStatusCode)
             {
                 var errorContent = await httpResponse.Content.ReadAsStringAsync();

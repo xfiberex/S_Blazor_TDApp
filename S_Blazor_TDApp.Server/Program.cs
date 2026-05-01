@@ -13,6 +13,8 @@ using S_Blazor_TDApp.Server.Utilities.AutoMapper;
 using S_Blazor_TDApp.Server.Utilities.BackgroundServices;
 using S_Blazor_TDApp.Server.Utilities;
 
+const string AccessTokenCookieName = "tdapp.access_token";
+
 var builder = WebApplication.CreateBuilder(args);
 
 // appsettings.Local.json sobreescribe cualquier valor de appsettings.json (está en .gitignore)
@@ -36,6 +38,11 @@ var jwtSettings = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSettings["Key"];
 if (string.IsNullOrWhiteSpace(jwtKey))
     throw new InvalidOperationException("La clave JWT ('Jwt:Key') no está configurada. Use dotnet user-secrets o variables de entorno.");
+
+var connectionString = builder.Configuration.GetConnectionString("cadenaSQLPrimary");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("La cadena de conexión 'ConnectionStrings:cadenaSQLPrimary' no está configurada. Use appsettings.Local.json, user-secrets o variables de entorno.");
+
 var key = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
@@ -54,6 +61,19 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            if (string.IsNullOrWhiteSpace(context.Token) &&
+                context.Request.Cookies.TryGetValue(AccessTokenCookieName, out var accessToken))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -75,7 +95,7 @@ builder.Services.AddDbContext<DbTdappContext>(options =>
     /* Para utilizar dos equipos SQL Server, puedes descomentar la línea correspondiente,
        de acuerdo a tu configuraci�n en el archivo appsettings.json */
 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLPrimary"));
+    options.UseSqlServer(connectionString);
     //options.UseSqlServer(builder.Configuration.GetConnectionString("cadenaSQLSecundary"));
 });
 
@@ -84,9 +104,15 @@ builder.Services.AddCors(options =>
     options.AddPolicy("nuevaPolitica", app =>
     {
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        if (allowedOrigins.Length == 0)
+        {
+            return;
+        }
+
         app.WithOrigins(allowedOrigins)
            .AllowAnyMethod()
-           .AllowAnyHeader();
+           .AllowAnyHeader()
+           .AllowCredentials();
     });
 });
 
@@ -104,6 +130,22 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 app.UseExceptionHandler();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.TryAdd("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.TryAdd("X-Frame-Options", "DENY");
+    context.Response.Headers.TryAdd("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers.TryAdd("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+    await next();
+});
+
 // Habilitar Swagger y la UI solo en Desarrollo (o seg�n prefieras)
 if (app.Environment.IsDevelopment())
 {

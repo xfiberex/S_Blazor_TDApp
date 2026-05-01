@@ -6,8 +6,5 @@ namespace S_Blazor_TDApp.Shared
     {
         [Required]
         public string Token { get; set; } = null!;
-
-        [Required]
-        public string RefreshToken { get; set; } = null!;
     }
 }
